@@ -266,6 +266,8 @@
     <ClCompile Include="modules\tm\t_stats.c" />
     <ClCompile Include="modules\tm\t_suspend.c" />
     <ClCompile Include="modules\tm\uac.c" />
+    <ClCompile Include="modules\xlog\xlog.c" />
+    <ClCompile Include="modules\xlog\xl_lib.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\action.h" />
@@ -632,6 +634,7 @@
     <ClInclude Include="modules\tm\t_suspend.h" />
     <ClInclude Include="modules\tm\uac.h" />
     <ClInclude Include="modules\tm\ut.h" />
+    <ClInclude Include="modules\xlog\xl_lib.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh" />
@@ -700,6 +703,9 @@
     <None Include="modules\tm\Makefile" />
     <None Include="modules\tm\README" />
     <None Include="modules\tm\test\kill_sem.sh" />
+    <None Include="modules\xlog\doc\Makefile" />
+    <None Include="modules\xlog\Makefile" />
+    <None Include="modules\xlog\README" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\mem\Readme.tlsf.txt" />
@@ -938,6 +944,8 @@
     <Xml Include="modules\tm\doc\params.xml" />
     <Xml Include="modules\tm\doc\rpc.xml" />
     <Xml Include="modules\tm\doc\tm.xml" />
+    <Xml Include="modules\xlog\doc\xlog.xml" />
+    <Xml Include="modules\xlog\doc\xlog_admin.xml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{664ADF2F-EF7D-47D7-9667-7C3C343C4A58}</ProjectGuid>

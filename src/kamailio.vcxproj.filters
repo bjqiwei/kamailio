@@ -211,6 +211,12 @@
     <Filter Include="modules\sl\doc">
       <UniqueIdentifier>{ffe5684d-ad6f-4d77-b5c6-30493bb065fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\xlog">
+      <UniqueIdentifier>{85481fab-25f3-4c48-869f-e6622b9b1778}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\xlog\doc">
+      <UniqueIdentifier>{af0cc685-f7f4-461a-85ef-c46dc45c30af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\action.c">
@@ -951,6 +957,12 @@
     </ClCompile>
     <ClCompile Include="modules\sl\sl_stats.c">
       <Filter>modules\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\xlog\xl_lib.c">
+      <Filter>modules\xlog</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\xlog\xlog.c">
+      <Filter>modules\xlog</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2046,6 +2058,9 @@
     <ClInclude Include="modules\sl\sl_stats.h">
       <Filter>modules\sl</Filter>
     </ClInclude>
+    <ClInclude Include="modules\xlog\xl_lib.h">
+      <Filter>modules\xlog</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh">
@@ -2219,6 +2234,15 @@
     </None>
     <None Include="modules\sl\doc\Makefile">
       <Filter>modules\sl\doc</Filter>
+    </None>
+    <None Include="modules\xlog\Makefile">
+      <Filter>modules\xlog</Filter>
+    </None>
+    <None Include="modules\xlog\README">
+      <Filter>modules\xlog</Filter>
+    </None>
+    <None Include="modules\xlog\doc\Makefile">
+      <Filter>modules\xlog\doc</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2925,6 +2949,12 @@
     </Xml>
     <Xml Include="modules\sl\doc\sl_stats.xml">
       <Filter>modules\sl\doc</Filter>
+    </Xml>
+    <Xml Include="modules\xlog\doc\xlog.xml">
+      <Filter>modules\xlog\doc</Filter>
+    </Xml>
+    <Xml Include="modules\xlog\doc\xlog_admin.xml">
+      <Filter>modules\xlog\doc</Filter>
     </Xml>
   </ItemGroup>
 </Project>
