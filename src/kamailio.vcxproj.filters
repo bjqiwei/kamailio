@@ -106,6 +106,63 @@
     <Filter Include="lib\srdb2\schema">
       <UniqueIdentifier>{b34a7f50-9e7f-4757-acd6-4dbf6e465156}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\xcap\doc">
+      <UniqueIdentifier>{c6729d33-e8f1-4368-8707-ebad41ff8a4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\acc_json">
+      <UniqueIdentifier>{56f41e4d-1049-4787-80bc-62b168996286}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\acc_radius">
+      <UniqueIdentifier>{e72f1570-709c-4cbf-a6d8-03d8b0184145}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\alias_db">
+      <UniqueIdentifier>{bc10bf18-defc-4153-85f6-b69c9bc0f810}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_java">
+      <UniqueIdentifier>{e6de1cd2-2fe6-4be4-8293-243c6d944de3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_jsdt">
+      <UniqueIdentifier>{54fdbfb3-ea82-4d45-8eaf-cc3708b25495}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_lua">
+      <UniqueIdentifier>{aadd0dec-ae57-4d60-bc4a-bf94c0945fed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_mono">
+      <UniqueIdentifier>{ca38182c-fe9e-4751-a665-38c37254c0ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_perl">
+      <UniqueIdentifier>{27948797-9094-47fc-b369-e3030625127b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_python">
+      <UniqueIdentifier>{bd6823b2-2c97-483d-a283-feae2b94d38b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_python3">
+      <UniqueIdentifier>{30a8214b-fa2a-4384-8fd2-3fd0271d0c74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_ruby">
+      <UniqueIdentifier>{76507611-bd0a-4c0e-8e3e-820b46e9a4c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\app_sqlang">
+      <UniqueIdentifier>{dc919179-1505-4030-8e65-f239129a3824}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\async">
+      <UniqueIdentifier>{eeea24fe-eed1-4f6e-abda-3ef167852ced}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\auth">
+      <UniqueIdentifier>{9978df5f-9650-4761-ba74-c9737c5fcd58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\auth_db">
+      <UniqueIdentifier>{7848d29c-5a0c-4ed1-abac-c856e45b9e7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\auth_diameter">
+      <UniqueIdentifier>{a6c5cf1a-307d-4718-bfc7-5e3350ed5d73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\auth_ephemeral">
+      <UniqueIdentifier>{c9a65c98-9478-4748-bd27-b7dc380dd9dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\auth_identity">
+      <UniqueIdentifier>{cbb2426b-4ff2-4f3d-a140-9dc2afa16e13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\action.c">
@@ -692,6 +749,73 @@
     </ClCompile>
     <ClCompile Include="lib\srdb2\db_uri.c">
       <Filter>lib\srdb2</Filter>
+    </ClCompile>
+    <ClCompile Include="main.c" />
+    <ClCompile Include="lib\srutils\sha256.c">
+      <Filter>lib\srutils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\srutils\shautils.c">
+      <Filter>lib\srutils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\srutils\srjson.c">
+      <Filter>lib\srutils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\srutils\sruid.c">
+      <Filter>lib\srutils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\srutils\tmrec.c">
+      <Filter>lib\srutils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\trie\dtrie.c">
+      <Filter>lib\trie</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\common_policy.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\msg_rules.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\parse_common_rules.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\parse_msg_rules.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\parse_pres_rules.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\pres_rules.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\resource_list.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\resource_lists_parser.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\rls_services_parser.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\xcap_client.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\xcap\xml_utils.c">
+      <Filter>lib\xcap</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\acc\acc.c">
+      <Filter>modules\acc</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\acc\acc_cdr.c">
+      <Filter>modules\acc</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\acc\acc_extra.c">
+      <Filter>modules\acc</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\acc\acc_logic.c">
+      <Filter>modules\acc</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\acc\acc_mod.c">
+      <Filter>modules\acc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1628,6 +1752,78 @@
     <ClInclude Include="lib\srdb2\db_uri.h">
       <Filter>lib\srdb2</Filter>
     </ClInclude>
+    <ClInclude Include="lib\srutils\sha256.h">
+      <Filter>lib\srutils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\srutils\shautils.h">
+      <Filter>lib\srutils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\srutils\srjson.h">
+      <Filter>lib\srutils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\srutils\sruid.h">
+      <Filter>lib\srutils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\srutils\tmrec.h">
+      <Filter>lib\srutils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\trie\dtrie.h">
+      <Filter>lib\trie</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\common_policy.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\msg_rules.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\parse_common_rules.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\parse_msg_rules.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\parse_pres_rules.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\pres_rules.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\resource_list.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\resource_lists_parser.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\rls_services_parser.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\xcap_client.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\xcap_result_codes.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\xcap\xml_utils.h">
+      <Filter>lib\xcap</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\acc\acc.h">
+      <Filter>modules\acc</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\acc\acc_api.h">
+      <Filter>modules\acc</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\acc\acc_cdr.h">
+      <Filter>modules\acc</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\acc\acc_extra.h">
+      <Filter>modules\acc</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\acc\acc_logic.h">
+      <Filter>modules\acc</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\acc\acc_mod.h">
+      <Filter>modules\acc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh">
@@ -1737,6 +1933,49 @@
     </None>
     <None Include="lib\srdb2\schema\Makefile">
       <Filter>lib\srdb2\schema</Filter>
+    </None>
+    <None Include="Makefile" />
+    <None Include="Makefile.cfg" />
+    <None Include="Makefile.defs" />
+    <None Include="Makefile.dirs" />
+    <None Include="Makefile.groups" />
+    <None Include="Makefile.libs" />
+    <None Include="Makefile.modules" />
+    <None Include="Makefile.radius" />
+    <None Include="Makefile.rules" />
+    <None Include="Makefile.shared" />
+    <None Include="Makefile.sources" />
+    <None Include="Makefile.targets" />
+    <None Include="Makefile.utils" />
+    <None Include="lib\srutils\Makefile">
+      <Filter>lib\srutils</Filter>
+    </None>
+    <None Include="lib\srutils\README">
+      <Filter>lib\srutils</Filter>
+    </None>
+    <None Include="lib\trie\Makefile">
+      <Filter>lib\trie</Filter>
+    </None>
+    <None Include="lib\xcap\ChangeLog">
+      <Filter>lib\xcap</Filter>
+    </None>
+    <None Include="lib\xcap\Makefile">
+      <Filter>lib\xcap</Filter>
+    </None>
+    <None Include="lib\xcap\Makefile.nonser">
+      <Filter>lib\xcap</Filter>
+    </None>
+    <None Include="lib\xcap\doc\Makefile">
+      <Filter>lib\xcap\doc</Filter>
+    </None>
+    <None Include="modules\acc\Makefile">
+      <Filter>modules\acc</Filter>
+    </None>
+    <None Include="modules\acc\README">
+      <Filter>modules\acc</Filter>
+    </None>
+    <None Include="modules\acc\doc\Makefile">
+      <Filter>modules\acc\doc</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2401,6 +2640,18 @@
     </Xml>
     <Xml Include="lib\srdb2\schema\watcherinfo.xml">
       <Filter>lib\srdb2\schema</Filter>
+    </Xml>
+    <Xml Include="lib\xcap\doc\xcap.xml">
+      <Filter>lib\xcap\doc</Filter>
+    </Xml>
+    <Xml Include="modules\acc\doc\acc.xml">
+      <Filter>modules\acc\doc</Filter>
+    </Xml>
+    <Xml Include="modules\acc\doc\acc_admin.xml">
+      <Filter>modules\acc\doc</Filter>
+    </Xml>
+    <Xml Include="modules\acc\doc\acc_faq.xml">
+      <Filter>modules\acc\doc</Filter>
     </Xml>
   </ItemGroup>
 </Project>

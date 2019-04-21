@@ -214,6 +214,29 @@
     <ClCompile Include="lib\srdb2\db_rec.c" />
     <ClCompile Include="lib\srdb2\db_res.c" />
     <ClCompile Include="lib\srdb2\db_uri.c" />
+    <ClCompile Include="lib\srutils\sha256.c" />
+    <ClCompile Include="lib\srutils\shautils.c" />
+    <ClCompile Include="lib\srutils\srjson.c" />
+    <ClCompile Include="lib\srutils\sruid.c" />
+    <ClCompile Include="lib\srutils\tmrec.c" />
+    <ClCompile Include="lib\trie\dtrie.c" />
+    <ClCompile Include="lib\xcap\common_policy.c" />
+    <ClCompile Include="lib\xcap\msg_rules.c" />
+    <ClCompile Include="lib\xcap\parse_common_rules.c" />
+    <ClCompile Include="lib\xcap\parse_msg_rules.c" />
+    <ClCompile Include="lib\xcap\parse_pres_rules.c" />
+    <ClCompile Include="lib\xcap\pres_rules.c" />
+    <ClCompile Include="lib\xcap\resource_list.c" />
+    <ClCompile Include="lib\xcap\resource_lists_parser.c" />
+    <ClCompile Include="lib\xcap\rls_services_parser.c" />
+    <ClCompile Include="lib\xcap\xcap_client.c" />
+    <ClCompile Include="lib\xcap\xml_utils.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="modules\acc\acc.c" />
+    <ClCompile Include="modules\acc\acc_cdr.c" />
+    <ClCompile Include="modules\acc\acc_extra.c" />
+    <ClCompile Include="modules\acc\acc_logic.c" />
+    <ClCompile Include="modules\acc\acc_mod.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\action.h" />
@@ -527,6 +550,30 @@
     <ClInclude Include="lib\srdb2\db_rec.h" />
     <ClInclude Include="lib\srdb2\db_res.h" />
     <ClInclude Include="lib\srdb2\db_uri.h" />
+    <ClInclude Include="lib\srutils\sha256.h" />
+    <ClInclude Include="lib\srutils\shautils.h" />
+    <ClInclude Include="lib\srutils\srjson.h" />
+    <ClInclude Include="lib\srutils\sruid.h" />
+    <ClInclude Include="lib\srutils\tmrec.h" />
+    <ClInclude Include="lib\trie\dtrie.h" />
+    <ClInclude Include="lib\xcap\common_policy.h" />
+    <ClInclude Include="lib\xcap\msg_rules.h" />
+    <ClInclude Include="lib\xcap\parse_common_rules.h" />
+    <ClInclude Include="lib\xcap\parse_msg_rules.h" />
+    <ClInclude Include="lib\xcap\parse_pres_rules.h" />
+    <ClInclude Include="lib\xcap\pres_rules.h" />
+    <ClInclude Include="lib\xcap\resource_list.h" />
+    <ClInclude Include="lib\xcap\resource_lists_parser.h" />
+    <ClInclude Include="lib\xcap\rls_services_parser.h" />
+    <ClInclude Include="lib\xcap\xcap_client.h" />
+    <ClInclude Include="lib\xcap\xcap_result_codes.h" />
+    <ClInclude Include="lib\xcap\xml_utils.h" />
+    <ClInclude Include="modules\acc\acc.h" />
+    <ClInclude Include="modules\acc\acc_api.h" />
+    <ClInclude Include="modules\acc\acc_cdr.h" />
+    <ClInclude Include="modules\acc\acc_extra.h" />
+    <ClInclude Include="modules\acc\acc_logic.h" />
+    <ClInclude Include="modules\acc\acc_mod.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh" />
@@ -565,6 +612,29 @@
     <None Include="lib\srdb2\Makefile" />
     <None Include="lib\srdb2\README" />
     <None Include="lib\srdb2\schema\Makefile" />
+    <None Include="lib\srutils\Makefile" />
+    <None Include="lib\srutils\README" />
+    <None Include="lib\trie\Makefile" />
+    <None Include="lib\xcap\ChangeLog" />
+    <None Include="lib\xcap\doc\Makefile" />
+    <None Include="lib\xcap\Makefile" />
+    <None Include="lib\xcap\Makefile.nonser" />
+    <None Include="Makefile" />
+    <None Include="Makefile.cfg" />
+    <None Include="Makefile.defs" />
+    <None Include="Makefile.dirs" />
+    <None Include="Makefile.groups" />
+    <None Include="Makefile.libs" />
+    <None Include="Makefile.modules" />
+    <None Include="Makefile.radius" />
+    <None Include="Makefile.rules" />
+    <None Include="Makefile.shared" />
+    <None Include="Makefile.sources" />
+    <None Include="Makefile.targets" />
+    <None Include="Makefile.utils" />
+    <None Include="modules\acc\doc\Makefile" />
+    <None Include="modules\acc\Makefile" />
+    <None Include="modules\acc\README" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\mem\Readme.tlsf.txt" />
@@ -789,6 +859,10 @@
     <Xml Include="lib\srdb2\schema\uri_attrs.xml" />
     <Xml Include="lib\srdb2\schema\user_attrs.xml" />
     <Xml Include="lib\srdb2\schema\watcherinfo.xml" />
+    <Xml Include="lib\xcap\doc\xcap.xml" />
+    <Xml Include="modules\acc\doc\acc.xml" />
+    <Xml Include="modules\acc\doc\acc_admin.xml" />
+    <Xml Include="modules\acc\doc\acc_faq.xml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{664ADF2F-EF7D-47D7-9667-7C3C343C4A58}</ProjectGuid>
