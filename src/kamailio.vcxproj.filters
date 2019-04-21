@@ -163,6 +163,54 @@
     <Filter Include="modules\auth_identity">
       <UniqueIdentifier>{cbb2426b-4ff2-4f3d-a140-9dc2afa16e13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\auth_radius">
+      <UniqueIdentifier>{82ddb654-134a-41f7-8d54-2e79edf9b20e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\auth_xkeys">
+      <UniqueIdentifier>{7656db72-dc77-4efc-992b-ef1df3f5f438}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\avp">
+      <UniqueIdentifier>{5b234f40-4a36-46a3-9149-b5652f46170d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\avpops">
+      <UniqueIdentifier>{bedbe685-b8ba-44fa-beff-222a8954bcd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\benchmark">
+      <UniqueIdentifier>{06199fbb-7f2f-46e6-b434-138ec6907dfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\blst">
+      <UniqueIdentifier>{361e4bce-ee1e-42ed-8f0b-2ac451586061}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\call_control">
+      <UniqueIdentifier>{b0965faf-81b6-4702-b24e-427da3ebb267}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\call_obj">
+      <UniqueIdentifier>{7ed5fc24-e175-4fa3-8fae-2c7c03d3d455}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\carrierroute">
+      <UniqueIdentifier>{0536f540-de00-4cfe-a104-ee864112557d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\cdp">
+      <UniqueIdentifier>{d9e0b05d-21d5-4a85-85a4-c77700f91251}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\cdp_avp">
+      <UniqueIdentifier>{8a8ee120-4986-4eae-bdfc-235846b42a19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\tm">
+      <UniqueIdentifier>{91a06e50-d507-4bb6-91d5-99fc702383b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\tm\doc">
+      <UniqueIdentifier>{a75a9d31-db9a-4d8a-923e-5d53d0cfd89b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\tm\test">
+      <UniqueIdentifier>{9b225987-d4f8-41c5-ad1f-53ba884142e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\sl">
+      <UniqueIdentifier>{ade25be3-a8ef-4475-9637-e7253d85c993}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\sl\doc">
+      <UniqueIdentifier>{ffe5684d-ad6f-4d77-b5c6-30493bb065fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\action.c">
@@ -816,6 +864,93 @@
     </ClCompile>
     <ClCompile Include="modules\acc\acc_mod.c">
       <Filter>modules\acc</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\callid.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\config.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\dlg.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\h_table.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\lock.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\lw_parser.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\rpc_uac.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\select.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\sip_msg.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_append_branches.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_cancel.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_fifo.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_funcs.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_fwd.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_hooks.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_lookup.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_msgbuilder.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_reply.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_serial.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_stats.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\t_suspend.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\test.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\timer.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\tm.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\tm_load.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\tm\uac.c">
+      <Filter>modules\tm</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\sl\sl.c">
+      <Filter>modules\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\sl\sl_funcs.c">
+      <Filter>modules\sl</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\sl\sl_stats.c">
+      <Filter>modules\sl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1824,6 +1959,93 @@
     <ClInclude Include="modules\acc\acc_mod.h">
       <Filter>modules\acc</Filter>
     </ClInclude>
+    <ClInclude Include="modules\tm\callid.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\config.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\defs.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\dlg.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\h_table.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\lock.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\lw_parser.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\rpc_uac.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\select.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\sip_msg.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_append_branches.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_cancel.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_fifo.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_funcs.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_fwd.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_hooks.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_lookup.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_msgbuilder.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_reply.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_serial.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_stats.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\t_suspend.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\timer.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\tm_load.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\uac.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\tm\ut.h">
+      <Filter>modules\tm</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\sl\sl.h">
+      <Filter>modules\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\sl\sl_funcs.h">
+      <Filter>modules\sl</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\sl\sl_stats.h">
+      <Filter>modules\sl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh">
@@ -1976,6 +2198,27 @@
     </None>
     <None Include="modules\acc\doc\Makefile">
       <Filter>modules\acc\doc</Filter>
+    </None>
+    <None Include="modules\tm\Makefile">
+      <Filter>modules\tm</Filter>
+    </None>
+    <None Include="modules\tm\README">
+      <Filter>modules\tm</Filter>
+    </None>
+    <None Include="modules\tm\doc\Makefile">
+      <Filter>modules\tm\doc</Filter>
+    </None>
+    <None Include="modules\tm\test\kill_sem.sh">
+      <Filter>modules\tm\test</Filter>
+    </None>
+    <None Include="modules\sl\Makefile">
+      <Filter>modules\sl</Filter>
+    </None>
+    <None Include="modules\sl\README">
+      <Filter>modules\sl</Filter>
+    </None>
+    <None Include="modules\sl\doc\Makefile">
+      <Filter>modules\sl\doc</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2652,6 +2895,36 @@
     </Xml>
     <Xml Include="modules\acc\doc\acc_faq.xml">
       <Filter>modules\acc\doc</Filter>
+    </Xml>
+    <Xml Include="modules\tm\doc\api.xml">
+      <Filter>modules\tm\doc</Filter>
+    </Xml>
+    <Xml Include="modules\tm\doc\event_routes.xml">
+      <Filter>modules\tm\doc</Filter>
+    </Xml>
+    <Xml Include="modules\tm\doc\functions.xml">
+      <Filter>modules\tm\doc</Filter>
+    </Xml>
+    <Xml Include="modules\tm\doc\params.xml">
+      <Filter>modules\tm\doc</Filter>
+    </Xml>
+    <Xml Include="modules\tm\doc\rpc.xml">
+      <Filter>modules\tm\doc</Filter>
+    </Xml>
+    <Xml Include="modules\tm\doc\tm.xml">
+      <Filter>modules\tm\doc</Filter>
+    </Xml>
+    <Xml Include="modules\sl\doc\sl.xml">
+      <Filter>modules\sl\doc</Filter>
+    </Xml>
+    <Xml Include="modules\sl\doc\sl_functions.xml">
+      <Filter>modules\sl\doc</Filter>
+    </Xml>
+    <Xml Include="modules\sl\doc\sl_params.xml">
+      <Filter>modules\sl\doc</Filter>
+    </Xml>
+    <Xml Include="modules\sl\doc\sl_stats.xml">
+      <Filter>modules\sl\doc</Filter>
     </Xml>
   </ItemGroup>
 </Project>

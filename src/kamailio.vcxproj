@@ -237,6 +237,35 @@
     <ClCompile Include="modules\acc\acc_extra.c" />
     <ClCompile Include="modules\acc\acc_logic.c" />
     <ClCompile Include="modules\acc\acc_mod.c" />
+    <ClCompile Include="modules\sl\sl.c" />
+    <ClCompile Include="modules\sl\sl_funcs.c" />
+    <ClCompile Include="modules\sl\sl_stats.c" />
+    <ClCompile Include="modules\tm\callid.c" />
+    <ClCompile Include="modules\tm\config.c" />
+    <ClCompile Include="modules\tm\dlg.c" />
+    <ClCompile Include="modules\tm\h_table.c" />
+    <ClCompile Include="modules\tm\lock.c" />
+    <ClCompile Include="modules\tm\lw_parser.c" />
+    <ClCompile Include="modules\tm\rpc_uac.c" />
+    <ClCompile Include="modules\tm\select.c" />
+    <ClCompile Include="modules\tm\sip_msg.c" />
+    <ClCompile Include="modules\tm\test.c" />
+    <ClCompile Include="modules\tm\timer.c" />
+    <ClCompile Include="modules\tm\tm.c" />
+    <ClCompile Include="modules\tm\tm_load.c" />
+    <ClCompile Include="modules\tm\t_append_branches.c" />
+    <ClCompile Include="modules\tm\t_cancel.c" />
+    <ClCompile Include="modules\tm\t_fifo.c" />
+    <ClCompile Include="modules\tm\t_funcs.c" />
+    <ClCompile Include="modules\tm\t_fwd.c" />
+    <ClCompile Include="modules\tm\t_hooks.c" />
+    <ClCompile Include="modules\tm\t_lookup.c" />
+    <ClCompile Include="modules\tm\t_msgbuilder.c" />
+    <ClCompile Include="modules\tm\t_reply.c" />
+    <ClCompile Include="modules\tm\t_serial.c" />
+    <ClCompile Include="modules\tm\t_stats.c" />
+    <ClCompile Include="modules\tm\t_suspend.c" />
+    <ClCompile Include="modules\tm\uac.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\action.h" />
@@ -574,6 +603,35 @@
     <ClInclude Include="modules\acc\acc_extra.h" />
     <ClInclude Include="modules\acc\acc_logic.h" />
     <ClInclude Include="modules\acc\acc_mod.h" />
+    <ClInclude Include="modules\sl\sl.h" />
+    <ClInclude Include="modules\sl\sl_funcs.h" />
+    <ClInclude Include="modules\sl\sl_stats.h" />
+    <ClInclude Include="modules\tm\callid.h" />
+    <ClInclude Include="modules\tm\config.h" />
+    <ClInclude Include="modules\tm\defs.h" />
+    <ClInclude Include="modules\tm\dlg.h" />
+    <ClInclude Include="modules\tm\h_table.h" />
+    <ClInclude Include="modules\tm\lock.h" />
+    <ClInclude Include="modules\tm\lw_parser.h" />
+    <ClInclude Include="modules\tm\rpc_uac.h" />
+    <ClInclude Include="modules\tm\select.h" />
+    <ClInclude Include="modules\tm\sip_msg.h" />
+    <ClInclude Include="modules\tm\timer.h" />
+    <ClInclude Include="modules\tm\tm_load.h" />
+    <ClInclude Include="modules\tm\t_append_branches.h" />
+    <ClInclude Include="modules\tm\t_cancel.h" />
+    <ClInclude Include="modules\tm\t_fifo.h" />
+    <ClInclude Include="modules\tm\t_funcs.h" />
+    <ClInclude Include="modules\tm\t_fwd.h" />
+    <ClInclude Include="modules\tm\t_hooks.h" />
+    <ClInclude Include="modules\tm\t_lookup.h" />
+    <ClInclude Include="modules\tm\t_msgbuilder.h" />
+    <ClInclude Include="modules\tm\t_reply.h" />
+    <ClInclude Include="modules\tm\t_serial.h" />
+    <ClInclude Include="modules\tm\t_stats.h" />
+    <ClInclude Include="modules\tm\t_suspend.h" />
+    <ClInclude Include="modules\tm\uac.h" />
+    <ClInclude Include="modules\tm\ut.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh" />
@@ -635,6 +693,13 @@
     <None Include="modules\acc\doc\Makefile" />
     <None Include="modules\acc\Makefile" />
     <None Include="modules\acc\README" />
+    <None Include="modules\sl\doc\Makefile" />
+    <None Include="modules\sl\Makefile" />
+    <None Include="modules\sl\README" />
+    <None Include="modules\tm\doc\Makefile" />
+    <None Include="modules\tm\Makefile" />
+    <None Include="modules\tm\README" />
+    <None Include="modules\tm\test\kill_sem.sh" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\mem\Readme.tlsf.txt" />
@@ -863,6 +928,16 @@
     <Xml Include="modules\acc\doc\acc.xml" />
     <Xml Include="modules\acc\doc\acc_admin.xml" />
     <Xml Include="modules\acc\doc\acc_faq.xml" />
+    <Xml Include="modules\sl\doc\sl.xml" />
+    <Xml Include="modules\sl\doc\sl_functions.xml" />
+    <Xml Include="modules\sl\doc\sl_params.xml" />
+    <Xml Include="modules\sl\doc\sl_stats.xml" />
+    <Xml Include="modules\tm\doc\api.xml" />
+    <Xml Include="modules\tm\doc\event_routes.xml" />
+    <Xml Include="modules\tm\doc\functions.xml" />
+    <Xml Include="modules\tm\doc\params.xml" />
+    <Xml Include="modules\tm\doc\rpc.xml" />
+    <Xml Include="modules\tm\doc\tm.xml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{664ADF2F-EF7D-47D7-9667-7C3C343C4A58}</ProjectGuid>
