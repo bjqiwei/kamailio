@@ -237,6 +237,8 @@
     <ClCompile Include="modules\acc\acc_extra.c" />
     <ClCompile Include="modules\acc\acc_logic.c" />
     <ClCompile Include="modules\acc\acc_mod.c" />
+    <ClCompile Include="modules\alias_db\alias_db.c" />
+    <ClCompile Include="modules\alias_db\alookup.c" />
     <ClCompile Include="modules\sl\sl.c" />
     <ClCompile Include="modules\sl\sl_funcs.c" />
     <ClCompile Include="modules\sl\sl_stats.c" />
@@ -605,6 +607,9 @@
     <ClInclude Include="modules\acc\acc_extra.h" />
     <ClInclude Include="modules\acc\acc_logic.h" />
     <ClInclude Include="modules\acc\acc_mod.h" />
+    <ClInclude Include="modules\alias_db\alias_db.h" />
+    <ClInclude Include="modules\alias_db\alookup.h" />
+    <ClInclude Include="modules\alias_db\api.h" />
     <ClInclude Include="modules\sl\sl.h" />
     <ClInclude Include="modules\sl\sl_funcs.h" />
     <ClInclude Include="modules\sl\sl_stats.h" />
@@ -696,6 +701,9 @@
     <None Include="modules\acc\doc\Makefile" />
     <None Include="modules\acc\Makefile" />
     <None Include="modules\acc\README" />
+    <None Include="modules\alias_db\doc\Makefile" />
+    <None Include="modules\alias_db\Makefile" />
+    <None Include="modules\alias_db\README" />
     <None Include="modules\sl\doc\Makefile" />
     <None Include="modules\sl\Makefile" />
     <None Include="modules\sl\README" />
@@ -934,6 +942,8 @@
     <Xml Include="modules\acc\doc\acc.xml" />
     <Xml Include="modules\acc\doc\acc_admin.xml" />
     <Xml Include="modules\acc\doc\acc_faq.xml" />
+    <Xml Include="modules\alias_db\doc\alias_db.xml" />
+    <Xml Include="modules\alias_db\doc\alias_db_admin.xml" />
     <Xml Include="modules\sl\doc\sl.xml" />
     <Xml Include="modules\sl\doc\sl_functions.xml" />
     <Xml Include="modules\sl\doc\sl_params.xml" />

@@ -217,6 +217,9 @@
     <Filter Include="modules\xlog\doc">
       <UniqueIdentifier>{af0cc685-f7f4-461a-85ef-c46dc45c30af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\alias_db\doc">
+      <UniqueIdentifier>{7d3a7de7-86f1-4cc0-bda9-8c17b48c939c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\action.c">
@@ -963,6 +966,12 @@
     </ClCompile>
     <ClCompile Include="modules\xlog\xlog.c">
       <Filter>modules\xlog</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\alias_db\alias_db.c">
+      <Filter>modules\alias_db</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\alias_db\alookup.c">
+      <Filter>modules\alias_db</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2061,6 +2070,15 @@
     <ClInclude Include="modules\xlog\xl_lib.h">
       <Filter>modules\xlog</Filter>
     </ClInclude>
+    <ClInclude Include="modules\alias_db\alias_db.h">
+      <Filter>modules\alias_db</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\alias_db\alookup.h">
+      <Filter>modules\alias_db</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\alias_db\api.h">
+      <Filter>modules\alias_db</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh">
@@ -2243,6 +2261,15 @@
     </None>
     <None Include="modules\xlog\doc\Makefile">
       <Filter>modules\xlog\doc</Filter>
+    </None>
+    <None Include="modules\alias_db\Makefile">
+      <Filter>modules\alias_db</Filter>
+    </None>
+    <None Include="modules\alias_db\README">
+      <Filter>modules\alias_db</Filter>
+    </None>
+    <None Include="modules\alias_db\doc\Makefile">
+      <Filter>modules\alias_db\doc</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2955,6 +2982,12 @@
     </Xml>
     <Xml Include="modules\xlog\doc\xlog_admin.xml">
       <Filter>modules\xlog\doc</Filter>
+    </Xml>
+    <Xml Include="modules\alias_db\doc\alias_db.xml">
+      <Filter>modules\alias_db\doc</Filter>
+    </Xml>
+    <Xml Include="modules\alias_db\doc\alias_db_admin.xml">
+      <Filter>modules\alias_db\doc</Filter>
     </Xml>
   </ItemGroup>
 </Project>
