@@ -217,8 +217,35 @@
     <Filter Include="modules\xlog\doc">
       <UniqueIdentifier>{af0cc685-f7f4-461a-85ef-c46dc45c30af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\pike">
+      <UniqueIdentifier>{3bdbcb36-81ff-45ee-94ef-87e463a06404}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\pike\doc">
+      <UniqueIdentifier>{fff9141a-d4e0-4874-8dbf-1972704fa83b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\osp">
+      <UniqueIdentifier>{137f052c-d84a-4833-b2b0-cb8488e4e9d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\osp\doc">
+      <UniqueIdentifier>{8e98206d-1f98-4340-b703-9e36f9396e86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\osp\etc">
+      <UniqueIdentifier>{3511c172-1d56-4ba2-afe4-aff02be3200f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\uac_redirect">
+      <UniqueIdentifier>{d4b1ca6d-d572-4832-b5a3-fb4daa59fd13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\uac_redirect\doc">
+      <UniqueIdentifier>{ade1cfea-165b-4df2-af4c-84d22f2fc72b}</UniqueIdentifier>
+    </Filter>
     <Filter Include="modules\alias_db\doc">
-      <UniqueIdentifier>{7d3a7de7-86f1-4cc0-bda9-8c17b48c939c}</UniqueIdentifier>
+      <UniqueIdentifier>{cc847db3-388f-4810-bc60-2d08d3be2682}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\dispatcher">
+      <UniqueIdentifier>{e9d2475c-a751-4ab7-bdd5-f71094f87c62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\dispatcher\doc">
+      <UniqueIdentifier>{694a4400-d64b-4248-a959-d868a1098155}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -967,11 +994,80 @@
     <ClCompile Include="modules\xlog\xlog.c">
       <Filter>modules\xlog</Filter>
     </ClCompile>
+    <ClCompile Include="modules\pike\ip_tree.c">
+      <Filter>modules\pike</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\pike\pike.c">
+      <Filter>modules\pike</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\pike\pike_funcs.c">
+      <Filter>modules\pike</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\pike\pike_rpc.c">
+      <Filter>modules\pike</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\pike\pike_top.c">
+      <Filter>modules\pike</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\pike\timer.c">
+      <Filter>modules\pike</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\destination.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\globals.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\orig_transaction.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\osp_mod.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\osptoolkit.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\provider.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\sipheader.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\term_transaction.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\tm.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\osp\usage.c">
+      <Filter>modules\osp</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\uac_redirect\rd_filter.c">
+      <Filter>modules\uac_redirect</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\uac_redirect\rd_funcs.c">
+      <Filter>modules\uac_redirect</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\uac_redirect\uac_redirect.c">
+      <Filter>modules\uac_redirect</Filter>
+    </ClCompile>
     <ClCompile Include="modules\alias_db\alias_db.c">
       <Filter>modules\alias_db</Filter>
     </ClCompile>
     <ClCompile Include="modules\alias_db\alookup.c">
       <Filter>modules\alias_db</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\dispatcher\config.c">
+      <Filter>modules\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\dispatcher\dispatch.c">
+      <Filter>modules\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\dispatcher\dispatcher.c">
+      <Filter>modules\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\dispatcher\ds_ht.c">
+      <Filter>modules\dispatcher</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2070,6 +2166,54 @@
     <ClInclude Include="modules\xlog\xl_lib.h">
       <Filter>modules\xlog</Filter>
     </ClInclude>
+    <ClInclude Include="modules\pike\ip_tree.h">
+      <Filter>modules\pike</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\pike\pike_funcs.h">
+      <Filter>modules\pike</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\pike\pike_rpc.h">
+      <Filter>modules\pike</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\pike\pike_top.h">
+      <Filter>modules\pike</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\pike\timer.h">
+      <Filter>modules\pike</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\destination.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\orig_transaction.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\osp_mod.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\osptoolkit.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\provider.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\sipheader.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\term_transaction.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\tm.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\osp\usage.h">
+      <Filter>modules\osp</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\uac_redirect\rd_filter.h">
+      <Filter>modules\uac_redirect</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\uac_redirect\rd_funcs.h">
+      <Filter>modules\uac_redirect</Filter>
+    </ClInclude>
     <ClInclude Include="modules\alias_db\alias_db.h">
       <Filter>modules\alias_db</Filter>
     </ClInclude>
@@ -2078,6 +2222,18 @@
     </ClInclude>
     <ClInclude Include="modules\alias_db\api.h">
       <Filter>modules\alias_db</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\dispatcher\api.h">
+      <Filter>modules\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\dispatcher\config.h">
+      <Filter>modules\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\dispatcher\dispatch.h">
+      <Filter>modules\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\dispatcher\ds_ht.h">
+      <Filter>modules\dispatcher</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2262,6 +2418,45 @@
     <None Include="modules\xlog\doc\Makefile">
       <Filter>modules\xlog\doc</Filter>
     </None>
+    <None Include="modules\pike\Makefile">
+      <Filter>modules\pike</Filter>
+    </None>
+    <None Include="modules\pike\README">
+      <Filter>modules\pike</Filter>
+    </None>
+    <None Include="modules\pike\doc\Makefile">
+      <Filter>modules\pike\doc</Filter>
+    </None>
+    <None Include="modules\osp\Makefile">
+      <Filter>modules\osp</Filter>
+    </None>
+    <None Include="modules\osp\README">
+      <Filter>modules\osp</Filter>
+    </None>
+    <None Include="modules\osp\doc\Makefile">
+      <Filter>modules\osp\doc</Filter>
+    </None>
+    <None Include="modules\osp\etc\cacert_0.pem">
+      <Filter>modules\osp\etc</Filter>
+    </None>
+    <None Include="modules\osp\etc\localcert.pem">
+      <Filter>modules\osp\etc</Filter>
+    </None>
+    <None Include="modules\osp\etc\pkey.pem">
+      <Filter>modules\osp\etc</Filter>
+    </None>
+    <None Include="modules\osp\etc\sample-osp-openser.cfg">
+      <Filter>modules\osp\etc</Filter>
+    </None>
+    <None Include="modules\uac_redirect\Makefile">
+      <Filter>modules\uac_redirect</Filter>
+    </None>
+    <None Include="modules\uac_redirect\README">
+      <Filter>modules\uac_redirect</Filter>
+    </None>
+    <None Include="modules\uac_redirect\doc\Makefile">
+      <Filter>modules\uac_redirect\doc</Filter>
+    </None>
     <None Include="modules\alias_db\Makefile">
       <Filter>modules\alias_db</Filter>
     </None>
@@ -2271,10 +2466,28 @@
     <None Include="modules\alias_db\doc\Makefile">
       <Filter>modules\alias_db\doc</Filter>
     </None>
+    <None Include="modules\dispatcher\Makefile">
+      <Filter>modules\dispatcher</Filter>
+    </None>
+    <None Include="modules\dispatcher\README">
+      <Filter>modules\dispatcher</Filter>
+    </None>
+    <None Include="modules\dispatcher\doc\dispatcher.cfg">
+      <Filter>modules\dispatcher\doc</Filter>
+    </None>
+    <None Include="modules\dispatcher\doc\dispatcher.list">
+      <Filter>modules\dispatcher\doc</Filter>
+    </None>
+    <None Include="modules\dispatcher\doc\Makefile">
+      <Filter>modules\dispatcher\doc</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\mem\Readme.tlsf.txt">
       <Filter>core\mem</Filter>
+    </Text>
+    <Text Include="modules\osp\RELEASE-NOTES.txt">
+      <Filter>modules\osp</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>
@@ -2983,11 +3196,47 @@
     <Xml Include="modules\xlog\doc\xlog_admin.xml">
       <Filter>modules\xlog\doc</Filter>
     </Xml>
+    <Xml Include="modules\pike\doc\pike.xml">
+      <Filter>modules\pike\doc</Filter>
+    </Xml>
+    <Xml Include="modules\pike\doc\pike_admin.xml">
+      <Filter>modules\pike\doc</Filter>
+    </Xml>
+    <Xml Include="modules\pike\doc\pike_devel.xml">
+      <Filter>modules\pike\doc</Filter>
+    </Xml>
+    <Xml Include="modules\pike\doc\pike_rpc.xml">
+      <Filter>modules\pike\doc</Filter>
+    </Xml>
+    <Xml Include="modules\osp\doc\osp.xml">
+      <Filter>modules\osp\doc</Filter>
+    </Xml>
+    <Xml Include="modules\osp\doc\osp_admin.xml">
+      <Filter>modules\osp\doc</Filter>
+    </Xml>
+    <Xml Include="modules\osp\doc\osp_devel.xml">
+      <Filter>modules\osp\doc</Filter>
+    </Xml>
+    <Xml Include="modules\uac_redirect\doc\uac_redirect.xml">
+      <Filter>modules\uac_redirect\doc</Filter>
+    </Xml>
+    <Xml Include="modules\uac_redirect\doc\uac_redirect_admin.xml">
+      <Filter>modules\uac_redirect\doc</Filter>
+    </Xml>
     <Xml Include="modules\alias_db\doc\alias_db.xml">
       <Filter>modules\alias_db\doc</Filter>
     </Xml>
     <Xml Include="modules\alias_db\doc\alias_db_admin.xml">
       <Filter>modules\alias_db\doc</Filter>
+    </Xml>
+    <Xml Include="modules\dispatcher\doc\dispatcher.xml">
+      <Filter>modules\dispatcher\doc</Filter>
+    </Xml>
+    <Xml Include="modules\dispatcher\doc\dispatcher_admin.xml">
+      <Filter>modules\dispatcher\doc</Filter>
+    </Xml>
+    <Xml Include="modules\dispatcher\doc\dispatcher_faq.xml">
+      <Filter>modules\dispatcher\doc</Filter>
     </Xml>
   </ItemGroup>
 </Project>

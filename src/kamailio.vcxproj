@@ -239,6 +239,26 @@
     <ClCompile Include="modules\acc\acc_mod.c" />
     <ClCompile Include="modules\alias_db\alias_db.c" />
     <ClCompile Include="modules\alias_db\alookup.c" />
+    <ClCompile Include="modules\dispatcher\config.c" />
+    <ClCompile Include="modules\dispatcher\dispatch.c" />
+    <ClCompile Include="modules\dispatcher\dispatcher.c" />
+    <ClCompile Include="modules\dispatcher\ds_ht.c" />
+    <ClCompile Include="modules\osp\destination.c" />
+    <ClCompile Include="modules\osp\globals.c" />
+    <ClCompile Include="modules\osp\orig_transaction.c" />
+    <ClCompile Include="modules\osp\osptoolkit.c" />
+    <ClCompile Include="modules\osp\osp_mod.c" />
+    <ClCompile Include="modules\osp\provider.c" />
+    <ClCompile Include="modules\osp\sipheader.c" />
+    <ClCompile Include="modules\osp\term_transaction.c" />
+    <ClCompile Include="modules\osp\tm.c" />
+    <ClCompile Include="modules\osp\usage.c" />
+    <ClCompile Include="modules\pike\ip_tree.c" />
+    <ClCompile Include="modules\pike\pike.c" />
+    <ClCompile Include="modules\pike\pike_funcs.c" />
+    <ClCompile Include="modules\pike\pike_rpc.c" />
+    <ClCompile Include="modules\pike\pike_top.c" />
+    <ClCompile Include="modules\pike\timer.c" />
     <ClCompile Include="modules\sl\sl.c" />
     <ClCompile Include="modules\sl\sl_funcs.c" />
     <ClCompile Include="modules\sl\sl_stats.c" />
@@ -268,6 +288,9 @@
     <ClCompile Include="modules\tm\t_stats.c" />
     <ClCompile Include="modules\tm\t_suspend.c" />
     <ClCompile Include="modules\tm\uac.c" />
+    <ClCompile Include="modules\uac_redirect\rd_filter.c" />
+    <ClCompile Include="modules\uac_redirect\rd_funcs.c" />
+    <ClCompile Include="modules\uac_redirect\uac_redirect.c" />
     <ClCompile Include="modules\xlog\xlog.c" />
     <ClCompile Include="modules\xlog\xl_lib.c" />
   </ItemGroup>
@@ -610,6 +633,24 @@
     <ClInclude Include="modules\alias_db\alias_db.h" />
     <ClInclude Include="modules\alias_db\alookup.h" />
     <ClInclude Include="modules\alias_db\api.h" />
+    <ClInclude Include="modules\dispatcher\api.h" />
+    <ClInclude Include="modules\dispatcher\config.h" />
+    <ClInclude Include="modules\dispatcher\dispatch.h" />
+    <ClInclude Include="modules\dispatcher\ds_ht.h" />
+    <ClInclude Include="modules\osp\destination.h" />
+    <ClInclude Include="modules\osp\orig_transaction.h" />
+    <ClInclude Include="modules\osp\osptoolkit.h" />
+    <ClInclude Include="modules\osp\osp_mod.h" />
+    <ClInclude Include="modules\osp\provider.h" />
+    <ClInclude Include="modules\osp\sipheader.h" />
+    <ClInclude Include="modules\osp\term_transaction.h" />
+    <ClInclude Include="modules\osp\tm.h" />
+    <ClInclude Include="modules\osp\usage.h" />
+    <ClInclude Include="modules\pike\ip_tree.h" />
+    <ClInclude Include="modules\pike\pike_funcs.h" />
+    <ClInclude Include="modules\pike\pike_rpc.h" />
+    <ClInclude Include="modules\pike\pike_top.h" />
+    <ClInclude Include="modules\pike\timer.h" />
     <ClInclude Include="modules\sl\sl.h" />
     <ClInclude Include="modules\sl\sl_funcs.h" />
     <ClInclude Include="modules\sl\sl_stats.h" />
@@ -639,6 +680,8 @@
     <ClInclude Include="modules\tm\t_suspend.h" />
     <ClInclude Include="modules\tm\uac.h" />
     <ClInclude Include="modules\tm\ut.h" />
+    <ClInclude Include="modules\uac_redirect\rd_filter.h" />
+    <ClInclude Include="modules\uac_redirect\rd_funcs.h" />
     <ClInclude Include="modules\xlog\xl_lib.h" />
   </ItemGroup>
   <ItemGroup>
@@ -704,6 +747,21 @@
     <None Include="modules\alias_db\doc\Makefile" />
     <None Include="modules\alias_db\Makefile" />
     <None Include="modules\alias_db\README" />
+    <None Include="modules\dispatcher\doc\dispatcher.cfg" />
+    <None Include="modules\dispatcher\doc\dispatcher.list" />
+    <None Include="modules\dispatcher\doc\Makefile" />
+    <None Include="modules\dispatcher\Makefile" />
+    <None Include="modules\dispatcher\README" />
+    <None Include="modules\osp\doc\Makefile" />
+    <None Include="modules\osp\etc\cacert_0.pem" />
+    <None Include="modules\osp\etc\localcert.pem" />
+    <None Include="modules\osp\etc\pkey.pem" />
+    <None Include="modules\osp\etc\sample-osp-openser.cfg" />
+    <None Include="modules\osp\Makefile" />
+    <None Include="modules\osp\README" />
+    <None Include="modules\pike\doc\Makefile" />
+    <None Include="modules\pike\Makefile" />
+    <None Include="modules\pike\README" />
     <None Include="modules\sl\doc\Makefile" />
     <None Include="modules\sl\Makefile" />
     <None Include="modules\sl\README" />
@@ -711,12 +769,16 @@
     <None Include="modules\tm\Makefile" />
     <None Include="modules\tm\README" />
     <None Include="modules\tm\test\kill_sem.sh" />
+    <None Include="modules\uac_redirect\doc\Makefile" />
+    <None Include="modules\uac_redirect\Makefile" />
+    <None Include="modules\uac_redirect\README" />
     <None Include="modules\xlog\doc\Makefile" />
     <None Include="modules\xlog\Makefile" />
     <None Include="modules\xlog\README" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="core\mem\Readme.tlsf.txt" />
+    <Text Include="modules\osp\RELEASE-NOTES.txt" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="lib\cds\doc\cds.xml" />
@@ -944,6 +1006,16 @@
     <Xml Include="modules\acc\doc\acc_faq.xml" />
     <Xml Include="modules\alias_db\doc\alias_db.xml" />
     <Xml Include="modules\alias_db\doc\alias_db_admin.xml" />
+    <Xml Include="modules\dispatcher\doc\dispatcher.xml" />
+    <Xml Include="modules\dispatcher\doc\dispatcher_admin.xml" />
+    <Xml Include="modules\dispatcher\doc\dispatcher_faq.xml" />
+    <Xml Include="modules\osp\doc\osp.xml" />
+    <Xml Include="modules\osp\doc\osp_admin.xml" />
+    <Xml Include="modules\osp\doc\osp_devel.xml" />
+    <Xml Include="modules\pike\doc\pike.xml" />
+    <Xml Include="modules\pike\doc\pike_admin.xml" />
+    <Xml Include="modules\pike\doc\pike_devel.xml" />
+    <Xml Include="modules\pike\doc\pike_rpc.xml" />
     <Xml Include="modules\sl\doc\sl.xml" />
     <Xml Include="modules\sl\doc\sl_functions.xml" />
     <Xml Include="modules\sl\doc\sl_params.xml" />
@@ -954,6 +1026,8 @@
     <Xml Include="modules\tm\doc\params.xml" />
     <Xml Include="modules\tm\doc\rpc.xml" />
     <Xml Include="modules\tm\doc\tm.xml" />
+    <Xml Include="modules\uac_redirect\doc\uac_redirect.xml" />
+    <Xml Include="modules\uac_redirect\doc\uac_redirect_admin.xml" />
     <Xml Include="modules\xlog\doc\xlog.xml" />
     <Xml Include="modules\xlog\doc\xlog_admin.xml" />
   </ItemGroup>
