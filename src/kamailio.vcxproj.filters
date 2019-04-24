@@ -241,6 +241,12 @@
     <Filter Include="modules\alias_db\doc">
       <UniqueIdentifier>{cc847db3-388f-4810-bc60-2d08d3be2682}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\dispatcher">
+      <UniqueIdentifier>{e9d2475c-a751-4ab7-bdd5-f71094f87c62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\dispatcher\doc">
+      <UniqueIdentifier>{694a4400-d64b-4248-a959-d868a1098155}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\action.c">
@@ -1050,6 +1056,18 @@
     </ClCompile>
     <ClCompile Include="modules\alias_db\alookup.c">
       <Filter>modules\alias_db</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\dispatcher\config.c">
+      <Filter>modules\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\dispatcher\dispatch.c">
+      <Filter>modules\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\dispatcher\dispatcher.c">
+      <Filter>modules\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\dispatcher\ds_ht.c">
+      <Filter>modules\dispatcher</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2205,6 +2223,18 @@
     <ClInclude Include="modules\alias_db\api.h">
       <Filter>modules\alias_db</Filter>
     </ClInclude>
+    <ClInclude Include="modules\dispatcher\api.h">
+      <Filter>modules\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\dispatcher\config.h">
+      <Filter>modules\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\dispatcher\dispatch.h">
+      <Filter>modules\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\dispatcher\ds_ht.h">
+      <Filter>modules\dispatcher</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh">
@@ -2435,6 +2465,21 @@
     </None>
     <None Include="modules\alias_db\doc\Makefile">
       <Filter>modules\alias_db\doc</Filter>
+    </None>
+    <None Include="modules\dispatcher\Makefile">
+      <Filter>modules\dispatcher</Filter>
+    </None>
+    <None Include="modules\dispatcher\README">
+      <Filter>modules\dispatcher</Filter>
+    </None>
+    <None Include="modules\dispatcher\doc\dispatcher.cfg">
+      <Filter>modules\dispatcher\doc</Filter>
+    </None>
+    <None Include="modules\dispatcher\doc\dispatcher.list">
+      <Filter>modules\dispatcher\doc</Filter>
+    </None>
+    <None Include="modules\dispatcher\doc\Makefile">
+      <Filter>modules\dispatcher\doc</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -3183,6 +3228,15 @@
     </Xml>
     <Xml Include="modules\alias_db\doc\alias_db_admin.xml">
       <Filter>modules\alias_db\doc</Filter>
+    </Xml>
+    <Xml Include="modules\dispatcher\doc\dispatcher.xml">
+      <Filter>modules\dispatcher\doc</Filter>
+    </Xml>
+    <Xml Include="modules\dispatcher\doc\dispatcher_admin.xml">
+      <Filter>modules\dispatcher\doc</Filter>
+    </Xml>
+    <Xml Include="modules\dispatcher\doc\dispatcher_faq.xml">
+      <Filter>modules\dispatcher\doc</Filter>
     </Xml>
   </ItemGroup>
 </Project>
