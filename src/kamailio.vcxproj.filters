@@ -247,6 +247,21 @@
     <Filter Include="modules\dispatcher\doc">
       <UniqueIdentifier>{694a4400-d64b-4248-a959-d868a1098155}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\auth_db\doc">
+      <UniqueIdentifier>{6dc0af84-1e34-4109-81b3-456efaa298bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\domain">
+      <UniqueIdentifier>{9880b0fc-04c8-4313-8051-50c398b87c62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\domain\doc">
+      <UniqueIdentifier>{91bb0f84-cd51-48ff-8518-9ef6f5e7c782}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\domainpolicy">
+      <UniqueIdentifier>{ffd97d41-cbf9-4602-b179-f18df6eb243d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\domainpolicy\doc">
+      <UniqueIdentifier>{7ac6342d-aa20-4249-bc3c-aac6720bc608}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\action.c">
@@ -1068,6 +1083,30 @@
     </ClCompile>
     <ClCompile Include="modules\dispatcher\ds_ht.c">
       <Filter>modules\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\auth_db\auth_db_mod.c">
+      <Filter>modules\auth_db</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\auth_db\authorize.c">
+      <Filter>modules\auth_db</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\domain\api.c">
+      <Filter>modules\domain</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\domain\domain.c">
+      <Filter>modules\domain</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\domain\domain_mod.c">
+      <Filter>modules\domain</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\domain\hash.c">
+      <Filter>modules\domain</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\domainpolicy\domainpolicy.c">
+      <Filter>modules\domainpolicy</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\domainpolicy\domainpolicy_mod.c">
+      <Filter>modules\domainpolicy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2235,6 +2274,33 @@
     <ClInclude Include="modules\dispatcher\ds_ht.h">
       <Filter>modules\dispatcher</Filter>
     </ClInclude>
+    <ClInclude Include="modules\auth_db\api.h">
+      <Filter>modules\auth_db</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\auth_db\auth_db_mod.h">
+      <Filter>modules\auth_db</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\auth_db\authorize.h">
+      <Filter>modules\auth_db</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\domain\api.h">
+      <Filter>modules\domain</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\domain\domain.h">
+      <Filter>modules\domain</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\domain\domain_mod.h">
+      <Filter>modules\domain</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\domain\hash.h">
+      <Filter>modules\domain</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\domainpolicy\domainpolicy.h">
+      <Filter>modules\domainpolicy</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\domainpolicy\domainpolicy_mod.h">
+      <Filter>modules\domainpolicy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="core\ccopts.sh">
@@ -2480,6 +2546,33 @@
     </None>
     <None Include="modules\dispatcher\doc\Makefile">
       <Filter>modules\dispatcher\doc</Filter>
+    </None>
+    <None Include="modules\auth_db\Makefile">
+      <Filter>modules\auth_db</Filter>
+    </None>
+    <None Include="modules\auth_db\README">
+      <Filter>modules\auth_db</Filter>
+    </None>
+    <None Include="modules\auth_db\doc\Makefile">
+      <Filter>modules\auth_db\doc</Filter>
+    </None>
+    <None Include="modules\domain\Makefile">
+      <Filter>modules\domain</Filter>
+    </None>
+    <None Include="modules\domain\README">
+      <Filter>modules\domain</Filter>
+    </None>
+    <None Include="modules\domain\doc\Makefile">
+      <Filter>modules\domain\doc</Filter>
+    </None>
+    <None Include="modules\domainpolicy\Makefile">
+      <Filter>modules\domainpolicy</Filter>
+    </None>
+    <None Include="modules\domainpolicy\README">
+      <Filter>modules\domainpolicy</Filter>
+    </None>
+    <None Include="modules\domainpolicy\doc\Makefile">
+      <Filter>modules\domainpolicy\doc</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -3237,6 +3330,27 @@
     </Xml>
     <Xml Include="modules\dispatcher\doc\dispatcher_faq.xml">
       <Filter>modules\dispatcher\doc</Filter>
+    </Xml>
+    <Xml Include="modules\auth_db\doc\auth_db.xml">
+      <Filter>modules\auth_db\doc</Filter>
+    </Xml>
+    <Xml Include="modules\auth_db\doc\auth_db_admin.xml">
+      <Filter>modules\auth_db\doc</Filter>
+    </Xml>
+    <Xml Include="modules\domain\doc\domain.xml">
+      <Filter>modules\domain\doc</Filter>
+    </Xml>
+    <Xml Include="modules\domain\doc\domain_admin.xml">
+      <Filter>modules\domain\doc</Filter>
+    </Xml>
+    <Xml Include="modules\domain\doc\domain_devel.xml">
+      <Filter>modules\domain\doc</Filter>
+    </Xml>
+    <Xml Include="modules\domainpolicy\doc\domainpolicy.xml">
+      <Filter>modules\domainpolicy\doc</Filter>
+    </Xml>
+    <Xml Include="modules\domainpolicy\doc\domainpolicy_admin.xml">
+      <Filter>modules\domainpolicy\doc</Filter>
     </Xml>
   </ItemGroup>
 </Project>
