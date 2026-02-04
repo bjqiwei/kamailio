@@ -27,6 +27,7 @@ Maxim Sobolev
               3.2. script_name (string)
               3.3. mod_init_function (string)
               3.4. child_init_method (string)
+              3.5. threads_mode (int)
 
         4. Functions
 
@@ -37,12 +38,15 @@ Maxim Sobolev
               5.1. app_python.reload
               5.2. app_python.api_list
 
+        6. KEMI Usage
+
    List of Examples
 
    1.1. Set load parameter
    1.2. Set mod_init_function parameter
    1.3. Set child_init_method parameter
-   1.4. python_exec usage
+   1.4. Set threads_mode parameter
+   1.5. python_exec usage
 
 Chapter 1. Admin Guide
 
@@ -60,6 +64,7 @@ Chapter 1. Admin Guide
         3.2. script_name (string)
         3.3. mod_init_function (string)
         3.4. child_init_method (string)
+        3.5. threads_mode (int)
 
    4. Functions
 
@@ -69,6 +74,8 @@ Chapter 1. Admin Guide
 
         5.1. app_python.reload
         5.2. app_python.api_list
+
+   6. KEMI Usage
 
 1. Overview
 
@@ -86,6 +93,11 @@ Chapter 1. Admin Guide
    For some basic examples of Python scripts that can be used with this
    module, look at the files inside the source tree located at
    'modules/app_python3/python_examples/'.
+
+   Note: if symbols exported to KEMI (module or function names) conflict
+   with Python's reserved keywords, use the 'getattr()' function or the
+   '__dict__' attribute for 'KSR' (e.g.,
+   'KSR.__dict__["async"].task_route("myroute")').
 
 2. Dependencies
 
@@ -115,6 +127,7 @@ Chapter 1. Admin Guide
    3.2. script_name (string)
    3.3. mod_init_function (string)
    3.4. child_init_method (string)
+   3.5. threads_mode (int)
 
 3.1. load (string)
 
@@ -157,6 +170,24 @@ modparam("app_python3", "mod_init_function", "my_mod_init")
 modparam("app_python3", "child_init_method", "my_child_init")
 ...
 
+3.5. threads_mode (int)
+
+   Control how locking for Python interpreter threads in done. If set to
+   1, use Py_BLOCK_THREADS/Py_UNBLOCK_THREADS (new mode added for v6.0.x).
+   If set to 0, use PyGILState_Ensure()/PyGILState_Release() (the mode
+   implemented initially).
+
+   If set to 1, Python threading Thread objects created in the KEMI script
+   will be scheduled. Otherwise, additional Python threads will not be
+   scheduled (no release of GIL).
+
+   Default value is “0”.
+
+   Example 1.4. Set threads_mode parameter
+...
+modparam("app_python3", "threads_mode", 1)
+...
+
 4. Functions
 
    4.1. python_exec(method [, args])
@@ -169,7 +200,7 @@ modparam("app_python3", "child_init_method", "my_child_init")
 
    Both parameters can contain pseudo-variables.
 
-   Example 1.4. python_exec usage
+   Example 1.5. python_exec usage
 ...
 python_exec("my_python_function");
 python_exec("my_python_function", "my_params");
@@ -190,9 +221,9 @@ python_exec("my_python_function", "$rU");
    in each worker when it next invokes a Python method. The module uses a
    worker process lock to prevent recursive reloads.
 
-   This function only reloads the user script and creates a new script
-   object. It does not reinitialize the interpreter. E.g., references in
-   the old module remain if not redefined by the new version.
+   This function only reloads (re-executes) the user script and creates a
+   new script object. It does not reinitialize the interpreter (references
+   in the old module remain if not redefined by the new version).
 
    Name: app_python.reload
 
@@ -200,8 +231,26 @@ python_exec("my_python_function", "$rU");
 
    Example:
 ...
-kamcmd app_python.reload
+kamctl rpc app_python.reload
 ...
+
+   Note that reload is done for the Python script provided as parameter to
+   this Kamailio module. To reload the Python libraries imported in this
+   script, use something like:
+...
+import mod1
+...
+import modN
+from importlib import reload
+
+def mod_init():
+    reload(mod1)
+    ...
+    reload(modN)
+    return kamailio()
+...
+
+   Where "modX" are the modules imported at the top.
 
 5.2.  app_python.api_list
 
@@ -213,5 +262,19 @@ kamcmd app_python.reload
 
    Example:
 ...
-kamcmd app_python.api_list
+kamctl rpc app_python.api_list
 ...
+
+6. KEMI Usage
+
+   The module exports KEMI engine with id "python".
+
+   Example:
+...
+loadmodule "app_python3.so"
+...
+cfgengine "python"
+...
+
+   For more details about KEMI, see:
+   https://www.kamailio.org/docs/tutorials/devel/kamailio-kemi-framework/

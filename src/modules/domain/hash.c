@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -137,7 +139,7 @@ int hash_table_install(struct domain_list **hash_table, str *did, str *domain)
 	np->did.len = did->len;
 	np->did.s = (char *)shm_malloc(did->len);
 	if(np->did.s == NULL) {
-		LM_ERR("no shared memeory for did\n");
+		LM_ERR("no shared memory for did\n");
 		shm_free(np);
 		return -1;
 	}
@@ -204,7 +206,9 @@ void hash_table_free(struct domain_list **hash_table)
 			shm_free(ap);
 			ap = next_ap;
 		}
-		np = np->next;
+		next = np->next;
+		shm_free(np);
+		np = next;
 	}
 
 	hash_table[DOM_HASH_SIZE] = NULL;

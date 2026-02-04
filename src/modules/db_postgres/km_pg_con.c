@@ -1,8 +1,10 @@
-/* 
+/*
  * Copyright (C) 2001-2004 iptel.org
  * Copyright (C) 2008 1&1 Internet AG
  *
  * This file is part of Kamailio, a free SIP server.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,8 +16,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
- * along with this program; if not, write to the Free Software 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
@@ -38,6 +40,7 @@
 
 
 extern int pg_bytea_output_escape;
+extern pg_con_param_t *pg_con_param_list;
 
 /*!
  * \brief Create a new connection
@@ -52,9 +55,9 @@ struct pg_con *db_postgres_new_connection(struct db_id *id)
 	struct pg_con *ptr;
 	char *ports;
 	int i = 0;
-	const char *keywords[10], *values[10];
-	char to[16];
+	const char *keywords[32], *values[32];
 	PGresult *res = NULL;
+	pg_con_param_t *pg_con_param;
 
 	LM_DBG("db_id = %p\n", id);
 
@@ -65,7 +68,8 @@ struct pg_con *db_postgres_new_connection(struct db_id *id)
 
 	ptr = (struct pg_con *)pkg_malloc(sizeof(struct pg_con));
 	if(!ptr) {
-		PKG_MEM_ERROR_FMT("%lu bytes for connection structure", (unsigned long)sizeof(struct pg_con));
+		PKG_MEM_ERROR_FMT("%lu bytes for connection structure",
+				(unsigned long)sizeof(struct pg_con));
 		return 0;
 	}
 	LM_DBG("%p=pkg_malloc(%lu)\n", ptr, (unsigned long)sizeof(struct pg_con));
@@ -75,7 +79,6 @@ struct pg_con *db_postgres_new_connection(struct db_id *id)
 
 	memset(keywords, 0, (sizeof(char *) * 10));
 	memset(values, 0, (sizeof(char *) * 10));
-	memset(to, 0, (sizeof(char) * 16));
 
 	if(id->port) {
 		ports = int2str(id->port, 0);
@@ -97,10 +100,13 @@ struct pg_con *db_postgres_new_connection(struct db_id *id)
 	values[i++] = id->username;
 	keywords[i] = "password";
 	values[i++] = id->password;
-	if(pg_timeout > 0) {
-		snprintf(to, sizeof(to) - 1, "%d", pg_timeout + 3);
-		keywords[i] = "connect_timeout";
-		values[i++] = to;
+
+	/* add other connection parameters */
+	pg_con_param = pg_con_param_list;
+	while(pg_con_param) {
+		keywords[i] = pg_con_param->name;
+		values[i++] = pg_con_param->value;
+		pg_con_param = pg_con_param->next;
 	}
 
 	keywords[i] = values[i] = NULL;
@@ -142,10 +148,9 @@ struct pg_con *db_postgres_new_connection(struct db_id *id)
 	}
 #endif
 
-	if(pg_bytea_output_escape!=0) {
+	if(pg_bytea_output_escape != 0) {
 		res = PQexec(ptr->con, "SET bytea_output=escape");
-		if (PQresultStatus(res) != PGRES_COMMAND_OK)
-		{
+		if(PQresultStatus(res) != PGRES_COMMAND_OK) {
 			LM_ERR("cannot set blob output escaping format\n");
 			PQclear(res);
 			goto err;
@@ -156,7 +161,7 @@ struct pg_con *db_postgres_new_connection(struct db_id *id)
 
 err:
 	if(ptr) {
-		LM_ERR("cleaning up %p=pkg_free()\n", ptr);
+		LM_DBG("cleaning up %p=pkg_free()\n", ptr);
 		pkg_free(ptr);
 	}
 	return 0;

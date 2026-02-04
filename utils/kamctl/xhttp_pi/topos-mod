@@ -1,4 +1,4 @@
-	<!-- topos_d provisionning -->
+	<!-- topos_d provisioning -->
 	<mod><mod_name>topos_d</mod_name>
 		<cmd><cmd_name>show</cmd_name>
 			<db_table_id>topos_d</db_table_id>
@@ -6,6 +6,7 @@
 			<query_cols>
 				<col><field>id</field><link_cmd>update</link_cmd></col>
 				<col><field>rectime</field></col>
+				<col><field>x_context</field></col>
 				<col><field>s_method</field></col>
 				<col><field>s_cseq</field></col>
 				<col><field>a_callid</field></col>
@@ -35,6 +36,7 @@
 			<cmd_type>DB1_INSERT</cmd_type>
 			<query_cols>
 				<col><field>rectime</field></col>
+				<col><field>x_context</field></col>
 				<col><field>s_method</field></col>
 				<col><field>s_cseq</field></col>
 				<col><field>a_callid</field></col>
@@ -67,6 +69,7 @@
 			</clause_cols>
 			<query_cols>
 				<col><field>rectime</field></col>
+				<col><field>x_context</field></col>
 				<col><field>s_method</field></col>
 				<col><field>s_cseq</field></col>
 				<col><field>a_callid</field></col>
@@ -99,7 +102,7 @@
 			</clause_cols>
 		</cmd>
 	</mod>
-	<!-- topos_t provisionning -->
+	<!-- topos_t provisioning -->
 	<mod><mod_name>topos_t</mod_name>
 		<cmd><cmd_name>show</cmd_name>
 			<db_table_id>topos_t</db_table_id>
@@ -107,6 +110,7 @@
 			<query_cols>
 				<col><field>id</field><link_cmd>update</link_cmd></col>
 				<col><field>rectime</field></col>
+				<col><field>x_context</field></col>
 				<col><field>s_method</field></col>
 				<col><field>s_cseq</field></col>
 				<col><field>a_callid</field></col>
@@ -137,6 +141,7 @@
 			<cmd_type>DB1_INSERT</cmd_type>
 			<query_cols>
 				<col><field>rectime</field></col>
+				<col><field>x_context</field></col>
 				<col><field>s_method</field></col>
 				<col><field>s_cseq</field></col>
 				<col><field>a_callid</field></col>
@@ -170,6 +175,7 @@
 			</clause_cols>
 			<query_cols>
 				<col><field>rectime</field></col>
+				<col><field>x_context</field></col>
 				<col><field>s_method</field></col>
 				<col><field>s_cseq</field></col>
 				<col><field>a_callid</field></col>

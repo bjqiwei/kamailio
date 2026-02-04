@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -34,11 +36,17 @@
 
 #include "../../core/parser/msg_parser.h"
 
+int ki_cmp_uri(sip_msg_t *msg, str *uri1, str *uri2);
 int w_cmp_uri(struct sip_msg *msg, char *uri1, char *uri2);
+int ki_cmp_aor(sip_msg_t *msg, str *uri1, str *uri2);
 int w_cmp_aor(struct sip_msg *msg, char *uri1, char *uri2);
+int ki_cmp_hdr_name(sip_msg_t *msg, str *shname1, str *shname2);
+int w_cmp_hdr_name(sip_msg_t *msg, char *hname1, char *hname2);
 int w_is_gruu(sip_msg_t *msg, char *uri1, char *p2);
 int w_is_supported(sip_msg_t *msg, char *_option, char *p2);
 int w_is_first_hop(sip_msg_t *msg, char *p1, char *p2);
 int is_first_hop(sip_msg_t *msg);
+int w_is_first_hop_mode(sip_msg_t *msg, char *p1mode, char *p2);
+int is_first_hop_mode(sip_msg_t *msg, int mode);
 
 #endif

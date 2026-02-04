@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -30,6 +32,7 @@
 #include "../../core/str.h"
 #include "../../core/ut.h"
 #include "../../core/ip_addr.h"
+#include "../../core/rand/kam_rand.h"
 
 /* size of buffer used for building SIP PING req */
 #define MAX_SIPPING_SIZE 65536
@@ -56,15 +59,15 @@ static void init_sip_ping(void)
 	char *p;
 
 	/* FROM tag - some random number */
-	sipping_fromtag = rand();
+	sipping_fromtag = kam_rand();
 	/* callid fix part - hexa string */
 	len = 8;
 	p = sipping_callid_buf;
-	int2reverse_hex(&p, &len, rand());
+	int2reverse_hex(&p, &len, kam_rand());
 	sipping_callid.s = sipping_callid_buf;
 	sipping_callid.len = 8 - len;
 	/* callid counter part */
-	sipping_callid_cnt = rand();
+	sipping_callid_cnt = kam_rand();
 }
 
 
@@ -127,7 +130,7 @@ static inline char *build_sipping(str *curi, struct socket_info *s, str *path,
 	str vaddr;
 	str vport;
 
-	if(sipping_from.s==NULL || sipping_from.len<=0) {
+	if(sipping_from.s == NULL || sipping_from.len <= 0) {
 		LM_WARN("SIP ping enabled but no SIP ping From address\n");
 		return NULL;
 	}
@@ -150,7 +153,7 @@ static inline char *build_sipping(str *curi, struct socket_info *s, str *path,
 					+ ruid->len + 1 + 8 + 1 + 8 + s_len(CRLF "To: ") + curi->len
 					+ s_len(CRLF "Call-ID: ") + sipping_callid.len + 1 + 8 + 1
 					+ 8 + 1 + s->address_str.len + s_len(CRLF "CSeq: 1 ")
-					+ sipping_method.len
+					+ sipping_method.len + s_len(CRLF "Max-Forwards: 70")
 					+ s_len(CRLF "Content-Length: 0" CRLF CRLF)
 			> MAX_SIPPING_SIZE) {
 		LM_ERR("len exceeds %d\n", MAX_SIPPING_SIZE);
@@ -162,7 +165,7 @@ static inline char *build_sipping(str *curi, struct socket_info *s, str *path,
 	*(p++) = ' ';
 	append_str(p, curi->s, curi->len);
 	append_fix(p, " SIP/2.0" CRLF "Via: SIP/2.0/UDP ");
-	if(s->address.af == AF_INET6) { /* Via header IP is a IPv6 reference */
+	if(s->address.af == AF_INET6) { /* Via header IP is an IPv6 reference */
 		append_fix(p, "[");
 	}
 	append_str(p, vaddr.s, vaddr.len);
@@ -204,6 +207,7 @@ static inline char *build_sipping(str *curi, struct socket_info *s, str *path,
 	append_str(p, s->address_str.s, s->address_str.len);
 	append_fix(p, CRLF "CSeq: 1 ");
 	append_str(p, sipping_method.s, sipping_method.len);
+	append_fix(p, CRLF "Max-Forwards: 70");
 	append_fix(p, CRLF "Content-Length: 0" CRLF CRLF);
 
 	*len_p = p - buf;

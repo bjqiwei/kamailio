@@ -9,6 +9,12 @@ NAME=ims_isc.so
 
 ifeq ($(CROSS_COMPILE),)
 XML2CFG=$(shell which xml2-config)
+ifeq ($(XML2CFG),)
+XML2CFG=$(shell \
+	if pkg-config --exists libxml-2.0; then \
+		echo 'pkg-config libxml-2.0'; \
+	fi)
+endif
 endif
 
 ifneq ($(XML2CFG),)
@@ -19,8 +25,5 @@ else
 		-I$(LOCALBASE)/include
 	LIBS+=-L$(LOCALBASE)/lib -lxml2
 endif
-
-SERLIBPATH=../../lib
-SER_LIBS+=$(SERLIBPATH)/ims/kamailio_ims
 
 include ../../Makefile.modules

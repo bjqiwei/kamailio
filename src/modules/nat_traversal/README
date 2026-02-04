@@ -36,6 +36,7 @@ Dan Pascu
               4.3. keepalive_from (string)
               4.4. keepalive_extra_headers (string)
               4.5. keepalive_state_file (string)
+              4.6. contact_match (integer)
 
         5. Exported functions
 
@@ -69,12 +70,13 @@ Dan Pascu
    1.3. Setting the keepalive_from parameter
    1.4. Setting the keepalive_extra_headers parameter
    1.5. Setting the keepalive_state_file parameter
-   1.6. Using the client_nat_test function
-   1.7. Using the fix_contact function
-   1.8. Using the nat_keepalive function
-   1.9. Using $keepalive.socket in multi-proxy environments
-   1.10. Using $source_uri to set the received AVP on registrars
-   1.11. Using $source_uri in multi-proxy environments
+   1.6. Setting the contact_match parameter
+   1.7. Using the client_nat_test function
+   1.8. Using the fix_contact function
+   1.9. Using the nat_keepalive function
+   1.10. Using $keepalive.socket in multi-proxy environments
+   1.11. Using $source_uri to set the received AVP on registrars
+   1.12. Using $source_uri in multi-proxy environments
 
 Chapter 1. Admin Guide
 
@@ -99,6 +101,7 @@ Chapter 1. Admin Guide
         4.3. keepalive_from (string)
         4.4. keepalive_extra_headers (string)
         4.5. keepalive_state_file (string)
+        4.6. contact_match (integer)
 
    5. Exported functions
 
@@ -155,7 +158,7 @@ Chapter 1. Admin Guide
    cases, including distributed environments with multiple proxies. Unlike
    existing keepalive solutions that only send keepalive messages to user
    agents that have registered (during their registration), the
-   nat_traversal module can keepalive an user agent based on multiple
+   nat_traversal module can keepalive a user agent based on multiple
    conditions, making it not only more flexible and more efficient, but
    also able to work in environments and with use cases where a simple
    keepalive implementation based on keeping alive registrations alone
@@ -195,7 +198,7 @@ Chapter 1. Admin Guide
    keepalive implementation based on sending keepalive messages only to
    registered user agents, will also fail to work in common cases, exactly
    because of this artificial association. For example lets assume that we
-   have an user agent that is registered. If during an outgoing call
+   have a user agent that is registered. If during an outgoing call
    initiated by this user agent, the agent stops registering, then it will
    not be able to receive further in-dialog messages after the NAT binding
    expires. The same is true for a presence agent, receiving notifications
@@ -281,13 +284,13 @@ Chapter 1. Admin Guide
    detects from the stateless replies or the TM relayed replies if the NAT
    endpoint needs to be kept alive for the condition triggered by the
    request for which the nat_keepalive() function was called. For example
-   assume a network where a proxy P1 receives a REGISTER from an user
-   agent behind NAT. P1 will determine that the user agent is behind NAT
-   so it needs keepalive functionality, but another proxy called P2 is
-   actually handling the subscriber registrations. In this case P1 has to
-   call nat_keepalive() even though it doesn't yet know the answer P2 will
-   give to the REGISTER request (which may even be a negative reply) or if
-   P2 will restrict the proposed expiration time in any way. Thus P1 calls
+   assume a network where a proxy P1 receives a REGISTER from a user agent
+   behind NAT. P1 will determine that the user agent is behind NAT so it
+   needs keepalive functionality, but another proxy called P2 is actually
+   handling the subscriber registrations. In this case P1 has to call
+   nat_keepalive() even though it doesn't yet know the answer P2 will give
+   to the REGISTER request (which may even be a negative reply) or if P2
+   will restrict the proposed expiration time in any way. Thus P1 calls
    nat_keepalive() after which it calls t_relay(). When the reply from P2
    arrives, a callback is triggered which will determine if the request
    did get a positive reply, and if so it will extract the registration
@@ -368,7 +371,7 @@ Chapter 1. Admin Guide
    endpoint is kept alive. Keepalive messages are also distributed over
    the keepalive interval to avoid overloading the proxy by generating too
    many messages at a time. The nat_traversal module keeps its internal
-   state about endpoints that need keepalive, state that is build while
+   state about endpoints that need keepalive, state that is built while
    messages are processed by the proxy and thus it doesn't need to
    transfer any information from the usrloc module, which should also
    improve its efficiency.
@@ -399,6 +402,7 @@ Chapter 1. Admin Guide
    4.3. keepalive_from (string)
    4.4. keepalive_extra_headers (string)
    4.5. keepalive_state_file (string)
+   4.6. contact_match (integer)
 
 4.1. keepalive_interval (integer)
 
@@ -493,8 +497,27 @@ MyHeader: some_value\r\n")
 
    Example 1.5. Setting the keepalive_state_file parameter
 ...
-modparam("nat_traversal", "keepalive_state_file", "/var/run/kamailio/keepalive_s
-tate")
+modparam("nat_traversal", "keepalive_state_file", "/run/kamailio/keepalive_state
+")
+...
+
+4.6. contact_match (integer)
+
+   Control how to match the contact URIs between requests and replies.
+
+   If set to 0, do string comparison. Use this mode when the contact URI
+   is not changed by registrar or proxy servers.
+
+   If set to 1, do light URI comparison (match URI type, user, host, port
+   and proto). Use this mode when the contact URI can be changed by
+   registrar or proxy servers (e.g., new parameters added, or the order of
+   parameters changed).
+
+   Default value is “0”.
+
+   Example 1.6. Setting the contact_match parameter
+...
+modparam("nat_traversal", "contact_match", 1)
 ...
 
 5. Exported functions
@@ -526,7 +549,7 @@ tate")
    This function can be used from REQUEST_ROUTE, ONREPLY_ROUTE,
    FAILURE_ROUTE, BRANCH_ROUTE.
 
-   Example 1.6. Using the client_nat_test function
+   Example 1.7. Using the client_nat_test function
 ...
 if (client_nat_test("3")) {
     .....
@@ -542,7 +565,7 @@ if (client_nat_test("3")) {
    This function can be used from REQUEST_ROUTE, ONREPLY_ROUTE,
    BRANCH_ROUTE.
 
-   Example 1.7. Using the fix_contact function
+   Example 1.8. Using the fix_contact function
 ...
 if (client_nat_test("3")) {
     fix_contact();
@@ -568,13 +591,21 @@ if (client_nat_test("3")) {
    agent). For more details about this function, see the Implementation
    subsection from the Keepalive functionality section.
 
+Note
+
+   The dlg_manage() function must be called in the configuration file to
+   have the dialog tracked.
+
    This function can be used from REQUEST_ROUTE.
 
-   Example 1.8. Using the nat_keepalive function
+   Example 1.9. Using the nat_keepalive function
 ...
 if ((method=="REGISTER" || method=="SUBSCRIBE" ||
     (method=="INVITE" && !has_totag())) && client_nat_test("3"))
 {
+  if (method=="INVITE"){
+    dlg_manage();
+  }
     nat_keepalive();
 }
 ...
@@ -642,7 +673,7 @@ if ((method=="REGISTER" || method=="SUBSCRIBE" ||
    being relayed back to the user agent by P1 which has the NAT open with
    it.
 
-   Example 1.9. Using $keepalive.socket in multi-proxy environments
+   Example 1.10. Using $keepalive.socket in multi-proxy environments
 ...
 # This code runs on P1 which has received an INVITE from P2 to forward
 # it to the user agent behind NAT (because P1 has the NAT open with it).
@@ -673,7 +704,7 @@ if (method=="INVITE" && $hdr(X-Scope)=="nat-relay") {
    so that P2 can include it later for incoming INVITE requests to this
    user agent.
 
-   Example 1.10. Using $source_uri to set the received AVP on registrars
+   Example 1.11. Using $source_uri to set the received AVP on registrars
 ...
 modparam("registrar", "received_avp", "$avp(s:received_uri)")
 modparam("registrar", "tcp_persistent_flag", 10)
@@ -709,7 +740,7 @@ if (method=="REGISTER") {
 }
 ...
 
-   Example 1.11. Using $source_uri in multi-proxy environments
+   Example 1.12. Using $source_uri in multi-proxy environments
 ...
 # This code runs on P1 which received the REGISTER request and has to
 # forward it to the registrar P2.

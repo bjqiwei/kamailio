@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -30,6 +32,14 @@
  * @param params - ptr to struct sec_agree_params, where parsed values will be saved
  * @returns 0 on success, error code on failure
  */
-security_t* cscf_get_security(struct sip_msg *msg);
+security_t *cscf_get_security(struct sip_msg *msg);
+
+/**
+ * Looks for the Security-Verify header
+ * @param msg - the sip message
+ * @param params - ptr to struct sec_agree_params, where parsed values will be saved
+ * @returns 0 on success, error code on failure
+ */
+security_t *cscf_get_security_verify(struct sip_msg *msg);
 
 #endif // SEC_AGREE_H

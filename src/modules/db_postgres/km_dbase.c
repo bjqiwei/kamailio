@@ -6,6 +6,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -39,6 +41,7 @@
 #include "../../lib/srdb1/db.h"
 #include "../../lib/srdb1/db_ut.h"
 #include "../../lib/srdb1/db_query.h"
+#include "../../core/async_task.h"
 #include "../../core/locking.h"
 #include "../../core/hashes.h"
 #include "../../core/clist.h"
@@ -107,6 +110,7 @@ static void db_postgres_free_query(const db1_con_t *_con);
  * \param _url URL of the database that should be opened
  * \return database connection on success, NULL on error
  * \note this function must be called prior to any database functions
+ *
  */
 db1_con_t *db_postgres_init(const str *_url)
 {
@@ -119,6 +123,8 @@ db1_con_t *db_postgres_init(const str *_url)
  * \param pooling whether or not to use a pooled connection
  * \return database connection on success, NULL on error
  * \note this function must be called prior to any database functions
+ *
+ * Init libssl in thread
  */
 db1_con_t *db_postgres_init2(const str *_url, db_pooling_t pooling)
 {
@@ -134,7 +140,6 @@ void db_postgres_close(db1_con_t *_h)
 {
 	db_do_close(_h, db_postgres_free_connection);
 }
-
 
 /*!
  * \brief Submit_query, run a query
@@ -186,7 +191,8 @@ static int db_postgres_submit_query(const db1_con_t *_con, const str *_s)
 
 	s = pkg_malloc((_s->len + 1) * sizeof(char));
 	if(s == NULL) {
-		PKG_MEM_ERROR_FMT("connection: %p, query: %.*s\n", _con, _s->len, _s->s);
+		PKG_MEM_ERROR_FMT(
+				"connection: %p, query: %.*s\n", _con, _s->len, _s->s);
 		return -1;
 	}
 
@@ -269,12 +275,76 @@ static int db_postgres_submit_query(const db1_con_t *_con, const str *_s)
 	return -1;
 }
 
+void db_postgres_async_exec_task(void *param)
+{
+	str *p;
+	db1_con_t *dbc;
+
+	p = (str *)param;
+
+	dbc = db_postgres_init(&p[0]);
+
+	if(dbc == NULL) {
+		LM_ERR("failed to open connection for [%.*s]\n", p[0].len, p[0].s);
+		return;
+	}
+	if(db_postgres_submit_query(dbc, &p[1]) < 0) {
+		LM_ERR("failed to execute query [%.*s] on async worker\n", p[1].len,
+				p[1].s);
+	}
+	db_do_con_free(dbc);
+}
+/**
+ * Execute a raw SQL query via core async framework.
+ * \param _u database URL
+ * \param _s raw query string
+ * \return zero on success, negative value on failure
+ */
+int db_postgres_submit_query_async(const str *_u, const str *_s)
+{
+	async_task_t *atask;
+	int asize;
+	str *p;
+
+	asize = sizeof(async_task_t) + 2 * sizeof(str) + _u->len + _s->len + 2;
+	atask = shm_malloc(asize);
+	if(atask == NULL) {
+		LM_ERR("no more shared memory to allocate %d\n", asize);
+		return -1;
+	}
+
+	atask->exec = db_postgres_async_exec_task;
+	atask->param = (char *)atask + sizeof(async_task_t);
+
+	p = (str *)((char *)atask + sizeof(async_task_t));
+	p[0].s = (char *)p + 2 * sizeof(str);
+	p[0].len = _u->len;
+	strncpy(p[0].s, _u->s, _u->len);
+	p[1].s = p[0].s + p[0].len + 1;
+	p[1].len = _s->len;
+	strncpy(p[1].s, _s->s, _s->len);
+
+
+	if(async_task_push(atask) < 0) {
+		shm_free(atask);
+		return -1;
+	}
+
+	return 0;
+}
+
+int db_postgres_submit_insert_async(const db1_con_t *_h, const str *_s)
+{
+	struct db_id *di;
+	di = ((struct pool_con *)_h->tail)->id;
+	return db_postgres_submit_query_async(&di->url, _s);
+}
 
 /*!
  * \brief Gets a partial result set, fetch rows from a result
  *
  * Gets a partial result set, fetch a number of rows from a database result.
- * This function initialize the given result structure on the first run, and
+ * This function initializes the given result structure on the first run, and
  * fetches the nrows number of rows. On subsequenting runs, it uses the
  * existing result and fetches more rows, until it reaches the end of the
  * result set. Because of this the result needs to be null in the first
@@ -443,7 +513,7 @@ int db_postgres_free_result(db1_con_t *_con, db1_res_t *_r)
  * \param _op operators
  * \param _v values of the keys that must match
  * \param _c column names to return
- * \param _n nmber of key=values pairs to compare
+ * \param _n number of key=values pairs to compare
  * \param _nc number of columns to return
  * \param _o order by the specified column
  * \param _r result set
@@ -466,7 +536,7 @@ int db_postgres_query(const db1_con_t *_h, const db_key_t *_k,
  * \param _op operators
  * \param _v values of the keys that must match
  * \param _c column names to return
- * \param _n nmber of key=values pairs to compare
+ * \param _n number of key=values pairs to compare
  * \param _nc number of columns to return
  * \param _o order by the specified column
  * \param _r result set
@@ -499,17 +569,27 @@ int db_postgres_raw_query(const db1_con_t *_h, const str *_s, db1_res_t **_r)
 			_h, _s, _r, db_postgres_submit_query, db_postgres_store_result);
 }
 
+/**
+ * Execute a raw SQL query via core async framework.
+ * \param _u database URL
+ * \param _s raw query string
+ * \return zero on success, negative value on failure
+ */
+int db_postgres_raw_query_async(const str *_u, const str *_s)
+{
+	return db_postgres_submit_query_async(_u, _s);
+}
 
 /*!
  * \brief Retrieve result set
  * \param _con structure representing the database connection
- * \param _r pointer to a structure represending the result set
+ * \param _r pointer to a structure representing the result set
  * \return 0 If the status of the last command produced a result set and,
  *   If the result set contains data or the convert_result() routine
  *   completed successfully. Negative if the status of the last command was
  * not handled or if the convert_result() returned an error.
  * \note A new result structure is allocated on every call to this routine.
- * If this routine returns 0, it is the callers responsbility to free the
+ * If this routine returns 0, it is the callers responsibility to free the
  * result structure. If this routine returns < 0, then the result structure
  * is freed before returning to the caller.
  */
@@ -606,7 +686,7 @@ int db_postgres_insert(const db1_con_t *_h, const db_key_t *_k,
 	int tmp = db_postgres_store_result(_h, &_r);
 
 	if(tmp < 0) {
-		LM_WARN("unexpected result returned");
+		LM_WARN("unexpected result returned\n");
 		ret = tmp;
 	}
 
@@ -616,6 +696,28 @@ int db_postgres_insert(const db1_con_t *_h, const db_key_t *_k,
 	return ret;
 }
 
+/**
+ * Insert a row into a specified table via core async framework.
+ * \param _h structure representing database connection
+ * \param _k key names
+ * \param _v values of the keys
+ * \param _n number of key=value pairs
+ * \return zero on success, negative value on failure
+ */
+int db_postgres_insert_async(const db1_con_t *_h, const db_key_t *_k,
+		const db_val_t *_v, const int _n)
+{
+	return db_do_insert(_h, _k, _v, _n, db_postgres_val2str,
+			db_postgres_submit_insert_async);
+}
+/*
+ * Delete a row from the specified table
+ * _h: structure representing database connection
+ * _k: key names
+ * _o: operators
+ * _v: values of the keys that must match
+ * _n: number of key=value pairs
+ */
 
 /*!
  * \brief Delete a row from the specified table
@@ -635,7 +737,7 @@ int db_postgres_delete(const db1_con_t *_h, const db_key_t *_k,
 	int tmp = db_postgres_store_result(_h, &_r);
 
 	if(tmp < 0) {
-		LM_WARN("unexpected result returned");
+		LM_WARN("unexpected result returned\n");
 		ret = tmp;
 	}
 
@@ -788,7 +890,7 @@ static char *db_postgres_constraint_get(const db1_con_t *_h)
 	rows = RES_ROWS(res);
 	for(x = 0; x < RES_ROW_N(res); x++) {
 		val = (ROW_VALUES(&rows[x])[0]).val.string_val;
-		type = (ROW_VALUES(&rows[x])[0]).val.string_val;
+		type = (ROW_VALUES(&rows[x])[1]).val.string_val;
 		LM_DBG("name[%s]type[%s]\n", val, type);
 		if(type[0] == 'u')
 			break; // always favor unique constraint over primary key constraint
@@ -914,7 +1016,7 @@ int db_postgres_update(const db1_con_t *_h, const db_key_t *_k,
 	int tmp = db_postgres_store_result(_h, &_r);
 
 	if(tmp < 0) {
-		LM_WARN("unexpected result returned");
+		LM_WARN("unexpected result returned\n");
 		ret = tmp;
 	}
 
@@ -1179,3 +1281,7 @@ int db_postgres_replace(const db1_con_t *_h, const db_key_t *_k,
 	}
 	return 0;
 }
+
+/**
+ *
+ */

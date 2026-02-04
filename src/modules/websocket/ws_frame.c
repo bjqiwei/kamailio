@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -34,8 +36,8 @@
 
 #include "../../core/events.h"
 #include "../../core/receive.h"
-#include "../../core/stats.h"
 #include "../../core/str.h"
+#include "../../core/ut.h"
 #include "../../core/tcp_conn.h"
 #include "../../core/tcp_read.h"
 #include "../../core/tcp_server.h"
@@ -80,7 +82,11 @@ typedef struct
 	ws_connection_t *wsc;
 } ws_frame_t;
 
-typedef enum { CONN_CLOSE_DO = 0, CONN_CLOSE_DONT } conn_close_t;
+typedef enum
+{
+	CONN_CLOSE_DO = 0,
+	CONN_CLOSE_DONT
+} conn_close_t;
 
 #define BYTE0_MASK_FIN (0x80)
 #define BYTE0_MASK_RSV1 (0x40)
@@ -204,7 +210,7 @@ static int encode_and_send_ws_frame(ws_frame_t *frame, conn_close_t conn_close)
 	/* Allocate send buffer and build frame */
 	frame_length = frame->payload_len + extended_length + 2;
 	if((send_buf = pkg_malloc(sizeof(char) * frame_length)) == NULL) {
-		LM_ERR("allocating send buffer from pkg memory\n");
+		PKG_MEM_ERROR_FMT("for send buffer\n");
 		return -1;
 	}
 	memset(send_buf, 0, sizeof(char) * frame_length);
@@ -244,7 +250,6 @@ static int encode_and_send_ws_frame(ws_frame_t *frame, conn_close_t conn_close)
 
 	if(dst.proto == PROTO_WS) {
 		if(unlikely(tcp_disable)) {
-			STATS_TX_DROPS;
 			LM_WARN("TCP disabled\n");
 			pkg_free(send_buf);
 			tcpconn_put(con);
@@ -254,7 +259,6 @@ static int encode_and_send_ws_frame(ws_frame_t *frame, conn_close_t conn_close)
 #ifdef USE_TLS
 	else if(dst.proto == PROTO_WSS) {
 		if(unlikely(tls_disable)) {
-			STATS_TX_DROPS;
 			LM_WARN("TLS disabled\n");
 			pkg_free(send_buf);
 			tcpconn_put(con);
@@ -275,7 +279,6 @@ static int encode_and_send_ws_frame(ws_frame_t *frame, conn_close_t conn_close)
 	dst.send_flags.f |= SND_F_FORCE_CON_REUSE;
 
 	if(tcp_send(&dst, from, send_buf, frame_length) < 0) {
-		STATS_TX_DROPS;
 		LM_ERR("sending WebSocket frame\n");
 		pkg_free(send_buf);
 		update_stat(ws_failed_connections, 1);
@@ -320,7 +323,7 @@ static int close_connection(ws_connection_t **p_wsc, ws_close_type_t type,
 	if(wsc->state == WS_S_OPEN) {
 		data = pkg_malloc(sizeof(char) * (reason.len + 2));
 		if(data == NULL) {
-			LM_ERR("allocating pkg memory\n");
+			PKG_MEM_ERROR;
 			return -1;
 		}
 
@@ -634,9 +637,9 @@ int ws_frame_receive(sr_event_param_t *evp)
 				if((frame.payload_len == CRLF_LEN
 						   && strncmp(frame.payload_data, CRLF, CRLF_LEN) == 0)
 						|| (frame.payload_len == CRLFCRLF_LEN
-								   && strncmp(frame.payload_data, CRLFCRLF,
-											  CRLFCRLF_LEN)
-											  == 0)) {
+								&& strncmp(frame.payload_data, CRLFCRLF,
+										   CRLFCRLF_LEN)
+										   == 0)) {
 					ws_send_crlf(frame.wsc, opcode);
 					wsconn_put(frame.wsc);
 					return 0;
@@ -680,7 +683,8 @@ int ws_frame_receive(sr_event_param_t *evp)
 					return -1;
 				}
 			} else {
-				LM_ERR("Unrecognized WebSocket subprotocol: %u\n", frame.wsc->sub_protocol);
+				LM_ERR("Unrecognized WebSocket subprotocol: %u\n",
+						frame.wsc->sub_protocol);
 				return -1;
 			}
 
@@ -793,8 +797,8 @@ static int ws_send_crlf(ws_connection_t *wsc, int opcode)
 
 void ws_keepalive(unsigned int ticks, void *param)
 {
-	int check_time =
-			(int)time(NULL) - cfg_get(websocket, ws_cfg, keepalive_timeout);
+	int check_time = ksr_time_sint(NULL, NULL)
+					 - cfg_get(websocket, ws_cfg, keepalive_timeout);
 
 	ws_connection_id_t *list_head = NULL;
 	ws_connection_t *wsc = NULL;
@@ -806,24 +810,33 @@ void ws_keepalive(unsigned int ticks, void *param)
 	if(!list_head)
 		return;
 
-	while(list_head[i].id!=-1) {
+	while(list_head[i].id != -1) {
 		wsc = wsconn_get(list_head[i].id);
 		if(wsc && wsc->last_used < check_time) {
 			if(wsc->state == WS_S_CLOSING || wsc->awaiting_pong) {
 				LM_WARN("forcibly closing connection\n");
 				wsconn_close_now(wsc);
-			} else if (ws_keepalive_mechanism == KEEPALIVE_MECHANISM_CONCHECK) {
-				tcp_connection_t *con = tcpconn_get(wsc->id, 0, 0, 0, 0);
-				if(con==NULL) {
-					LM_INFO("tcp connection has been lost\n");
-					wsc->state = WS_S_CLOSING;
+			} else if(ws_keepalive_mechanism == KEEPALIVE_MECHANISM_CONCHECK) {
+				if(wsc->state == WS_S_REMOVING) {
+					LM_DBG("ws (id: %d wsc: %p) in removing state ignoring "
+						   "keepalive\n",
+							wsc->id, wsc);
 				} else {
-					tcpconn_put(con);
+					tcp_connection_t *con = tcpconn_get(wsc->id, 0, 0, 0, 0);
+					if(con == NULL) {
+						LM_INFO("tcp connection has been lost (id: %d wsc: "
+								"%p)\n",
+								wsc->id, wsc);
+						wsc->state = WS_S_CLOSING;
+					} else {
+						tcpconn_put(con);
+					}
 				}
 			} else {
-				int opcode = (ws_keepalive_mechanism == KEEPALIVE_MECHANISM_PING)
-								 ? OPCODE_PING
-								 : OPCODE_PONG;
+				int opcode =
+						(ws_keepalive_mechanism == KEEPALIVE_MECHANISM_PING)
+								? OPCODE_PING
+								: OPCODE_PONG;
 				ping_pong(wsc, opcode);
 			}
 		}
@@ -831,7 +844,6 @@ void ws_keepalive(unsigned int ticks, void *param)
 			wsconn_put_id(list_head[i].id);
 		}
 		i++;
-
 	}
 
 	wsconn_put_list_ids(list_head);

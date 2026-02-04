@@ -8,8 +8,6 @@ Edited by
 
 Jeffrey Magder
 
-Edited by
-
 Olle E. Johansson
 
    Copyright © 2006 SOMA Networks, Inc.
@@ -46,7 +44,8 @@ Olle E. Johansson
               4.5. dlg_major_threshold (Integer)
               4.6. snmpgetPath (String)
               4.7. snmpCommunity (String)
-              4.8. export_registrar (int)
+              4.8. snmpVersion (String)
+              4.9. export_registrar (int)
 
         5. Functions
         6. Installation and Running
@@ -71,7 +70,8 @@ Olle E. Johansson
    1.5. Setting the dlg_major_threshold parameter
    1.6. Setting the snmpgetPath parameter
    1.7. Setting the snmpCommunity parameter
-   1.8. Setting the export_registrar parameter
+   1.8. Setting the snmpVersion parameter
+   1.9. Setting the export_registrar parameter
 
 Chapter 1. Admin Guide
 
@@ -102,7 +102,8 @@ Chapter 1. Admin Guide
         4.5. dlg_major_threshold (Integer)
         4.6. snmpgetPath (String)
         4.7. snmpCommunity (String)
-        4.8. export_registrar (int)
+        4.8. snmpVersion (String)
+        4.9. export_registrar (int)
 
    5. Functions
    6. Installation and Running
@@ -281,10 +282,11 @@ Chapter 1. Admin Guide
      * usrloc - all scalars and tables relating to users and contacts are
        dependent on the usrloc module. If the module is not loaded, the
        respective tables will be empty.
-     * dialog or dialog-ng - all scalars relating to the number of dialogs
-       are dependent on the presence of a dialog module. Furthermore, if
-       the module is not loaded, then the kamailioDialogLimitMinorEvent,
-       and kamailioDialogLimitMajorEvent alarm will be disabled.
+     * dialog or ims_dialog - all scalars relating to the number of
+       dialogs are dependent on the presence of a dialog module.
+       Furthermore, if the module is not loaded, then the
+       kamailioDialogLimitMinorEvent, and kamailioDialogLimitMajorEvent
+       alarm will be disabled.
 
    The contents of the kamailioSIPMethodSupportedTable change depending on
    which modules are loaded.
@@ -311,7 +313,8 @@ Chapter 1. Admin Guide
    4.5. dlg_major_threshold (Integer)
    4.6. snmpgetPath (String)
    4.7. snmpCommunity (String)
-   4.8. export_registrar (int)
+   4.8. snmpVersion (String)
+   4.9. export_registrar (int)
 
 4.1. sipEntityType (String)
 
@@ -320,7 +323,7 @@ Chapter 1. Admin Guide
    kamailioSIPEntityType scalar. Valid parameters are:
 
    registrarServer, redirectServer, proxyServer, userAgent,
-   edgeproxyServer, sipcaptureServer,other
+   edgeproxyServer, sipcaptureServer, other
 
    Example 1.1. Setting the sipEntityType parameter
 ...
@@ -338,7 +341,7 @@ modparam("snmpstats", "sipEntityType", "proxyServer")
 
    The SNMPStats module monitors the number of bytes waiting to be
    consumed by Kamailio. If the number of bytes waiting to be consumed
-   exceeds a minor threshold, the SNMPStats module will send out an
+   exceeds a minor threshold, the SNMPStats module will send out a
    kamailioMsgQueueDepthMinorEvent trap to signal that an alarm condition
    has occurred. The minor threshold is set with the
    MsgQueueMinorThreshold parameter.
@@ -355,7 +358,7 @@ modparam("snmpstats", "MsgQueueMinorThreshold", 2000)
 
    The SNMPStats module monitors the number of bytes waiting to be
    consumed by Kamailio. If the number of bytes waiting to be consumed
-   exceeds a major threshold, the SNMPStats module will send out an
+   exceeds a major threshold, the SNMPStats module will send out a
    kamailioMsgQueueDepthMajorEvent trap to signal that an alarm condition
    has occurred. The major threshold is set with the
    MsgQueueMajorThreshold parameter.
@@ -372,7 +375,7 @@ modparam("snmpstats", "MsgQueueMajorThreshold", 5000)
 
    The SNMPStats module monitors the number of active dialogs. If the
    number of active dialogs exceeds a minor threshold, the SNMPStats
-   module will send out an kamailioDialogLimitMinorEvent trap to signal
+   module will send out a kamailioDialogLimitMinorEvent trap to signal
    that an alarm condition has occurred. The minor threshold is set with
    the dlg_minor_threshold parameter.
 
@@ -388,7 +391,7 @@ modparam("snmpstats", "MsgQueueMajorThreshold", 5000)
 
    The SNMPStats module monitors the number of active dialogs. If the
    number of active dialogs exceeds a major threshold, the SNMPStats
-   module will send out an kamailioDialogLimitMajorEvent trap to signal
+   module will send out a kamailioDialogLimitMajorEvent trap to signal
    that an alarm condition has occurred. The major threshold is set with
    the dlg_major_threshold parameter.
 
@@ -428,7 +431,21 @@ modparam("snmpstats", "snmpgetPath",     "/my/custom/path/")
 modparam("snmpstats", "snmpCommunity", "customCommunityString")
 ...
 
-4.8. export_registrar (int)
+4.8. snmpVersion (String)
+
+   The SNMPStats module provides the kamailioSIPServiceStartTime scalar.
+   This scalar requires the SNMPStats module to perform a snmpget query to
+   the master agent. You can use this parameter to set specific SNMP
+   version.
+
+   Default value is “3”.
+
+   Example 1.8. Setting the snmpVersion parameter
+...
+modparam("snmpstats", "snmpVersion", "2c")
+...
+
+4.9. export_registrar (int)
 
    The SNMPStats module will export registrar (usrloc) records if this
    parameter is set to 1. This will result in more memory usage and bigger
@@ -442,7 +459,7 @@ modparam("snmpstats", "snmpCommunity", "customCommunityString")
 
    Default value is “0” (don't export).
 
-   Example 1.8. Setting the export_registrar parameter
+   Example 1.9. Setting the export_registrar parameter
 ...
 modparam("snmpstats", "export_registrar", 1)
 ...
@@ -780,9 +797,11 @@ Name
    First at all check if your question was already answered on one of our
    mailing lists:
      * User Mailing List -
-       https://lists.kamailio.org/cgi-bin/mailman/listinfo/sr-users
+       https://lists.kamailio.org/mailman3/postorius/lists/sr-users.lists.
+       kamailio.org/
      * Developer Mailing List -
-       https://lists.kamailio.org/cgi-bin/mailman/listinfo/sr-dev
+       https://lists.kamailio.org/mailman3/postorius/lists/sr-dev.lists.ka
+       mailio.org/
 
    E-mails regarding any stable Kamailio release should be sent to
    <sr-users@lists.kamailio.org> and e-mails regarding development

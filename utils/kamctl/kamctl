@@ -5,15 +5,20 @@
 #===================================================================
 
 ### version for this script
-VERSION='5.3.0'
+VERSION='6.1.0'
 
 PATH=$PATH:/usr/local/sbin/
 
 # for testing only, please don't enable this in production environments
 # as this introduce security risks
-TEST="false"
+if [ -z "$KAMCTL_TEST" ]; then
+	TEST="false"
+else
+	TEST="true"
+fi
 
 ### include config files
+RC_FILE_SOURCED="false"
 
 # check for rc file at same location with kamctl
 which greadlink >/dev/null 2>&1
@@ -35,13 +40,15 @@ if [ -n "$KAMCTLFULLPATH" ] ; then
 fi
 
 # check for rc file at standard locations
-if [ -f /etc/kamailio/kamctlrc ]; then
+if [ $RC_FILE_SOURCED = "false" ] && [ -f /etc/kamailio/kamctlrc -a -r /etc/kamailio/kamctlrc ]; then
 	. /etc/kamailio/kamctlrc
+	RC_FILE_SOURCED="true"
 fi
-if [ -f /usr/local/etc/kamailio/kamctlrc ]; then
+if [ $RC_FILE_SOURCED = "false" ] &&  [ -f /usr/local/etc/kamailio/kamctlrc -a -r /usr/local/etc/kamailio/kamctlrc ]; then
 	. /usr/local/etc/kamailio/kamctlrc
+	RC_FILE_SOURCED="true"
 fi
-if [ -f ~/.kamctlrc ]; then
+if [ -f ~/.kamctlrc -a -r ~/.kamctlrc ]; then
 	. ~/.kamctlrc
 fi
 
@@ -69,13 +76,17 @@ if [ -z "$MYLIBDIR" ] ; then
 	fi
 fi
 
+if [ -z "$STARTUP_CONFIG_FILE" ]; then
+	STARTUP_CONFIG_FILE="kamailio.cfg"
+fi
+
 ##### ------------------------------------------------ #####
 ### load base functions
 #
 if [ -f "$MYLIBDIR/kamctl.base" ]; then
 	. "$MYLIBDIR/kamctl.base"
 else
-	echo -e "Cannot load core functions '$MYLIBDIR/kamctl.base' - exiting ...\n"
+	printf "Cannot load core functions '%s' - exiting ...\n\n" "$MYLIBDIR/kamctl.base"
 	exit -1
 fi
 
@@ -133,12 +144,6 @@ case $DBENGINE in
 	DBTEXT|dbtext|textdb)
 		if [ -f "$MYLIBDIR/kamctl.dbtext" ]; then
 			. "$MYLIBDIR/kamctl.dbtext"
-			DBENGINELOADED=1
-		fi
-		;;
-	DB_BERKELEY|db_berkeley|BERKELEY|berkeley)
-		if [ -f "$MYLIBDIR/kamctl.db_berkeley" ]; then
-			. "$MYLIBDIR/kamctl.db_berkeley"
 			DBENGINELOADED=1
 		fi
 		;;
@@ -949,14 +954,9 @@ $AVP_USER_COLUMN='$OSERUSER' AND $AVP_DOMAIN_COLUMN='$OSERDOMAIN'"
 cisco_restart() {
 	require_ctlengine
 	myhost=`get_my_host`
-	CMDPARAMS="tm.t_uac_start NOTIFY $1 . . \"From:sip:daemon@$myhost\r\nTo:<$1>\r\nEvent:check-sync\r\nContact:sip:daemon@$myhost\r\n\""
+	CMDPARAMS="= tm.t_uac_start NOTIFY \"$1\" \".\" \".\" \"From:sip:daemon@$myhost=CRLF=To:<$1>=CRLF=Event:check-sync=CRLF=Contact:sip:daemon@$myhost=CRLF=\""
 
-	if [ $CTLENGINETYPE -eq 1 ] ; then
-		ctl_cmd_run $CMDPARAMS
-	else
-		RET=`ctl_cmd_run $CMDPARAMS | head -1`
-		print_status $RET
-	fi
+	ctl_cmd_run $CMDPARAMS
 }
 
 #
@@ -1753,6 +1753,40 @@ dispatcher() {
 			fi
 
 			;;
+	  rmip)
+			require_dbengine
+			shift
+			if [ $# -ne 2 ] ; then
+				merr "missing gateway ip address and/or setid to be removed"
+				exit 1
+			fi
+
+			QUERY="delete from $DISPATCHER_TABLE where $DISPATCHER_SETID_COLUMN='$2' and $DISPATCHER_DESTINATION_COLUMN like 'sip:$1:%';"
+			$DBCMD "$QUERY"
+
+			if [ $? -ne 0 ] ; then
+				merr "dispatcher - SQL Error"
+				exit 1
+			fi
+
+	    ;;
+	  rmset)
+			require_dbengine
+			shift
+			if [ $# -ne 2 ] ; then
+				merr "missing gateway setid to be removed"
+				exit 1
+			fi
+
+			QUERY="delete from $DISPATCHER_TABLE where $DISPATCHER_SETID_COLUMN='$1'' and $DISPATCHER_DESTINATION_COLUMN like 'sip:$1:%'';"
+			$DBCMD "$QUERY"
+
+			if [ $? -ne 0 ] ; then
+				merr "dispatcher - SQL Error"
+				exit 1
+			fi
+
+	    ;;
 		reload)
 			require_ctlengine
 			ctl_cmd_run dispatcher.reload
@@ -1790,6 +1824,25 @@ ksr_srv() {
 			require_ctlengine
 			mecho "list server rpc commands"
 			ctl_cmd_run system.listMethods
+			;;
+		debug)
+			require_ctlengine
+			mecho "server debug level command"
+			if [ $# -lt 2 ] ; then
+				ctl_cmd_run corex.debug
+			else
+				ctl_cmd_run corex.debug $2
+			fi
+			;;
+		modules)
+			require_ctlengine
+			mecho "list loaded modules"
+			ctl_cmd_run core.modules
+			;;
+		version)
+			require_ctlengine
+			mecho "list server version"
+			ctl_cmd_run core.version
 			;;
 		*)
 			usage_ksr_srv
@@ -1989,9 +2042,9 @@ kamailio_start() {
 		exit 1
 	fi
 	if [ $SYSLOG = 1 ] ; then
-		$KAMBIN -P $PID_FILE  -f $ETCDIR/kamailio.cfg $STARTOPTIONS 1>/dev/null 2>/dev/null
+		$KAMBIN -P $PID_FILE  -f $ETCDIR/$STARTUP_CONFIG_FILE $STARTOPTIONS 1>/dev/null 2>/dev/null
 	else
-		$KAMBIN -P $PID_FILE -E  -f $ETCDIR/kamailio.cfg $STARTOPTIONS
+		$KAMBIN -P $PID_FILE -E  -f $ETCDIR/$STARTUP_CONFIG_FILE $STARTOPTIONS
 	fi
 	sleep 3
 	if [ ! -s $PID_FILE ] ; then
@@ -2027,13 +2080,8 @@ kamailio_stop() {
 options_ping() {
 	myhost=`get_my_host`
 	require_ctlengine
-	CMDPARAMS="tm.t_uac_start OPTIONS \"$1\" \".\" \".\" \"From:sip:daemon@$myhost"$'\r\n'"To:<$1>"$'\r\n'"Contact:sip:daemon@$myhost"$'\r\n'"\""
-	if [ $CTLENGINETYPE -eq 1 ] ; then
-		ctl_cmd_run $CMDPARAMS
-	else
-		RET=`ctl_cmd_run $CMDPARAMS | head -1`
-		print_status $RET
-	fi
+	CMDPARAMS="= tm.t_uac_wait_block OPTIONS \"$1\" \".\" \".\" \"From:sip:daemon@$myhost=CRLF=To:<$1>=CRLF=Contact:sip:daemon@$myhost=CRLF=\""
+	ctl_cmd_run $CMDPARAMS
 }
 
 #
@@ -2179,7 +2227,7 @@ $SD_DESC_COLUMN FROM $SD_TABLE;"
 				#| $AWK 'BEGIN {line=0;}
 				#	/^\+/ { next }
 				#	{	line++;
-	#if(line==1) print "SIP-ID     \tSpeedDial  \tNew-URI    \tDescritpion\n";
+	#if(line==1) print "SIP-ID     \tSpeedDial  \tNew-URI    \tDescription\n";
 				#		else {
 				#			ORS_BAK=ORS;
 				#			ORS="";
@@ -2221,7 +2269,7 @@ $SD_TABLE $CLAUSE ; "
 			$DBROCMD "$QUERY"
 			# | $AWK 'BEGIN {line=0;} /^\+/ { next }
 			# {
-			#	  if(line==0) print "##  SIP-ID    \tNew-URI   \tDescritpion\n";
+			#	  if(line==0) print "##  SIP-ID    \tNew-URI   \tDescription\n";
 			#	  else {
 			#		  ORS_BAK=ORS;usage_kamailio_monitor() {
 			#		  ORS="";
@@ -2643,12 +2691,12 @@ usrloc() {
 				UL_EXPIRES=0
 				UL_FLAGS=0
 				BR_FLAGS=0
-				UL_PATH=0
+				UL_PATH="."
 			elif [ $# -eq 4 ] ; then
 				UL_EXPIRES=$4
 				UL_FLAGS=0
 				BR_FLAGS=0
-				UL_PATH=0
+				UL_PATH="."
 			elif [ $# -eq 5 ] ; then
 				UL_EXPIRES=$4
 				UL_FLAGS=0
@@ -2717,6 +2765,18 @@ usrloc() {
 			fi
 			;;
 
+		dbclean)
+			require_dbengine
+			KSR_CLEAN_VAL=3600
+			if [ $# -eq 2 ] ; then
+				KSR_CLEAN_VAL=$2
+			fi
+			QUERY="delete from $USRLOC_TABLE where expires < SUBDATE(NOW(), INTERVAL $KSR_CLEAN_VAL SECOND);"
+			$DBCMD "$QUERY"
+
+			exit $?
+			;;
+
 		*)
 			usage_usrloc
 			exit 1
@@ -2730,142 +2790,156 @@ usrloc() {
 
 tls_ca() {
 
-	if [ "$1" = "rootCA" ] ; then
-		if [ -z $2 ] ; then
-			# use default
-			CA_BASE=$ETCDIR/tls
-		else
-			CA_BASE=`(cd $2;pwd)`
-		fi
+	case $1 in
+		"rootCA")
+			if [ -z $2 ] ; then
+				# use default
+				CA_BASE=$ETCDIR/tls
+			else
+				CA_BASE=`(cd $2;pwd)`
+			fi
 
-		if [ ! -d $CA_BASE ] ; then
-			merr "Config directory ($CA_BASE) does not exist"
-			exit 1
-		fi
-
-		CA_CONF='ca.conf'
-		CA_PATH=$CA_BASE/rootCA
-		if [ ! -f $CA_BASE/$CA_CONF  ] ; then
-			merr "root CA config file ($CA_BASE/$CA_CONF) does not exist"
-			exit 1
-		fi
-
-		if [ -d $CA_PATH ] ; then
-			mwarn "root CA directory ($CA_PATH) exists! Remove it (y/n)?"
-			read X
-			if [ "$X" != "y" -a "$X" != "Y" ] ; then
+			if [ ! -d $CA_BASE ] ; then
+				merr "Config directory ($CA_BASE) does not exist"
 				exit 1
 			fi
-		fi
 
-		mecho "Creating directory $CA_PATH and its sub-tree"
-		mkdir -p $CA_PATH
-		if [ $? -ne 0 ] ; then
-			merr "Failed to create root directory $CA_PATH"
-			exit 1
-		fi
-		rm -fr "${CA_PATH:?}"/*
-		mkdir $CA_PATH/private
-		mkdir $CA_PATH/certs
-		touch $CA_PATH/index.txt
-		echo 01 >$CA_PATH/serial
-
-		mecho "Creating CA self-signed certificate"
-		( cd $CA_PATH; openssl req -config $CA_BASE/$CA_CONF -x509 -newkey \
-			rsa:2048 -days 365 -out ./cacert.pem -outform PEM )
-		if [ $? -ne 0 ] ; then
-			merr "Failed to create self-signed certificate"
-			exit 1
-		fi
-
-		mecho "Protecting CA private key"
-		chmod 600 $CA_PATH/private/cakey.pem
-
-		mecho "DONE"
-		minfo "Private key can be found in $CA_PATH/private/cakey.pem"
-		minfo "Certificate can be found in $CA_PATH/cacert.pem"
-
-	elif [ "$1" = "userCERT" ] ; then
-
-		if [ -z $2 ] ; then
-			merr "Missing user name parameter"
-			exit 1
-		fi
-
-		if [ -z $3 ] ; then
-			# use default
-			CA_BASE=$ETCDIR/tls
-		else
-			CA_BASE=`(cd $3;pwd)`
-		fi
-
-		if [ ! -d $CA_BASE ] ; then
-			merr "Config directory ($CA_BASE) does not exist"
-			exit 1
-		fi
-
-		USER_DIR=$CA_BASE/$2
-		USER_CFG=$CA_BASE/$2.conf
-		USER=$2
-		REQ_CFG=$CA_BASE/request.conf
-
-		if [ ! -f $USER_CFG ] ; then
-			merr "User config file $USER_CFG not found"
-			exit 1
-		fi
-
-		if [ ! -f $REQ_CFG ] ; then
-			merr "Request config file $REQ_CFG not found"
-			exit 1
-		fi
-
-		mecho "Using config file $USER_CFG"
-
-		if [ -d $USER_DIR ] ; then
-			mwarn "User CERT directory ($USER_DIR) exists! Remove it (y/n)?"
-			read X
-			if [ "$X" != "y" -a "$X" != "Y" ] ; then
+			CA_CONF='ca.conf'
+			CA_PATH=$CA_BASE/rootCA
+			if [ ! -f $CA_BASE/$CA_CONF  ] ; then
+				merr "root CA config file ($CA_BASE/$CA_CONF) does not exist"
 				exit 1
 			fi
-		fi
 
-		mecho "Creating directory $USER_DIR"
-		mkdir -p $USER_DIR
-		if [ $? -ne 0 ] ; then
-			merr "Failed to create user directory $USER_DIR "
-			exit 1
-		fi
-		rm -fr "${USER_DIR:?}"/*
+			if [ -d $CA_PATH ] ; then
+				mwarn "root CA directory ($CA_PATH) exists! Remove it (y/n)?"
+				read X
+				if [ "$X" != "y" -a "$X" != "Y" ] ; then
+					exit 1
+				fi
+			fi
 
-		mecho "Creating user certificate request"
-		openssl req  -config $USER_CFG -out $USER_DIR/$USER-cert_req.pem \
-			-keyout $USER_DIR/$USER-privkey.pem -new -nodes
-		if [ $? -ne 0 ] ; then
-			merr "Failed to generate certificate request"
-			exit 1
-		fi
+			mecho "Creating directory $CA_PATH and its sub-tree"
+			mkdir -p $CA_PATH
+			if [ $? -ne 0 ] ; then
+				merr "Failed to create root directory $CA_PATH"
+				exit 1
+			fi
+			rm -fr "${CA_PATH:?}"/*
+			mkdir $CA_PATH/private
+			mkdir $CA_PATH/certs
+			touch $CA_PATH/index.txt
+			echo 01 >$CA_PATH/serial
 
-		mecho "Signing certificate request"
-		( cd $CA_BASE ; openssl ca -config $REQ_CFG -in \
-			$USER_DIR/$USER-cert_req.pem -out $USER_DIR/$USER-cert.pem )
-		if [ $? -ne 0 ] ; then
-			merr "Failed to generate certificate request"
-			exit 1
-		fi
+			mecho "Creating CA self-signed certificate"
+			( cd $CA_PATH; openssl req -config $CA_BASE/$CA_CONF -x509 -newkey \
+				rsa:2048 -days 365 -out ./cacert.pem -outform PEM )
+			if [ $? -ne 0 ] ; then
+				merr "Failed to create self-signed certificate"
+				exit 1
+			fi
 
-		mecho "Generating CA list"
-		cat $CA_BASE/rootCA/cacert.pem >> $USER_DIR/$USER-calist.pem
+			mecho "Protecting CA private key"
+			chmod 600 $CA_PATH/private/cakey.pem
 
-		mecho "DONE"
-		minfo "Private key is locate at $USER_DIR/$USER-privkey.pem "
-		minfo "Certificate is locate at $USER_DIR/$USER-cert.pem "
-		minfo "CA-List is locate at $USER_DIR/$USER-calist.pem "
+			mecho "DONE"
+			minfo "Private key can be found in $CA_PATH/private/cakey.pem"
+			minfo "Certificate can be found in $CA_PATH/cacert.pem"
+			;;
 
-	else
-		merr "unknown TLS command $1"
-		usage_tls
-		exit 1
-	fi
+		"userCERT")
+			if [ -z $2 ] ; then
+				merr "Missing user name parameter"
+				exit 1
+			fi
+
+			if [ -z $3 ] ; then
+				# use default
+				CA_BASE=$ETCDIR/tls
+			else
+				CA_BASE=`(cd $3;pwd)`
+			fi
+
+			if [ ! -d $CA_BASE ] ; then
+				merr "Config directory ($CA_BASE) does not exist"
+				exit 1
+			fi
+
+			USER_DIR=$CA_BASE/$2
+			USER_CFG=$CA_BASE/$2.conf
+			USER=$2
+			REQ_CFG=$CA_BASE/request.conf
+
+			if [ ! -f $USER_CFG ] ; then
+				merr "User config file $USER_CFG not found"
+				exit 1
+			fi
+
+			if [ ! -f $REQ_CFG ] ; then
+				merr "Request config file $REQ_CFG not found"
+				exit 1
+			fi
+
+			mecho "Using config file $USER_CFG"
+
+			if [ -d $USER_DIR ] ; then
+				mwarn "User CERT directory ($USER_DIR) exists! Remove it (y/n)?"
+				read X
+				if [ "$X" != "y" -a "$X" != "Y" ] ; then
+					exit 1
+				fi
+			fi
+
+			mecho "Creating directory $USER_DIR"
+			mkdir -p $USER_DIR
+			if [ $? -ne 0 ] ; then
+				merr "Failed to create user directory $USER_DIR "
+				exit 1
+			fi
+			rm -fr "${USER_DIR:?}"/*
+
+			mecho "Creating user certificate request"
+			openssl req  -config $USER_CFG -out $USER_DIR/$USER-cert_req.pem \
+				-keyout $USER_DIR/$USER-privkey.pem -new -nodes
+			if [ $? -ne 0 ] ; then
+				merr "Failed to generate certificate request"
+				exit 1
+			fi
+
+			mecho "Signing certificate request"
+			( cd $CA_BASE ; openssl ca -config $REQ_CFG -in \
+				$USER_DIR/$USER-cert_req.pem -out $USER_DIR/$USER-cert.pem )
+			if [ $? -ne 0 ] ; then
+				merr "Failed to generate certificate request"
+				exit 1
+			fi
+
+			mecho "Generating CA list"
+			cat $CA_BASE/rootCA/cacert.pem >> $USER_DIR/$USER-calist.pem
+
+			mecho "DONE"
+			minfo "Private key is locate at $USER_DIR/$USER-privkey.pem "
+			minfo "Certificate is locate at $USER_DIR/$USER-cert.pem "
+			minfo "CA-List is locate at $USER_DIR/$USER-calist.pem "
+			;;
+
+		"gen-certs")
+			mecho "Generating self signed certificates"
+			if [ -z "$CERTDAYS" ] ; then
+				CERTDAYS=365
+			fi
+			if [ -n "$2" ] ; then
+				openssl req -x509 -newkey rsa:4096 -nodes -subj "/CN=${2}" -keyout kamailio-selfsigned.key -out kamailio-selfsigned.pem -days ${CERTDAYS}
+			else
+				openssl req -x509 -newkey rsa:4096 -nodes -keyout kamailio-selfsigned.key -out kamailio-selfsigned.pem -days ${CERTDAYS}
+			fi
+			;;
+
+		*)
+			merr "unknown TLS command $1"
+			usage_tls
+			;;
+	esac
 }
 
 extcmd() {
@@ -2888,7 +2962,7 @@ extcmd() {
 }
 
 ##### ================================================ #####
-### trap with gdb kamailio processes
+### trap with gdb kamailio processes using RPC core.psx
 #
 
 kamailio_trap() {
@@ -2897,7 +2971,7 @@ kamailio_trap() {
 		exit
 	fi
 	DATE=`/bin/date +%Y%m%d_%H%M%S`
-	LOG_FILE=/tmp/gdb_kamailio_$DATE
+	LOG_FILE=/tmp/gdb_kamailio_${DATE}.txt
 	minfo "Trap file: $LOG_FILE"
 	ctl_cmd_run core.psx > $LOG_FILE
 	echo -n "Trapping Kamailio with gdb: "
@@ -2909,6 +2983,35 @@ kamailio_trap() {
 		echo "" >> $LOG_FILE
 		echo "---start $PID -----------------------------------------------------" >> $LOG_FILE
 		$GDB kamailio $PID -batch --eval-command="bt full" >> $LOG_FILE 2>&1
+		echo "---end $PID -------------------------------------------------------" >> $LOG_FILE
+	done
+	echo "."
+}
+
+##### ================================================ #####
+### trap with gdb kamailio processes using ps command
+#
+
+kamailio_pstrap() {
+	if [ -z "$GDB" ] ; then
+		merr "'gdb' tool not found: set GDB variable to correct tool path"
+		exit
+	fi
+	DATE=`/bin/date +%Y%m%d_%H%M%S`
+	LOG_FILE=/tmp/gdb_kamailio_${DATE}.txt
+	minfo "Trap file: $LOG_FILE"
+	ps axw | grep kamailio | grep -v grep | grep -v kamctl | sort > $LOG_FILE
+	echo "" >> $LOG_FILE
+	echo "" >> $LOG_FILE
+	echo -n "Trapping Kamailio with gdb: "
+	PID_TIMESTAMP_VECTOR=`ps axw | grep kamailio | grep -v grep | grep -v kamctl | sort | awk '{print $1}'`
+	for pid in $PID_TIMESTAMP_VECTOR
+	do
+		echo -n "."
+		PID=`echo $pid | cut -d '-' -f 1`
+		echo "" >> $LOG_FILE
+		echo "---start $PID -----------------------------------------------------" >> $LOG_FILE
+		$GDB kamailio $PID -batch --eval-command="p process_no" --eval-command="p pt[process_no]" --eval-command="bt full" >> $LOG_FILE 2>&1
 		echo "---end $PID -------------------------------------------------------" >> $LOG_FILE
 	done
 	echo "."
@@ -3126,6 +3229,10 @@ case $1 in
 		kamailio_trap
 		;;
 
+	pstrap)
+		kamailio_pstrap
+		;;
+
 	start)
 		kamailio_start
 		;;
@@ -3145,4 +3252,3 @@ case $1 in
 		exit 1
 		;;
 esac
-

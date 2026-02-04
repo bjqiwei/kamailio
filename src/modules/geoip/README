@@ -10,8 +10,6 @@ Daniel-Constantin Mierla
 
    <miconda@gmail.com>
 
-Edited by
-
 Alex Balashov
 
    Evariste Systems LLC
@@ -165,4 +163,4 @@ if(geoip_match("$si", "src"))
           + contc - continent code
 
    Exported pseudo-variables are documented at
-   https://www.kamailio.org/wiki/.
+   https://www.kamailio.org/wikidocs/.

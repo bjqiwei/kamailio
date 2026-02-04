@@ -384,7 +384,7 @@ if (pcre_match_group("$ua", "$avp(i:10)")) {
 
 <programlisting  format="linespecific">
 ...
-&kamcmd; regex.reload
+&kamctl; rpc regex.reload
 ...
 </programlisting>
 
@@ -432,7 +432,7 @@ if (pcre_match_group("$ua", "$avp(i:10)")) {
 ^PJSUA
 
 
-### Blacklisted source IP's
+### Blocklisted source IP's
 [1]
 
 ^190\.232\.250\.226$

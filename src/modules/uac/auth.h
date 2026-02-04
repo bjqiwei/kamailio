@@ -26,14 +26,19 @@
 
 #include "../../core/parser/msg_parser.h"
 
-struct uac_credential {
+#define UAC_FLCRED_HA1 (1 << 0)
+
+typedef struct uac_credential
+{
 	str realm;
 	str user;
 	str passwd;
+	uint32_t aflags;
 	struct uac_credential *next;
-};
+} uac_credential_t;
 
-struct authenticate_body {
+typedef struct authenticate_body
+{
 	int flags;
 	str realm;
 	str domain;
@@ -42,33 +47,34 @@ struct authenticate_body {
 	str qop;
 	str *nc;
 	str *cnonce;
-};
+} uac_authenticate_body_t;
 
-#define AUTHENTICATE_MD5         (1<<0)
-#define AUTHENTICATE_MD5SESS     (1<<1)
-#define AUTHENTICATE_STALE       (1<<2)
-#define QOP_AUTH                 (1<<3)
-#define QOP_AUTH_INT             (1<<4)
+#define UACAUTH_MODE_HA1 (1 << 0)
+
+#define AUTHENTICATE_MD5 (1 << 0)
+#define AUTHENTICATE_MD5SESS (1 << 1)
+#define AUTHENTICATE_STALE (1 << 2)
+#define QOP_AUTH (1 << 3)
+#define QOP_AUTH_INT (1 << 4)
 
 #define HASHLEN 16
 typedef char HASH[HASHLEN];
 
 #define HASHHEXLEN 32
-typedef char HASHHEX[HASHHEXLEN+1];
+typedef char HASHHEX[HASHHEXLEN + 1];
 
 int has_credentials(void);
 
-int add_credential( unsigned int type, void *val);
+int add_credential(unsigned int type, void *val);
 
 void destroy_credentials(void);
 
-struct hdr_field *get_autenticate_hdr(struct sip_msg *rpl, int rpl_code);
+struct hdr_field *get_authenticate_hdr(struct sip_msg *rpl, int rpl_code);
 
-int uac_auth( struct sip_msg *msg);
+int uac_auth(sip_msg_t *msg);
+int uac_auth_mode(sip_msg_t *msg, int mode);
 
-void do_uac_auth(str *method, str *uri,
-		struct uac_credential *crd,
-		struct authenticate_body *auth,
-		HASHHEX response);
+void do_uac_auth(str *method, str *uri, struct uac_credential *crd,
+		struct authenticate_body *auth, HASHHEX response);
 
 #endif

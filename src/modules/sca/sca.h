@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 Andrew Mortensen
+ * Copyright (C) 2024 Sipwise GmbH, https://www.sipwise.com
  *
  * This file is part of the sca module for Kamailio, a free SIP server.
  *
@@ -27,7 +28,8 @@
 #ifndef SCA_H
 #define SCA_H
 
-struct _sca_config {
+struct _sca_config
+{
 	str *outbound_proxy;
 	str *db_url;
 	str *subs_table;
@@ -39,10 +41,16 @@ struct _sca_config {
 	int purge_expired_interval;
 	int onhold_bflag;
 	str *server_address;
+	str *contact_fallback;
+	avp_flags_t from_uri_avp_type;
+	avp_name_t from_uri_avp;
+	avp_flags_t to_uri_avp_type;
+	avp_name_t to_uri_avp;
 };
 typedef struct _sca_config sca_config;
 
-struct _sca_mod {
+struct _sca_mod
+{
 	sca_config *cfg;
 	sca_hash_table *subscriptions;
 	sca_hash_table *appearances;

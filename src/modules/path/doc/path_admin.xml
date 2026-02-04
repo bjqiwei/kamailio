@@ -59,7 +59,7 @@
 			</para>
 			<para>
 				Note that some SIP registrars may check if header Supported includes 'path'. It
-				can be added in &kamailio;.cfg using append_hf() from textops module.
+				can be added in &kamailioconfig; using append_hf() from textops module.
 			</para>
 		<example>
 		<title>Add Supported header</title>
@@ -171,6 +171,26 @@ modparam("path", "received_format", 1)
 </programlisting>
 		</example>
 	</section>
+	<section id="path.p.received_name">
+		<title><varname>received_name</varname> (str)</title>
+		<para>
+			Set the name of the header parameter to add the
+			<quote>received</quote> value.
+		</para>
+		<para>
+		<emphasis>
+			Default value is "received".
+		</emphasis>
+		</para>
+		<example>
+		<title>Set <varname>received_name</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("path", "received_name", "rcv")
+...
+</programlisting>
+		</example>
+	</section>
 	<section id="path.p.enable_r2">
 		<title><varname>enable_r2</varname> (int)</title>
 		<para>
@@ -196,6 +216,25 @@ modparam("path", "received_format", 1)
 		<programlisting format="linespecific">
 ...
 modparam("path", "enable_r2", 1)
+...
+</programlisting>
+		</example>
+	</section>
+	<section id="path.p.sockname_mode">
+		<title><varname>sockname_mode</varname> (int)</title>
+		<para>
+		If set to 1, the Path URI is built to contain socket name in 'sn' parameter.
+		</para>
+		<para>
+		<emphasis>
+			Default value is 0.
+		</emphasis>
+		</para>
+		<example>
+		<title>Set <varname>sockname_mode</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("path", "sockname_mode", 1)
 ...
 </programlisting>
 		</example>

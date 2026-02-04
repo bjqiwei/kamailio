@@ -1,7 +1,9 @@
-/* 
+/*
  * Copyright (C) 2009 Sippy Software, Inc., http://www.sippysoft.com
  *
  * This file is part of Kamailio, a free SIP server.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +22,12 @@
 */
 
 #ifndef _PYTHON_SUPPORT_H
-#define  _PYTHON_SUPPORT_H
+#define _PYTHON_SUPPORT_H
 
 #include <Python.h>
 #include <stdarg.h>
 
-PyObject *format_exc_obj;
+extern PyObject *format_exc_obj;
 
 void python_handle_exception(const char *, ...);
 

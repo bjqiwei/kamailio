@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -24,87 +26,203 @@
 #include "spi_gen.h"
 #include "spi_list.h"
 #include <pthread.h>
+#include "../../core/mem/shm_mem.h"
 
-pthread_mutex_t spis_mut;
-spi_list_t used_spis;
-uint32_t spi_val;
-uint32_t min_spi;
-uint32_t max_spi;
+#define MAX_HASH_SPI 10000
 
-int init_spi_gen(uint32_t start_val, uint32_t range)
+typedef struct spi_generator
 {
-    if(start_val < 1) {
-        return 1;
-    }
+	pthread_mutex_t spis_mut;
+	spi_list_t used_spis[MAX_HASH_SPI];
+	spi_list_t free_spi;
+	uint32_t spi_val;
+	uint32_t min_spi;
+	uint32_t max_spi;
+	uint32_t sport_start_val;
+	uint32_t cport_start_val;
+	uint32_t port_range;
+} spi_generator_t;
 
-    if(UINT32_MAX - range < start_val)
-        return 2;
+spi_generator_t *spi_data = NULL;
 
-    if(pthread_mutex_init(&spis_mut, NULL))
-        return 3;
+static int init_free_spi()
+{
+	uint32_t sport_start_val, cport_start_val, port_range, sport, cport, j;
 
-    used_spis = create_list();
+	if(!spi_data) {
+		return 1;
+	}
 
-    spi_val = start_val;
-    min_spi = start_val;
-    max_spi = start_val + range;
+	sport_start_val = spi_data->sport_start_val;
+	cport_start_val = spi_data->cport_start_val;
+	port_range = spi_data->port_range;
+	//save the initial value for the highly unlikely case where there are no free SPIs
+	sport = sport_start_val;
+	cport = cport_start_val;
 
-    return 0;
+	spi_data->free_spi = create_list();
+	for(j = spi_data->min_spi; j < spi_data->max_spi; j += 2) {
+		spi_add(&spi_data->free_spi, j, j + 1, cport, sport);
+		cport++;
+		sport++;
+
+		if(cport >= cport_start_val + port_range) {
+			cport = cport_start_val;
+		}
+
+		if(sport >= sport_start_val + port_range) {
+			sport = sport_start_val;
+		}
+	}
+
+	return 0;
 }
 
-uint32_t acquire_spi()
+int init_spi_gen(uint32_t spi_start_val, uint32_t spi_range,
+		uint32_t sport_start_val, uint32_t cport_start_val, uint32_t port_range)
 {
-    //save the initial value for the highly unlikely case where there are no free SPIs
-    uint32_t initial_val = spi_val;
-    uint32_t ret = 0; // by default return invalid SPI
+	uint32_t j;
 
-    if(pthread_mutex_lock(&spis_mut) != 0) {
-        return ret;
-    }
+	if(spi_start_val < 1) {
+		return 1;
+	}
 
-    while(1) {
-        if(spi_in_list(&used_spis, spi_val) == 0) {
-            ret = spi_val;
-            spi_val++;
-            break;
-        }
+	if(UINT32_MAX - spi_range < spi_start_val) {
+		return 2;
+	}
 
-        spi_val++; //the current SPI is not available - increment
+	if(spi_data) {
+		return 3;
+	}
 
-        if(spi_val >= max_spi) { //reached the top of the range - reset
-            spi_val = min_spi;
-        }
+	spi_data = shm_malloc(sizeof(spi_generator_t));
+	if(spi_data == NULL) {
+		return 4;
+	}
 
-        if(spi_val == initial_val) { //there are no free SPIs
-            break;
-        }
+	if(pthread_mutex_init(&spi_data->spis_mut, NULL)) {
+		shm_free(spi_data);
+		return 5;
+	}
 
-    }
+	if(pthread_mutex_lock(&spi_data->spis_mut) != 0) {
+		return 6;
+	}
 
-    //found unused SPI - add it to the used list
-    if(spi_add(&used_spis, ret) != 0) {
-        ret = 0;
-    }
+	for(j = 0; j < MAX_HASH_SPI; j++) {
+		spi_data->used_spis[j] = create_list();
+	}
 
-    pthread_mutex_unlock(&spis_mut);
+	spi_data->spi_val = spi_data->min_spi = spi_start_val;
+	spi_data->max_spi = spi_start_val + spi_range;
+	spi_data->sport_start_val = sport_start_val;
+	spi_data->cport_start_val = cport_start_val;
+	spi_data->port_range = port_range;
 
-    return ret;
+	if(init_free_spi() != 0) {
+		return 7;
+	}
+
+	pthread_mutex_unlock(&spi_data->spis_mut);
+
+	return 0;
 }
 
-int release_spi(uint32_t id)
+uint32_t acquire_spi(
+		uint32_t *spi_cid, uint32_t *spi_sid, uint16_t *cport, uint16_t *sport)
 {
-    if(pthread_mutex_lock(&spis_mut) != 0) {
-        return 1;
-    }
+	if(!spi_data) {
+		LM_ERR("spi_data is NULL\n");
+		return 0;
+	}
 
-    spi_remove(&used_spis, id);
+	if(pthread_mutex_lock(&spi_data->spis_mut) != 0) {
+		LM_ERR("spi_data failed to lock\n");
+		return 0;
+	}
 
-    pthread_mutex_unlock(&spis_mut);
+	if(!spi_data->free_spi.head) {
+		LM_ERR("spi_data:%p spi_data->free_spi.head %p\n", spi_data,
+				spi_data->free_spi.head);
+		pthread_mutex_unlock(&spi_data->spis_mut);
+		return 0;
+	}
 
-    return 0;
+	*spi_cid = spi_data->free_spi.head->spi_cid;
+	*spi_sid = spi_data->free_spi.head->spi_sid;
+	*sport = spi_data->free_spi.head->sport;
+	*cport = spi_data->free_spi.head->cport;
+	spi_remove_head(&spi_data->free_spi);
+	spi_add(&spi_data->used_spis[*spi_cid % MAX_HASH_SPI], *spi_cid, *spi_sid,
+			*cport, *sport);
+	pthread_mutex_unlock(&spi_data->spis_mut);
+
+	LM_DBG("spi acquired spi_cid:%u spi_sid:%u sport:%u cport:%u \n", *spi_cid,
+			*spi_sid, *sport, *cport);
+
+	return 1;
+}
+
+int release_spi(
+		uint32_t spi_cid, uint32_t spi_sid, uint16_t cport, uint16_t sport)
+{
+	LM_DBG("releasing spi spi_data:%p spi_cid:%u spi_sid:%u cport:%u "
+		   "sport:%u\n",
+			spi_data, spi_cid, spi_sid, cport, sport);
+	if(!spi_data) {
+		return 1;
+	}
+
+	if(pthread_mutex_lock(&spi_data->spis_mut) != 0) {
+		return 1;
+	}
+
+	// if we successfully remove from used spi we will insert into free spi
+	if(spi_remove(&spi_data->used_spis[spi_cid % MAX_HASH_SPI], spi_cid,
+			   spi_sid)) {
+		spi_add(&spi_data->free_spi, spi_cid, spi_sid, cport, sport);
+	}
+
+	pthread_mutex_unlock(&spi_data->spis_mut);
+
+	return 0;
+}
+
+int clean_spi_list()
+{
+	uint32_t j;
+
+	if(!spi_data) {
+		return 1;
+	}
+
+	if(pthread_mutex_lock(&spi_data->spis_mut) != 0) {
+		return 1;
+	}
+
+	for(j = 0; j < MAX_HASH_SPI; j++) {
+		destroy_list(&spi_data->used_spis[j]);
+	}
+
+	destroy_list(&spi_data->free_spi);
+	init_free_spi();
+
+	spi_data->spi_val = spi_data->min_spi;
+
+	pthread_mutex_unlock(&spi_data->spis_mut);
+
+	return 0;
 }
 
 int destroy_spi_gen()
 {
-    return pthread_mutex_destroy(&spis_mut);
+	if(!spi_data) {
+		return 1;
+	}
+
+	clean_spi_list();
+
+	int ret = pthread_mutex_destroy(&spi_data->spis_mut);
+	shm_free(spi_data);
+	return ret;
 }

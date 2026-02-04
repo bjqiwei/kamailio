@@ -4,6 +4,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -31,6 +33,7 @@ int bind_httpc_api(httpc_api_t *api)
 	}
 	api->http_connect = curl_con_query_url;
 	api->http_client_query = http_client_query;
+	api->http_client_query_c = http_client_query_c;
 	api->http_connection_exists = http_connection_exists;
 	api->http_get_content_type = http_get_content_type;
 

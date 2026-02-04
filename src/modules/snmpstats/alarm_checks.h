@@ -1,9 +1,11 @@
 /*
- * SNMPStats Module 
+ * SNMPStats Module
  * Copyright (C) 2006 SOMA Networks, INC.
  * Written by: Jeffrey Magder (jmagder@somanetworks.com)
  *
  * This file is part of Kamailio, a free SIP server.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Kamailio is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -45,7 +47,7 @@ int check_msg_queue_alarm(int threshold_to_compare_to);
  * otherwise. */
 int check_dialog_alarm(int threshold_to_compare_to);
 
-/*! This function will be called periodically from an Kamailio timer.  The first
+/*! This function will be called periodically from a Kamailio timer.  The first
  * time it is called, it will query KAMAILIO-MIB for configured thresholds.
  */
 void run_alarm_check(unsigned int ticks, void *attr);

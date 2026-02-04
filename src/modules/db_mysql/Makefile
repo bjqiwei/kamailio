@@ -1,5 +1,5 @@
 #
-# WARNING: do not run this directly, it should be run by the master Makefile
+# WARNING: do not run this directly, it should be run by the main Makefile
 
 include ../../Makefile.defs
 auto_gen=
@@ -37,8 +37,6 @@ else
 		-lmysqlclient -lz
 endif
 
-SERLIBPATH=../../lib
-SER_LIBS=$(SERLIBPATH)/srdb2/srdb2 $(SERLIBPATH)/srdb1/srdb1
 ifneq (,$(filter sip-router ser, $(INSTALL_FLAVOUR)))
 MOD_INSTALL_SHARE= ../../scripts/mysql/my_create.sql \
 				   ../../scripts/mysql/my_data.sql   \

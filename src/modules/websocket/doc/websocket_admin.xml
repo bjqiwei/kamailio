@@ -43,6 +43,10 @@
 	<title>event_route[xhttp:request]</title>
 	<programlisting><![CDATA[
 ...
+tcp_accept_no_cl=yes
+listen=tcp:127.0.0.17:80
+listen=tls:127.0.0.17:443
+...
 loadmodule "sl.so"
 loadmodule "xhttp.so"
 loadmodule "msrp.so"  # Only required if using MSRP over WebSockets
@@ -133,6 +137,7 @@ event_route[xhttp:request] {
 ...
 loadmodule "sl.so"
 loadmodule "tm.so"
+loadmodule "xhttp.so"
 ...
 loadmodule "websocket.so"
 ...
@@ -164,7 +169,7 @@ request_route {
 # Handle requests within SIP dialogs
 route[WITHINDLG] {
         if (has_totag()) {
-                # sequential request withing a dialog should
+                # sequential request within a dialog should
                 # take the path determined by record-routing
                 if (loose_route()) {
                         if ($du == "") {
@@ -378,11 +383,11 @@ modparam("websocket", "ping_application_data", "WebSockets rock")
 		</para></listitem>
 		<listitem><para>
 		<emphasis>2</emphasis> - msrp (RFC 7977) -
-		msrp.so must be loaded before websocket.so
+		the msrp module must be loaded before the websocket module
 		</para></listitem>
 		</itemizedlist>
-		<para><emphasis>Default value is 1 when msrp.so is not loaded
-		 3 when msrp.so is loaded.</emphasis></para>
+		<para><emphasis>Default value is 1 when msrp module is not loaded,
+		 3 when msrp module is loaded.</emphasis></para>
 		<example>
 		<title>Set <varname>sub_protocols</varname>
 		parameter</title>
@@ -405,12 +410,12 @@ modparam("websocket", "sub_protocols", 2)
 		accepting the WebSocket handshake.
 		</para></listitem>
 		<listitem><para>
-		<emphasis>1</emphasis> - Add a
+		<emphasis>1</emphasis> - Add an
 		&quot;Access-Control-Allow-Origin: *&quot; header to the
 		response accepting the WebSocket handshake.
 		</para></listitem>
 		<listitem><para>
-		<emphasis>2</emphasis> - Add a
+		<emphasis>2</emphasis> - Add an
 		&quot;Access-Control-Allow-Origin:&quot; header containing the
 		same body as the &quot;Origin:&quot; header from the request to
 		the response accepting the WebSocket handshake. If there is no
@@ -483,7 +488,7 @@ end
 		</para>
 		<para><emphasis>Default value is 1.</emphasis></para>
 		<example>
-		<title>Set <varname>timer_interval</varname>parameter</title>
+		<title>Set <varname>timer_interval</varname> parameter</title>
 		<programlisting format="linespecific">
 ...
 modparam("websocket", "timer_interval", 5)
@@ -499,7 +504,7 @@ modparam("websocket", "timer_interval", 5)
 		</para>
 		<para><emphasis>Default value is 5.</emphasis></para>
 		<example>
-		<title>Set <varname>rm_timer_interval</varname>parameter</title>
+		<title>Set <varname>rm_delay_interval</varname>parameter</title>
 		<programlisting format="linespecific">
 ...
 modparam("websocket", "rm_delay_interval", 2)
@@ -592,7 +597,7 @@ ws_close(4000, "Because I say so");
 		<para>RPC Command Usage:</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; ws.dump used_asc
+&kamctl; rpc ws.dump used_asc
 ...
 </programlisting>
 	</section>
@@ -611,7 +616,7 @@ ws_close(4000, "Because I say so");
 		<para>RPC Command Usage:</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; ws.close: 1
+&kamctl; rpc ws.close: 1
 ...
 </programlisting>
 	</section>
@@ -630,7 +635,7 @@ ws_close(4000, "Because I say so");
 		<para>RPC Command Usage:</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; ws.ping 1
+&kamctl; rpc ws.ping 1
 ...
 </programlisting>
 	</section>
@@ -649,7 +654,7 @@ ws_close(4000, "Because I say so");
 		<para>RPC Command Usage:</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; ws.pong 1
+&kamctl; rpc ws.pong 1
 ...
 </programlisting>
 	</section>
@@ -663,7 +668,7 @@ ws_close(4000, "Because I say so");
 		<para>RPC Command Usage:</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; ws.disable
+&kamctl; rpc ws.disable
 ...
 </programlisting>
 	</section>
@@ -678,7 +683,7 @@ ws_close(4000, "Because I say so");
 		<para>RPC Command Format:</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; ws.enable
+&kamctl; rpc ws.enable
 ...
 </programlisting>
 	</section>
@@ -695,7 +700,7 @@ ws_close(4000, "Because I say so");
 			When defined, the module calls
 			event_route[websocket:closed] when a connection
 			closes.  The connection may be identified using the
-			the $si and $sp pseudo-variables.
+			$si and $sp pseudo-variables.
 		</para>
 		<example>
 		<title><function moreinfo="none">event_route[websocket:closed]</function> usage</title>
@@ -710,7 +715,7 @@ event_route[websocket:closed] {
 	</section>
 
 	</section>
- 
+
 	<section>
 		<title>Exported Pseudo Variables</title>
 		<section>
@@ -734,4 +739,3 @@ event_route[websocket:closed] {
 	</section>
 
 </chapter>
-

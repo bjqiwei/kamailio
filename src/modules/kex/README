@@ -15,8 +15,6 @@ Daniel-Constantin Mierla
 
    <miconda@gmail.com>
 
-Edited by
-
 Ovidiu Sas
 
    <osas@voipembedded.com.com>
@@ -49,9 +47,10 @@ Ovidiu Sas
               3.9. isdsturiset()
               3.10. pv_printf(var, str)
               3.11. is_myself(uri)
-              3.12. setdebug(level)
-              3.13. resetdebug()
-              3.14. km_append_branch([uri])
+              3.12. is_myhost(uri)
+              3.13. setdebug(level)
+              3.14. resetdebug()
+              3.15. km_append_branch([uri])
 
         4. RPC Commands
 
@@ -60,33 +59,40 @@ Ovidiu Sas
               4.3. core.echo
               4.4. core.flags
               4.5. core.info
-              4.6. core.kill
-              4.7. core.printi
-              4.8. core.prints
-              4.9. core.ps
-              4.10. core.psx
-              4.11. core.pwd
-              4.12. core.shmem
-              4.13. core.sockets_list
-              4.14. core.tcp_info
-              4.15. core.tcp_list
-              4.16. core.tcp_options
-              4.17. core.udp4_raw_info
-              4.18. core.uptime
-              4.19. core.version
-              4.20. core.ppdefines
-              4.21. core.modules
-              4.22. pkg.stats
-              4.23. stats.get_statistics
-              4.24. stats.fetch
-              4.25. stats.reset_statistics
-              4.26. stats.clear_statistics
-              4.27. system.listMethods
-              4.28. system.methodHelp
-              4.29. system.methodSignature
-              4.30. mod.mem_stats
-              4.31. mod.stats
-              4.32. mod.mem_statsx
+              4.6. core.runinfo
+              4.7. core.kill
+              4.8. core.printi
+              4.9. core.prints
+              4.10. core.ps
+              4.11. core.psx
+              4.12. core.pwd
+              4.13. core.shmmem
+              4.14. core.sockets_list
+              4.15. core.tcp_info
+              4.16. core.tcp_list
+              4.17. core.tcp_options
+              4.18. core.udp4_raw_info
+              4.19. core.uptime
+              4.20. core.version
+              4.21. core.ppdefines
+              4.22. core.modules
+              4.23. modparam.getn
+              4.24. modparam.gets
+              4.25. modparam.setn
+              4.26. modparam.list
+              4.27. pkg.stats
+              4.28. pkg.info
+              4.29. stats.get_statistics
+              4.30. stats.fetch
+              4.31. stats.fetchn
+              4.32. stats.reset_statistics
+              4.33. stats.clear_statistics
+              4.34. system.listMethods
+              4.35. system.methodHelp
+              4.36. system.methodSignature
+              4.37. mod.mem_stats
+              4.38. mod.stats
+              4.39. mod.mem_statsx
 
    List of Examples
 
@@ -101,8 +107,9 @@ Ovidiu Sas
    1.9. isdsturiset usage
    1.10. pv_printf usage
    1.11. is_myself usage
-   1.12. setdebug usage
-   1.13. resetdebug usage
+   1.12. is_myhost usage
+   1.13. setdebug usage
+   1.14. resetdebug usage
 
 Chapter 1. Admin Guide
 
@@ -127,9 +134,10 @@ Chapter 1. Admin Guide
         3.9. isdsturiset()
         3.10. pv_printf(var, str)
         3.11. is_myself(uri)
-        3.12. setdebug(level)
-        3.13. resetdebug()
-        3.14. km_append_branch([uri])
+        3.12. is_myhost(uri)
+        3.13. setdebug(level)
+        3.14. resetdebug()
+        3.15. km_append_branch([uri])
 
    4. RPC Commands
 
@@ -138,39 +146,47 @@ Chapter 1. Admin Guide
         4.3. core.echo
         4.4. core.flags
         4.5. core.info
-        4.6. core.kill
-        4.7. core.printi
-        4.8. core.prints
-        4.9. core.ps
-        4.10. core.psx
-        4.11. core.pwd
-        4.12. core.shmem
-        4.13. core.sockets_list
-        4.14. core.tcp_info
-        4.15. core.tcp_list
-        4.16. core.tcp_options
-        4.17. core.udp4_raw_info
-        4.18. core.uptime
-        4.19. core.version
-        4.20. core.ppdefines
-        4.21. core.modules
-        4.22. pkg.stats
-        4.23. stats.get_statistics
-        4.24. stats.fetch
-        4.25. stats.reset_statistics
-        4.26. stats.clear_statistics
-        4.27. system.listMethods
-        4.28. system.methodHelp
-        4.29. system.methodSignature
-        4.30. mod.mem_stats
-        4.31. mod.stats
-        4.32. mod.mem_statsx
+        4.6. core.runinfo
+        4.7. core.kill
+        4.8. core.printi
+        4.9. core.prints
+        4.10. core.ps
+        4.11. core.psx
+        4.12. core.pwd
+        4.13. core.shmmem
+        4.14. core.sockets_list
+        4.15. core.tcp_info
+        4.16. core.tcp_list
+        4.17. core.tcp_options
+        4.18. core.udp4_raw_info
+        4.19. core.uptime
+        4.20. core.version
+        4.21. core.ppdefines
+        4.22. core.modules
+        4.23. modparam.getn
+        4.24. modparam.gets
+        4.25. modparam.setn
+        4.26. modparam.list
+        4.27. pkg.stats
+        4.28. pkg.info
+        4.29. stats.get_statistics
+        4.30. stats.fetch
+        4.31. stats.fetchn
+        4.32. stats.reset_statistics
+        4.33. stats.clear_statistics
+        4.34. system.listMethods
+        4.35. system.methodHelp
+        4.36. system.methodSignature
+        4.37. mod.mem_stats
+        4.38. mod.stats
+        4.39. mod.mem_statsx
 
 1. Overview
 
    This module collects extensions from Kamailio core.
 
-   Kamailio Core Cookbook is available at: https://www.kamailio.org/wiki/
+   Kamailio Core Cookbook is available at:
+   https://www.kamailio.org/wikidocs/
 
 2. Dependencies
 
@@ -201,9 +217,10 @@ Chapter 1. Admin Guide
    3.9. isdsturiset()
    3.10. pv_printf(var, str)
    3.11. is_myself(uri)
-   3.12. setdebug(level)
-   3.13. resetdebug()
-   3.14. km_append_branch([uri])
+   3.12. is_myhost(uri)
+   3.13. setdebug(level)
+   3.14. resetdebug()
+   3.15. km_append_branch([uri])
 
 3.1. setsflag(flag)
 
@@ -225,7 +242,7 @@ setsflag("$var(flag)");
 
 3.2. issflagset(flag)
 
-   Return true of the script flag is set.
+   Return true if the script flag is set.
 
    Meaning of the parameters is as follows:
      * flag - the index of the script flag to be tested. Can be integer or
@@ -279,7 +296,7 @@ setbflag("$var(flag)", "1");
 
 3.5. isbflagset(flag [, branch])
 
-   Return true of the branch flag is set.
+   Return true if the branch flag is set.
 
    Meaning of the parameters is as follows:
      * flag - the index of the branch flag to be tested. Can be integer or
@@ -386,7 +403,8 @@ pv_printf("$avp(x)", "From: $fU - To: $tU");
 
    Meaning of the parameters is as follows:
      * uri - Valid SIP URI or IP address to check against the list of
-       local IP addresses or domains. The parameter value can contain
+       local IP addresses or domains, matching as well the port and
+       protocol if they are provided. The parameter value can contain
        pseudo-variables.
 
    This function can be used from ANY_ROUTE.
@@ -398,7 +416,27 @@ if(is_myself("$fu")) {
 }
 ...
 
-3.12. setdebug(level)
+3.12. is_myhost(uri)
+
+   Check if the host part of the parameter matches a local domain or IP
+   address.
+
+   Meaning of the parameters is as follows:
+     * uri - Valid SIP URI, hostname of IP address to check against the
+       list of local IP addresses or domains. If it is a SIP URI, the port
+       and protocol are ignored. The parameter value can contain
+       pseudo-variables.
+
+   This function can be used from ANY_ROUTE.
+
+   Example 1.12. is_myhost usage
+...
+if(is_myhost("$tu")) {
+    ...
+}
+...
+
+3.13. setdebug(level)
 
    Set the debug log level per process.
 
@@ -408,7 +446,7 @@ if(is_myself("$fu")) {
 
    This function can be used from ANY_ROUTE.
 
-   Example 1.12. setdebug usage
+   Example 1.13. setdebug usage
 ...
 setdebug("1");
 ...
@@ -416,19 +454,19 @@ $var(level) = 2;
 setdebug("$var(level)");
 ...
 
-3.13. resetdebug()
+3.14. resetdebug()
 
    Reset the local debug log level back to the value of core parameter
    'debug'.
 
    This function can be used from ANY_ROUTE.
 
-   Example 1.13. resetdebug usage
+   Example 1.14. resetdebug usage
 ...
 resetdebug();
 ...
 
-3.14. km_append_branch([uri])
+3.15. km_append_branch([uri])
 
    This function was replaced by append_branch() from corex module,
    starting with version 4.0.0.
@@ -440,33 +478,40 @@ resetdebug();
    4.3. core.echo
    4.4. core.flags
    4.5. core.info
-   4.6. core.kill
-   4.7. core.printi
-   4.8. core.prints
-   4.9. core.ps
-   4.10. core.psx
-   4.11. core.pwd
-   4.12. core.shmem
-   4.13. core.sockets_list
-   4.14. core.tcp_info
-   4.15. core.tcp_list
-   4.16. core.tcp_options
-   4.17. core.udp4_raw_info
-   4.18. core.uptime
-   4.19. core.version
-   4.20. core.ppdefines
-   4.21. core.modules
-   4.22. pkg.stats
-   4.23. stats.get_statistics
-   4.24. stats.fetch
-   4.25. stats.reset_statistics
-   4.26. stats.clear_statistics
-   4.27. system.listMethods
-   4.28. system.methodHelp
-   4.29. system.methodSignature
-   4.30. mod.mem_stats
-   4.31. mod.stats
-   4.32. mod.mem_statsx
+   4.6. core.runinfo
+   4.7. core.kill
+   4.8. core.printi
+   4.9. core.prints
+   4.10. core.ps
+   4.11. core.psx
+   4.12. core.pwd
+   4.13. core.shmmem
+   4.14. core.sockets_list
+   4.15. core.tcp_info
+   4.16. core.tcp_list
+   4.17. core.tcp_options
+   4.18. core.udp4_raw_info
+   4.19. core.uptime
+   4.20. core.version
+   4.21. core.ppdefines
+   4.22. core.modules
+   4.23. modparam.getn
+   4.24. modparam.gets
+   4.25. modparam.setn
+   4.26. modparam.list
+   4.27. pkg.stats
+   4.28. pkg.info
+   4.29. stats.get_statistics
+   4.30. stats.fetch
+   4.31. stats.fetchn
+   4.32. stats.reset_statistics
+   4.33. stats.clear_statistics
+   4.34. system.listMethods
+   4.35. system.methodHelp
+   4.36. system.methodSignature
+   4.37. mod.mem_stats
+   4.38. mod.stats
+   4.39. mod.mem_statsx
 
 4.1.  core.aliases_list
 
@@ -482,7 +527,7 @@ resetdebug();
 
    RPC Command Format:
 ...
-kamcmd core.arg
+kamctl rpc core.arg
 ...
 
 4.3.  core.echo
@@ -498,7 +543,11 @@ kamcmd core.arg
    Verbose info, including version number, compile flags, compiler,
    repository, hash
 
-4.6.  core.kill
+4.6.  core.runinfo
+
+   Runtime details like running version, uptime, ...
+
+4.7.  core.kill
 
    Kill the application.
 
@@ -508,26 +557,26 @@ kamcmd core.arg
 
    RPC Command Format:
 ...
-kamcmd core.kill
+kamctl rpc core.kill
 ...
 
-4.7.  core.printi
+4.8.  core.printi
 
    Returns the integers given as parameters.
 
-4.8.  core.prints
+4.9.  core.prints
 
    Returns the strings given as parameters.
 
-4.9.  core.ps
+4.10.  core.ps
 
    Returns the description of running processes.
 
-4.10.  core.psx
+4.11.  core.psx
 
    Returns the detailed description of running processes.
 
-4.11.  core.pwd
+4.12.  core.pwd
 
    Print working directory.
 
@@ -537,37 +586,37 @@ kamcmd core.kill
 
    RPC Command Format:
 ...
-kamcmd core.pwd
+kamctl rpc core.pwd
 ...
 
-4.12.  core.shmem
+4.13.  core.shmmem
 
    Returns shared memory info. It has an optional parameter that specifies
    the measuring unit: b - bytes (default), k or kb, m or mb, g or gb.
    Note: when using something different from bytes, the value is
    truncated.
 
-4.13.  core.sockets_list
+4.14.  core.sockets_list
 
    Returns the list of local SIP server listen sockets.
 
-4.14.  core.tcp_info
+4.15.  core.tcp_info
 
    Returns TCP related info.
 
-4.15.  core.tcp_list
+4.16.  core.tcp_list
 
    Returns TCP connections details.
 
-4.16.  core.tcp_options
+4.17.  core.tcp_options
 
    Returns active TCP options.
 
-4.17.  core.udp4_raw_info
+4.18.  core.udp4_raw_info
 
    Returns udp4_raw mode related info.
 
-4.18.  core.uptime
+4.19.  core.uptime
 
    Print uptime.
 
@@ -577,10 +626,10 @@ kamcmd core.pwd
 
    RPC Command Format:
 ...
-kamcmd core.uptime
+kamctl rpc core.uptime
 ...
 
-4.19.  core.version
+4.20.  core.version
 
    Print version information.
 
@@ -590,10 +639,10 @@ kamcmd core.uptime
 
    RPC Command Format:
 ...
-kamcmd core.version
+kamctl rpc core.version
 ...
 
-4.20.  core.ppdefines
+4.21.  core.ppdefines
 
    List preprocessor defines enabled in config.
 
@@ -603,10 +652,10 @@ kamcmd core.version
 
    RPC Command Format:
 ...
-kamcmd core.ppdefines
+kamctl rpc core.ppdefines
 ...
 
-4.21.  core.modules
+4.22.  core.modules
 
    List loaded modules in config.
 
@@ -616,10 +665,64 @@ kamcmd core.ppdefines
 
    RPC Command Format:
 ...
-kamcmd core.modules
+kamctl rpc core.modules
 ...
 
-4.22.  pkg.stats
+4.23.  modparam.getn
+
+   Get the value of a module parameter with integer value.
+
+   Name: modparam.getn
+
+   Parameters: module_name and parameter_name.
+
+   RPC Command Format:
+...
+kamcli rpc modparam.getn tls keylog_mode
+...
+
+4.24.  modparam.gets
+
+   Get the value of a module parameter with string value.
+
+   Name: modparam.gets
+
+   Parameters: module_name and parameter_name.
+
+   RPC Command Format:
+...
+kamcli rpc modparam.gets tls config
+...
+
+4.25.  modparam.setn
+
+   Set the value of a module parameter with integer value stored in shared
+   memory.
+
+   Name: modparam.setn
+
+   Parameters: module_name, parameter_name and value.
+
+   RPC Command Format:
+...
+kamcli rpc modparam.setn tls keylog_mode 15
+...
+
+4.26.  modparam.list
+
+   List the parameters of the loaded modules.
+
+   Name: modparam.list
+
+   Parameters: module_name (optional).
+
+   RPC Command Format:
+...
+kamcli rpc modparam.list
+kamcli rpc modparam.list tls
+...
+
+4.27.  pkg.stats
 
    Print private memory (pkg) usage statistics per process. It can take
    optionally a filter to print statistics only for a specific process or
@@ -632,19 +735,26 @@ kamcmd core.modules
      * index value - print statistics for specific index in process table.
 
    Examples:
-                kamcmd pkg.stats
-                kamcmd pkg.stats pid 1234
-                kamcmd pkg.stats rank 1
-                kamcmd pkg.stats index 10
+                kamctl rpc pkg.stats
+                kamctl rpc pkg.stats pid 1234
+                kamctl rpc pkg.stats rank 1
+                kamctl rpc pkg.stats index 10
 
-4.23.  stats.get_statistics
+4.28.  pkg.info
+
+   Get pkg manager details.
+
+   Example:
+                kamcli rpc pkg.info
+
+4.29.  stats.get_statistics
 
    Print the list of available internal statistics.
 
    NOTE: the result is an array of strings that have the list of
-   statistics formated like "name = value", being propagated over the time
-   from the MI variant. Use "stats.fetch" command to have a more
-   JSON-friendly output.
+   statistics formatted like "name = value", being propagated over the
+   time from the MI variant. Use "stats.fetch" or "stats.fetchn"commands
+   to have a more JSON-friendly output.
 
    Parameters: statsid - which statistics to be printed. If set to 'all'
    then all statistics are printed; if set to 'statsgroup:' then all
@@ -652,17 +762,17 @@ kamcmd core.modules
    statistics identified by the name is printed.
 
    Examples:
-                kamcmd stats.get_statistics all
-                kamcmd stats.get_statistics core:
-                kamcmd stats.get_statistics unsupported_methods
-                kamcmd stats.get_statistics shmem: fwd_requests fwd_replies
+                kamctl rpc stats.get_statistics all
+                kamctl rpc stats.get_statistics core:
+                kamctl rpc stats.get_statistics unsupported_methods
+                kamctl rpc stats.get_statistics shmem: fwd_requests fwd_replies
 
-4.24.  stats.fetch
+4.30.  stats.fetch
 
    Print the list of available internal statistics with a more json
    friendly output. Each printed statistic is a field in the output
    structure: {"statsgroup.statsname" : "statsvalue"}. The value is
-   represented as string to accomodate large numbers.
+   represented as string to accommodate large numbers.
 
    Parameters: statsid - which statistics to be printed. If set to 'all'
    then all statistics are printed; if set to 'statsgroup:' then all
@@ -671,37 +781,59 @@ kamcmd core.modules
    'statsgroup.stastname' or 'statsgroup:statsname').
 
    Examples:
-                kamcmd stats.fetch all
-                kamcmd stats.fetch core:
-                kamcmd stats.fetch unsupported_methods
-                kamcmd stats.fetch shmem.free_size
-                kamcmd stats.fetch shmem: fwd_requests fwd_replies
+                kamctl rpc stats.fetch all
+                kamctl rpc stats.fetch core:
+                kamctl rpc stats.fetch unsupported_methods
+                kamctl rpc stats.fetch shmem.free_size
+                kamctl rpc stats.fetch shmem: fwd_requests fwd_replies
 
-4.25.  stats.reset_statistics
+4.31.  stats.fetchn
+
+   Print the list of available internal statistics with a more json
+   friendly output. Each printed statistic is a field in the output
+   structure: {"statsgroup.statsname" : statsvalue}. The value is
+   represented as number.
+
+   Parameters: statsid - which statistics to be printed. If set to 'all'
+   then all statistics are printed; if set to 'statsgroup:' then all
+   statistics in the group are printed; if set to 'statsname' then the
+   statistics identified by the name is printed (can be also
+   'statsgroup.stastname' or 'statsgroup:statsname').
+
+   Examples:
+                kamctl rpc stats.fetchn all
+                kamctl rpc stats.fetchn core:
+                kamctl rpc stats.fetchn unsupported_methods
+                kamctl rpc stats.fetchn shmem.free_size
+                kamctl rpc stats.fetchn shmem: fwd_requests fwd_replies
+
+4.32.  stats.reset_statistics
 
    Reset internal statistics.
 
    Parameters: statsid - same as for get_statistics.
 
    Examples:
-                kamcmd stats.reset_statistics all
-                kamcmd stats.reset_statistics core:
-                kamcmd stats.reset_statistics unsupported_methods
-                kamcmd stats.reset_statistics shmem: fwd_requests fwd_replies
+                kamctl rpc stats.reset_statistics all
+                kamctl rpc stats.reset_statistics core:
+                kamctl rpc stats.reset_statistics unsupported_methods
+                kamctl rpc stats.reset_statistics shmem: fwd_requests fwd_replie
+s
 
-4.26.  stats.clear_statistics
+4.33.  stats.clear_statistics
 
    Return statistics and reset their value in one command.
 
    Parameters: statsid - same as for get_statistics.
 
    Examples:
-                kamcmd stats.reset_statistics all
-                kamcmd stats.reset_statistics core:
-                kamcmd stats.reset_statistics unsupported_methods
-                kamcmd stats.reset_statistics shmem: fwd_requests fwd_replies
+                kamctl rpc stats.reset_statistics all
+                kamctl rpc stats.reset_statistics core:
+                kamctl rpc stats.reset_statistics unsupported_methods
+                kamctl rpc stats.reset_statistics shmem: fwd_requests fwd_replie
+s
 
-4.27.  system.listMethods
+4.34.  system.listMethods
 
    Print list of available RPC commands.
 
@@ -711,18 +843,18 @@ kamcmd core.modules
 
    RPC Command Format:
 ...
-kamcmd system.listMethods
+kamctl rpc system.listMethods
 ...
 
-4.28.  system.methodHelp
+4.35.  system.methodHelp
 
    Print the help string for given method.
 
-4.29.  system.methodSignature
+4.36.  system.methodSignature
 
    Returns signature of given method.
 
-4.30.  mod.mem_stats
+4.37.  mod.mem_stats
 
    Print private(pkg) or shared(shm) memory currently allocated a given
    module or by all modules.
@@ -745,10 +877,10 @@ kamcmd system.listMethods
      * all - print both private and shared memory statistics.
 
    Examples:
-                kamcmd mod.stats core all
-                kamcmd mod.stats userblacklist shm
-                kamcmd mod.stats kex pkg
-                kamcmd mod.stats all all
+                kamctl rpc mod.stats core all
+                kamctl rpc mod.stats tm shm
+                kamctl rpc mod.stats kex pkg
+                kamctl rpc mod.stats all all
 
    Output:
 Module: kex
@@ -767,12 +899,12 @@ loc
     Total: 864
 }
 
-4.31.  mod.stats
+4.38.  mod.stats
 
    Same as RPC command "mod.mem_stats", this is an alias command to
    preserve backward compatibility.
 
-4.32.  mod.mem_statsx
+4.39.  mod.mem_statsx
 
    Similar to RPC command "mod.mem_stats", but the output has an extended
    format, printing info that includes the allocated size and the count of

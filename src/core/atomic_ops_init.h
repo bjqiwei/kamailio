@@ -1,7 +1,9 @@
-/* 
+/*
  * Copyright (C) 2006 iptelorg GmbH
  *
  * This file is part of Kamailio, a free SIP server.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +29,7 @@
  * \ingroup core
  * Module: \ref core
  *
- * Needed for lock intializing if no native asm locks are available
+ * Needed for lock initializing if no native asm locks are available
  *  for the current arch./compiler combination, see \ref atomic_ops.c
  */
 

@@ -103,6 +103,8 @@ modparam("statsc", "interval", 300)
 
    How many items to store for each statistic.
 
+   Note: it must be set before any 'track' parameter.
+
    Default value is 100.
 
    Example 1.2. Set items parameter
@@ -154,8 +156,8 @@ modparam("statsc", "track", "req.received=rcv_requests;rpl.received=rcv_replies"
 
    Example:
 ...
-# prototype: kamcmd statsc.report _type_ _name_ _limit_
-kamcmd statsc.report list
-kamcmd statsc.report list all 10
-kamcmd statsc.report diff
+# prototype: kamctl rpc statsc.report _type_ _name_ _limit_
+kamctl rpc statsc.report list
+kamctl rpc statsc.report list all 10
+kamctl rpc statsc.report diff
 ...

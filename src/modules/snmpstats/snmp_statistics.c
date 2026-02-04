@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -269,7 +271,7 @@ static int parse_proc_net_line(char *line, int *ipAddress, int *rx_queue)
 
 		/* strtol()'s specifications specify that the second parameter
 		 * is set to the first parameter when a number couldn't be
-		 * parsed out.  This means the parse was unsuccesful.  */
+		 * parsed out.  This means the parse was unsuccessful.  */
 		if(nextNonNumericalChar == currColonLocation) {
 			return 0;
 		}

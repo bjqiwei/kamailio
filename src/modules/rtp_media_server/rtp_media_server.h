@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -37,9 +39,10 @@
 #include "rms_util.h"
 #include "rms_sdp.h"
 #include "rms_media.h"
-#include "rms_session_info.h"
+#include "rms_dialog_info.h"
 
-ser_lock_t session_list_mutex;
+extern gen_lock_t *dialog_list_mutex;
+
 
 typedef struct rms
 {
@@ -49,7 +52,7 @@ typedef struct rms
 	char *local_ip;
 } rms_t;
 
-struct tm_binds tmb;
+extern struct tm_binds tmb;
 
 
 #endif

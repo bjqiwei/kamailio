@@ -8,6 +8,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -51,6 +53,9 @@ int ldap_search_impl(struct sip_msg *_msg, str *ldap_url);
 
 int ldap_write_result(struct sip_msg *_msg, struct ldap_result_params *_lrp,
 		struct subst_expr *_se);
+
+int ldap_result_toavp(sip_msg_t *_msg, str *attrname, struct subst_expr *_se,
+		int_str *dst_avp_name, int dst_avp_type, int dst_avp_val_type);
 
 int ldap_result_next(void);
 

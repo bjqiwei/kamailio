@@ -2,7 +2,7 @@
 # XCAP client for Kamailio
 #
 #
-# WARNING: do not run this directly, it should be run by the master Makefile
+# WARNING: do not run this directly, it should be run by the main Makefile
 
 include ../../Makefile.defs
 auto_gen=
@@ -24,8 +24,5 @@ else
 	DEFS+=-I$(LOCALBASE)/include
 	LIBS+=-L$(LOCALBASE)/lib -lcurl
 endif
-
-SERLIBPATH=../../lib
-SER_LIBS+=$(SERLIBPATH)/srdb1/srdb1
 
 include ../../Makefile.modules

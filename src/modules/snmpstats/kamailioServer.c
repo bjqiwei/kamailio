@@ -9,6 +9,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -190,7 +192,7 @@ int handle_kamailioSrvFreeMemory(netsnmp_mib_handler *handler,
 		netsnmp_agent_request_info *reqinfo, netsnmp_request_info *requests)
 {
 	stats_shm_update();
-	int freememory = (int)_stats_shm_mi.free;
+	int freememory = (int)_stats_shm_mi.free_size;
 
 	switch(reqinfo->mode) {
 

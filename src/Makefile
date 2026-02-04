@@ -28,11 +28,11 @@ include Makefile.sources
 include Makefile.targets
 
 # whether or not the entire build process should fail if building a module or
-#  an utility fails
+#  a utility fails
 err_fail?=1
 
 # whether or not to install $(MAIN_NAME).cfg or just $(MAIN_NAME).cfg.default
-# ($(MAIN_NAME).cfg will never be overwritten by make install, this is usefull
+# ($(MAIN_NAME).cfg will never be overwritten by make install, this is useful
 #  when creating packages)
 skip_cfg_install?=
 
@@ -118,10 +118,10 @@ endif
 endif
 else # config.mak doesn't need to be used
 ifneq (,$(filter cfg config cfg-defs,$(word 1,$(MAKECMDGOALS))))
-# needed here to avoid starting a config submake 
-# (e.g. rm -f config.mak; make config.mak), which would either require 
+# needed here to avoid starting a config submake
+# (e.g. rm -f config.mak; make config.mak), which would either require
 # double Makefile.defs defines execution (suboptimal), would loose
-# $(value ...) expansion or would cause some warning (if Makefile.defs exec. 
+# $(value ...) expansion or would cause some warning (if Makefile.defs exec.
 # is skipped in the "main" makefile invocation).
 $(shell rm -rf config.mak)
 config_mak=0
@@ -154,12 +154,13 @@ export extra_defs
 # When group_include is used, we want: include_modules (based on group_include)
 # - exclude_modules
 
-ifneq ($(modules_configured),1) 
-#modules_all=$(filter-out modules/CVS,$(wildcard modules/*))
+ifneq ($(modules_configured),1)
+#modules_all=$(filter-out modules/CMakeLists.txt,$(wildcard modules/*))
 
 # create modules*_all vars
 $(foreach mods,$(modules_dirs),$(eval \
-	$(mods)_all=$$(filter-out $(mods)/CVS,$$(wildcard $(mods)/*))))
+	$(mods)_all=$$(filter-out $(mods)/CMakeLists.txt, \
+	$$(wildcard $(mods)/*))))
 #debugging
 #$(foreach mods,$(modules_dirs),$(info "$(mods)_all=$($(mods)_all)"))
 
@@ -168,7 +169,7 @@ $(foreach mods,$(modules_dirs),$(eval \
 	$(mods)=$$(filter-out $$(addprefix $(mods)/, \
 			$$(exclude_modules) $$(static_modules)), \
 			$$(addprefix $(mods)/, $$(include_modules) )) ))
-else	
+else
 	# Standard, old resultant set
 $(foreach mods,$(modules_dirs),$(eval \
 	$(mods)_noinc=$$(filter-out $$(addprefix $(mods)/, \
@@ -202,7 +203,7 @@ cmodules=$(foreach mods,$(modules_dirs), $($(mods)))
 
 
 # list of utils directories that should be compiled by make utils
-C_COMPILE_UTILS=	../utils/kamcmd
+C_COMPILE_UTILS= # kamcmd is now installed by ctl
 # list of binaries that should be installed alongside
 # (they should be created after make utils, see C_COMPILE_UTILS)
 C_INSTALL_BIN=	# kamcmd is now installed by ctl
@@ -214,14 +215,14 @@ C_INSTALL_UTILS= ../utils/kamctl
 else
 C_INSTALL_UTILS=
 endif
-# list of scripts that should be installed along the core 
+# list of scripts that should be installed along the core
 # (here a script is something that doesn't have a Makefile)
 C_INSTALL_SCRIPTS=
 # list of extra configs that should be installed along the core
 # Note: all the paths of the form /usr/*lib/$(CFG_NAME)/<module_dir>
 # will be updated to the directory where the modules will be installed.
 C_INSTALL_CFGS=
-# list of files that should be installed in the arch-independent 
+# list of files that should be installed in the arch-independent
 # directory (by default /usr/local/share/$(MAIN_NAME)))
 C_INSTALL_SHARE=
 
@@ -237,11 +238,11 @@ tar_extra_args+=$(addprefix --exclude=$(notdir $(CURDIR))/, \
 ifeq ($(CORE_TLS), 1)
 	tar_extra_args+=
 else
-	tar_extra_args+=--exclude=$(notdir $(CURDIR))/tls/* 
+	tar_extra_args+=--exclude=$(notdir $(CURDIR))/tls/*
 endif
 
 ifneq ($(nodeb),)
-	tar_extra_args+=--exclude=$(notdir $(CURDIR))/debian 
+	tar_extra_args+=--exclude=$(notdir $(CURDIR))/debian
 	tar_name:=$(tar_name)_nodeb
 endif
 
@@ -260,7 +261,8 @@ $(NAME): $(extra_objs) # static_modules
 core/lex.yy.c: core/cfg.lex core/cfg.tab.h $(ALLDEP)
 	$(LEX) -o core/lex.yy.c $<
 
-core/cfg.tab.c core/cfg.tab.h: core/cfg.y  $(ALLDEP)
+core/cfg.tab.c: core/cfg.tab.h
+core/cfg.tab.h: core/cfg.y  $(ALLDEP)
 	$(YACC) $(YACC_FLAGS) $<
 
 nullstring=
@@ -471,13 +473,10 @@ install-$(1)-doc: modules.lst $(doc_prefix)/$(doc_dir)$(1)
 		if [ -n "$$$$r" -a -r $(1)/"$$$$r/Makefile" ]; then \
 			if [ -f $(1)/"$$$$r"/README ]; then \
 				$$(call try_err,\
-					$(INSTALL_TOUCH) $(doc_prefix)/$(doc_dir)$(1)/README ); \
+					$(INSTALL_TOUCH) $(doc_prefix)/$(doc_dir)$(1)/README."$$$$r" ); \
 				$$(call try_err,\
 					$(INSTALL_DOC)  $(1)/"$$$$r"/README  \
-									$(doc_prefix)/$(doc_dir)$(1)/README ); \
-				$$(call try_err,\
-					mv -f $(doc_prefix)/$(doc_dir)$(1)/README \
-							$(doc_prefix)/$(doc_dir)$(1)/README."$$$$r" ); \
+									$(doc_prefix)/$(doc_dir)$(1)/README."$$$$r" ); \
 			fi ; \
 		fi ; \
 	done; true
@@ -516,7 +515,7 @@ $(foreach mods,$(modules_dirs),$(eval $(call MODULES_RULES_template,$(mods))))
 modules-all every-module: $(modules_dirs)
 
 $(extra_objs):
-	@echo "Extra objs: $(extra_objs)" 
+	@echo "Extra objs: $(extra_objs)"
 	@for r in $(static_modules_path) "" ; do \
 		if [ -n "$$r" -a -r "$$r/Makefile"  ]; then \
 			$(call oecho, "" ;) \
@@ -567,9 +566,6 @@ tar: makefile_vars $(auto_gen_keep)
 		--exclude=$(notdir $(realpath $(shell pwd)/..))/$(MAIN_NAME)_tls* \
 		--exclude=$(notdir $(realpath $(shell pwd)/..))/misc/obsolete \
 		--exclude=.git* \
-		--exclude=CVS* \
-		--exclude=.svn* \
-		--exclude=.cvsignore \
 		--exclude=tags \
 		--exclude=librpath.lst \
 		--exclude=libiname.lst \
@@ -614,7 +610,7 @@ deb:
 		dpkg-buildpackage -rfakeroot -tc -uc -us; \
 		rm debian; \
 	else \
-		ln -s pkg/$(MAIN_NAME)/deb/debian debian; \
+		ln -s pkg/$(MAIN_NAME)/deb/sid debian; \
 		dpkg-buildpackage -rfakeroot -tc -uc -us; \
 		rm debian; \
 	fi)
@@ -626,7 +622,7 @@ deb-stable:
 		dpkg-buildpackage -rfakeroot -tc -uc -us; \
 		rm debian; \
 	else \
-		ln -s pkg/$(MAIN_NAME)/deb/jessie debian; \
+		ln -s pkg/$(MAIN_NAME)/deb/bullseye debian; \
 		dpkg-buildpackage -rfakeroot -tc -uc -us; \
 		rm debian; \
 	fi)
@@ -673,10 +669,10 @@ mk-install_dirs: $(cfg_prefix)/$(cfg_dir) $(bin_prefix)/$(bin_dir) \
 				$(modules_prefix)/$(modules_dir)$(mods) \
 				$(doc_prefix)/$(doc_dir)$(mods) )
 
-$(cfg_prefix)/$(cfg_dir): 
+$(cfg_prefix)/$(cfg_dir):
 		mkdir -p $(cfg_prefix)/$(cfg_dir)
 
-$(run_prefix)/$(run_dir): 
+$(run_prefix)/$(run_dir):
 		mkdir -p $(run_prefix)/$(run_dir)
 
 $(bin_prefix)/$(bin_dir):
@@ -982,48 +978,48 @@ install_initd_debian install-initd-debian:
 	sed -e "s#DAEMON=/usr/sbin/kamailio#DAEMON=$(bin_prefix)/$(bin_dir)$(NAME)#g" \
 		-e "s#NAME=kamailio#NAME=$(NAME)#g" \
 		-e "s#DESC=Kamailio#DESC=$(NAME)#g" \
-		-e "s#HOMEDIR=/var/run/kamailio#HOMEDIR=/var/run/$(NAME)#g" \
+		-e "s#HOMEDIR=/run/kamailio#HOMEDIR=/run/$(NAME)#g" \
 		-e "s#DEFAULTS=/etc/default/kamailio#DEFAULTS=/etc/default/$(NAME)#g" \
 		-e "s#CFGFILE=/etc/kamailio/kamailio.cfg#CFGFILE=$(cfg_prefix)/$(cfg_dir)$(NAME).cfg#g" \
-		< pkg/kamailio/deb/debian/kamailio.init \
+		< ../pkg/kamailio/deb/debian/kamailio.init \
 		> /etc/init.d/$(NAME)
 	chmod +x /etc/init.d/$(NAME)
 	sed -e "s#RUN_KAMAILIO=no#RUN_KAMAILIO=yes#g" \
-		< pkg/kamailio/deb/debian/kamailio.default \
+		< ../pkg/kamailio/deb/debian/kamailio.default \
 		> /etc/default/$(NAME)
-	mkdir -p /var/run/$(NAME)
+	mkdir -p /run/$(NAME)
 	adduser --quiet --system --group --disabled-password \
         --shell /bin/false --gecos "$(NAME)" \
-        --home /var/run/$(NAME) $(NAME)
-	chown $(NAME):$(NAME) /var/run/$(NAME)
+        --home /run/$(NAME) $(NAME)
+	chown $(NAME):$(NAME) /run/$(NAME)
 
 .PHONY: install_initd_centos install-initd-centos
 install_initd_centos install-initd-centos:
 	sed -e "s#KAM=/usr/sbin/kamailio#KAM=$(bin_prefix)/$(bin_dir)$(NAME)#g" \
 		-e "s#PROG=kamailio#PROG=$(NAME)#g" \
 		-e "s#DEFAULTS=/etc/default/kamailio#DEFAULTS=/etc/default/$(NAME)#g" \
-		-e "s#PID_FILE=/var/run/kamailio.pid#PID_FILE=/var/run/$(NAME).pid#g" \
+		-e "s#PID_FILE=/run/kamailio.pid#PID_FILE=/run/$(NAME).pid#g" \
 		-e "s#LOCK_FILE=/var/lock/subsys/kamailio#LOCK_FILE=/var/lock/subsys/$(NAME)#g" \
 		-e "s#KAMCFG=/etc/kamailio/kamailio.cfg#KAMCFG=$(cfg_prefix)/$(cfg_dir)$(NAME).cfg#g" \
-		< pkg/kamailio/rpm/kamailio.init \
+		< ../pkg/kamailio/rpm/kamailio.init \
 		> /etc/init.d/$(NAME)
 	chmod +x /etc/init.d/$(NAME)
 	sed -e "s#RUN_KAMAILIO=no#RUN_KAMAILIO=yes#g" \
 		-e "s#USER=kamailio#USER=$(NAME)#g" \
 		-e "s#GROUP=kamailio#GROUP=$(NAME)#g" \
-		< pkg/kamailio/rpm/kamailio.default \
+		< ../pkg/kamailio/rpm/kamailio.default \
 		> /etc/default/$(NAME)
-	mkdir -p /var/run/$(NAME)
+	mkdir -p /run/$(NAME)
 	/usr/sbin/groupadd -r $(NAME)
 	/usr/sbin/useradd -r -g $(NAME) -s /bin/false -c "Kamailio Daemon" \
-                  -d /var/run/$(NAME) $(NAME)
-	chown $(NAME):$(NAME) /var/run/$(NAME)
+                  -d /run/$(NAME) $(NAME)
+	chown $(NAME):$(NAME) /run/$(NAME)
 
 .PHONY: install_systemd_debian install-systemd-debian
 install_systemd_debian install-systemd-debian:
 	sed -e "s#ExecStart=/usr/sbin/kamailio#ExecStart=$(bin_prefix)/$(bin_dir)$(NAME)#g" \
 		-e "s#Description=Kamailio#Description=$(NAME)#g" \
-		-e "s#/var/run/kamailio/kamailio.pid#/var/run/$(NAME)/$(NAME).pid#g" \
+		-e "s#/run/kamailio/kamailio.pid#/run/$(NAME)/$(NAME).pid#g" \
 		-e "s#EnvironmentFile=-/etc/default/kamailio#EnvironmentFile=-/etc/default/$(NAME)#g" \
 		-e "s#CFGFILE=/etc/kamailio/kamailio.cfg#CFGFILE=$(cfg_prefix)/$(cfg_dir)$(NAME).cfg#g" \
 		< ../pkg/kamailio/deb/debian/kamailio.service \
@@ -1031,11 +1027,11 @@ install_systemd_debian install-systemd-debian:
 	sed -e "s#RUN_KAMAILIO=no#RUN_KAMAILIO=yes#g" \
 		< ../pkg/kamailio/deb/debian/kamailio.default \
 		> /etc/default/$(NAME)
-	mkdir -p /var/run/$(NAME)
+	mkdir -p /run/$(NAME)
 	adduser --quiet --system --group --disabled-password \
         --shell /bin/false --gecos "$(NAME)" \
-        --home /var/run/$(NAME) $(NAME)
-	chown $(NAME):$(NAME) /var/run/$(NAME)
+        --home /run/$(NAME) $(NAME)
+	chown $(NAME):$(NAME) /run/$(NAME)
 	echo "D /run/$(NAME) 0700 $(NAME) $(NAME) -" > /etc/tmpfiles.d/$(NAME).conf
 	@echo
 	@echo "* to enable kamailio service run:"
@@ -1045,18 +1041,18 @@ install_systemd_debian install-systemd-debian:
 install_systemd_centos install-systemd-centos:
 	sed -e "s#ExecStart=/usr/sbin/kamailio#ExecStart=$(bin_prefix)/$(bin_dir)$(NAME)#g" \
 		-e "s#Description=Kamailio#Description=$(NAME)#g" \
-		-e "s#/var/run/kamailio/kamailio.pid#/var/run/$(NAME)/$(NAME).pid#g" \
+		-e "s#/run/kamailio/kamailio.pid#/run/$(NAME)/$(NAME).pid#g" \
 		-e "s#EnvironmentFile=-/etc/sysconfig/kamailio#EnvironmentFile=-/etc/sysconfig/$(NAME)#g" \
 		-e "s#CFGFILE=/etc/kamailio/kamailio.cfg#CFGFILE=$(cfg_prefix)/$(cfg_dir)$(NAME).cfg#g" \
 		< ../pkg/kamailio/obs/kamailio.service \
 		> /etc/systemd/system/$(NAME).service
 	cp ../pkg/kamailio/obs/kamailio.sysconfig \
 		/etc/sysconfig/$(NAME)
-	mkdir -p /var/run/$(NAME)
-	chmod 0700 /var/run/$(NAME)
+	mkdir -p /run/$(NAME)
+	chmod 0700 /run/$(NAME)
 	groupadd --system $(NAME)
-	useradd $(NAME) --system --shell /sbin/nologin -g $(NAME) --home /var/run/$(NAME)
-	chown $(NAME):$(NAME) /var/run/$(NAME)
+	useradd $(NAME) --system --shell /sbin/nologin -g $(NAME) --home /run/$(NAME)
+	chown $(NAME):$(NAME) /run/$(NAME)
 	echo "D /run/$(NAME) 0700 $(NAME) $(NAME) -" > /etc/tmpfiles.d/$(NAME).conf
 	@echo
 	@echo "* to enable kamailio service run:"

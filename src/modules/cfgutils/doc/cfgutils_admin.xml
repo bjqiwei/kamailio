@@ -24,13 +24,13 @@
 	true or false, depending on a random value and a specified probability.
 	E.g. if you set via fifo or script a probability value of 5%, then 5% of
 	all calls to rand_event will return true.
-	The pseudovariable <quote>$RANDOM</quote> could be used to introduce 
+	The pseudovariable <quote>$RANDOM</quote> could be used to introduce
 	random values e.g. into a SIP reply.
 	</para>
 	<para>
 	The benefit of this module is the probability of the decision
 	can be manipulated by external applications such as web interface
-	or command line tools. The probability must be specified as 
+	or command line tools. The probability must be specified as
 	percent value, ranging from 0 to 100.
 	</para>
 	<para>
@@ -41,7 +41,7 @@
 	</para>
 	<para>
 	This module can be used for simple load-shedding, e.g. reply 5% of
-	the Invites with a 503 error and a adequate random Retry-After value.
+	the Invites with a 503 error and an adequate random Retry-After value.
 	</para>
 	<para>
 	The module provides as well functions to delay the execution of the
@@ -80,7 +80,7 @@
 	<section>
 	<title>Dependencies</title>
 	<para>
-	    The module depends on the following modules (in the other words the
+	    The module depends on the following modules (in other words the
 		listed modules must be loaded before this module):
 	    <itemizedlist>
 		<listitem>
@@ -485,16 +485,19 @@ if(is_gflag("4"))
 		</example>
 	</section>
 	<section id="cfgutils.f.lock">
-		<title><function moreinfo="none">lock(key)</function></title>
+		<title><function moreinfo="none">lock(key [, key2])</function></title>
 		<para>
 		Lock the key. Can be used to synchronize operations in config file,
-		a hash id is computed over the key and appropriate lock is set in the
+		a hash id is computed over the keys and appropriate lock is set in the
 		lock array controlled by parameter "lock_set_size". Do not use lock()
 		after another lock() unless you are sure the keys hit different array
 		entries.
 		</para>
 		<para>
 		<quote>key</quote> can be static string or string with PVs.
+		</para>
+		<para>
+		<quote>key2</quote> is optional and can be static string or string with PVs.
 		</para>
 		<para>
 		This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
@@ -510,13 +513,16 @@ lock("$rU");
 		</example>
 	</section>
 	<section id="cfgutils.f.trylock">
-		<title><function moreinfo="none">trylock(key)</function></title>
+		<title><function moreinfo="none">trylock(key [, key2])</function></title>
 		<para>
 		Try to lock the key. If the lock can not be obtained (possibly already locked),
 		the function returns an error and script execution continues.
 		</para>
 		<para>
 		<quote>key</quote> can be static string or string with PVs.
+		</para>
+		<para>
+		<quote>key2</quote> is optional and can be static string or string with PVs.
 		</para>
 		<para>
 		This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
@@ -535,12 +541,15 @@ if (trylock("$rU")) {
 		</example>
 	</section>
 	<section id="cfgutils.f.unlock">
-		<title><function moreinfo="none">unlock(key)</function></title>
+		<title><function moreinfo="none">unlock(key [, key2])</function></title>
 		<para>
 		Unlock the key.
 		</para>
 		<para>
 		<quote>key</quote> can be static string or string with PVs.
+		</para>
+		<para>
+		<quote>key2</quote> is optional and can be static string or string with PVs.
 		</para>
 		<para>
 		This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
@@ -668,7 +677,7 @@ core_hash("$ci", "", 4);
 				<title><function moreinfo="none">cfgutils.rand_set_prob</function> usage</title>
 				<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.rand_set_prob 10
+$ &kamctl; rpc cfgutils.rand_set_prob 10
 ...
 </programlisting>
 			</example>
@@ -687,7 +696,7 @@ $ &kamcmd; cfgutils.rand_set_prob 10
 					<function moreinfo="none">cfgutils.rand_reset_prob</function> usage</title>
 				<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.rand_reset_prob
+$ &kamctl; rpc cfgutils.rand_reset_prob
 ...
 </programlisting>
 			</example>
@@ -704,7 +713,7 @@ $ &kamcmd; cfgutils.rand_reset_prob
 				<title><function moreinfo="none">cfgutils.rand_get_prob</function> usage</title>
 				<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.rand_get_prob
+$ &kamctl; rpc cfgutils.rand_get_prob
 ...
 </programlisting>
 			</example>
@@ -723,7 +732,7 @@ $ &kamcmd; cfgutils.rand_get_prob
 				<title><function moreinfo="none">cfgutils.check_config_hash</function> usage</title>
 				<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.check_config_hash
+$ &kamctl; rpc cfgutils.check_config_hash
 ...
 </programlisting>
 			</example>
@@ -741,7 +750,7 @@ $ &kamcmd; cfgutils.check_config_hash
 				<title><function moreinfo="none">cfgutils.get_config_hash</function> usage</title>
 				<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.get_config_hash
+$ &kamctl; rpc cfgutils.get_config_hash
 ...
 </programlisting>
 			</example>
@@ -759,7 +768,7 @@ $ &kamcmd; cfgutils.get_config_hash
 			<title><function moreinfo="none">cfgutils.set_gflag</function> usage</title>
 			<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.set_gflag 1
+$ &kamctl; rpc cfgutils.set_gflag 1
 ...
 </programlisting>
 			</example>
@@ -779,7 +788,7 @@ $ &kamcmd; cfgutils.set_gflag 1
 				<function moreinfo="none">cfgutils.reset_gflag</function> usage</title>
 			<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.reset_gflag 1
+$ &kamctl; rpc cfgutils.reset_gflag 1
 ...
 </programlisting>
 			</example>
@@ -787,7 +796,7 @@ $ &kamcmd; cfgutils.reset_gflag 1
 		<section  id="cfgutils.rpc.is_gflag">
 			<title><function moreinfo="none">cfgutils.is_gflag</function></title>
 			<para>
-			Returns true if the all the flags from the bitmask are set.
+			Returns true if all the flags from the bitmask are set.
 			</para>
 			<para>
 			The parameter value must be a bitmask in decimal or hexadecimal format.
@@ -801,8 +810,8 @@ $ &kamcmd; cfgutils.reset_gflag 1
 			<title><function moreinfo="none">cfgutils.is_gflag</function> usage</title>
 			<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.set_gflag 1024
-$ &kamcmd; cfgutils.is_gflag 1024
+$ &kamctl; rpc cfgutils.set_gflag 1024
+$ &kamctl; rpc cfgutils.is_gflag 1024
 TRUE
 ...
 </programlisting>
@@ -819,7 +828,7 @@ TRUE
 				<function moreinfo="none">cfgutils.get_gflags</function> usage</title>
 			<programlisting format="linespecific">
 ...
-$ &kamcmd; cfgutils.get_gflags
+$ &kamctl; rpc cfgutils.get_gflags
 ...
 </programlisting>
 			</example>
@@ -839,11 +848,11 @@ $ &kamcmd; cfgutils.get_gflags
 				<programlisting format="linespecific">
 ...
 if (rand_event()) {
-  $avp(i:10) = ($RANDOM / 16777216); # 2^24
-  if ($avp(i:10) &lt; 10) {
-     $avp(i:10) = 10;
+  $var(value) = ($RANDOM / 16777216); # 2^24
+  if ($var(value) &lt; 10) {
+     $var(value) = 10;
   }
-  append_to_reply("Retry-After: $avp(i:10)\n");
+  append_to_reply("Retry-After: $var(value)\n");
   sl_send_reply("503", "Try later");
   exit;
 };
@@ -854,4 +863,3 @@ if (rand_event()) {
 	</section>
 </section>
 </chapter>
-

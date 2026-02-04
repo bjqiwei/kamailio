@@ -25,7 +25,7 @@
 
 cleanup() {
 	killall -9 sipp > /dev/null 2>&1
-	kill_kamailio	
+	kill_kamailio
 
 	$MYSQL "delete from location where (user_agent = \"kamailio_test\");"
 	$MYSQL "delete from userblacklist where username='49721123456786';"
@@ -46,7 +46,7 @@ fi ;
 
 CFG=25.cfg
 
-# add an registrar entry to the db;
+# add a registrar entry to the db;
 $MYSQL "insert into location (ruid,username,contact,socket,user_agent,cseq,q) values (\"ul-ruid-aa\",\"49721123456789\",\"sip:123456789@127.0.0.1\",\"udp:127.0.0.1:5060\",\"kamailio_test\",1,-1);"
 
 $MYSQL "insert into location (ruid,username,contact,socket,user_agent,cseq,q) values (\"ul-ruid-bb\",\"49721123456788\",\"sip:123456788@127.0.0.1\",\"udp:127.0.0.1:5060\",\"kamailio_test\",1,-1);"
@@ -61,7 +61,7 @@ $MYSQL "insert into location (ruid,username,contact,socket,user_agent,cseq,q) va
 
 $MYSQL "insert into location (ruid,username,contact,socket,user_agent,cseq,q) values (\"ul-ruid-gg\",\"user4946\",\"sip:user4946@127.0.0.1\",\"udp:127.0.0.1:5060\",\"kamailio_test\",1,-1);"
 
-# setup userblacklist, first some dummy data
+# set up userblacklist, first some dummy data
 $MYSQL "insert into userblacklist (username, domain, prefix, whitelist) values ('494675454','','49900','0');"
 $MYSQL "insert into userblacklist (username, domain, prefix, whitelist) values ('494675453','test.domain','49901','0');"
 $MYSQL "insert into userblacklist (username, domain, prefix, whitelist) values ('494675231','test','499034132','0');"

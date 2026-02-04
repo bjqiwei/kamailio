@@ -6,17 +6,33 @@ include $(COREPATH)/Makefile.defs
 include $(COREPATH)/Makefile.targets
 
 auto_gen=
-RELEASE=1.5
+RELEASE=1.6
 UTIL_SRC_NAME=kamcmd
+# Pass CUSTOM_NAME to overwrite the kamcmd/sercmd bin name
+ifeq ($(CUSTOM_NAME),)
 ifeq ($(FLAVOUR),ser)
-	NAME?=sercmd
+	NAME=sercmd
 else
-	NAME?=kamcmd
+	NAME=kamcmd
+endif
+else
+	NAME=$(CUSTOM_NAME)
 endif
 
 readline_localpath=$(LOCALBASE)/include/readline/readline.h
 readline_locations= /usr/include/readline/readline.h \
 					$(readline_localpath)
+
+ifeq ($(CROSS_COMPILE),)
+	BUILDER = $(shell which pkg-config)
+ifneq ($(BUILDER),)
+	PKGREADLINE = $(shell $(BUILDER) --exists readline > /dev/null 2>&1 ; echo $$? )
+ifneq ($(PKGREADLINE),0)
+	BUILDER =
+endif
+endif
+endif
+
 
 use_readline ?=
 ifneq (,$(MAKECMDGOALS))
@@ -66,6 +82,13 @@ ifneq (,$(findstring cygwin, $(OS)))
 	LIBS:= -lresolv
 endif
 
+# detect libreadline
+ifneq ($(BUILDER),)
+	DEFS += $(shell $(BUILDER) --cflags readline)
+	DEFS+=-DUSE_READLINE
+	LIBS += $(shell $(BUILDER) --libs readline)
+	use_readline := 1
+else
 ifeq ($(use_readline),)
 readline_path := $(shell  \
 						for r in $(readline_locations) ""; do \
@@ -93,14 +116,20 @@ endif
 	LIBS+=-lreadline -lncurses
 endif
 
-endif
+endif  # ifeq ($(use_readline),1)
+
+endif  # ifneq ($(BUILDER),)
 
 
 include $(COREPATH)/Makefile.utils
 
 ifeq (,$(quiet))
 ifeq ($(use_readline),1)
+ifneq ($(BUILDER),)
+$(info readline detected via pkg-config)
+else
 $(info readline detected ($(readline_path)) )
+endif
 $(info command completion enabled)
 else
 $(info "no readline include files detected, disabling readline support")
@@ -114,7 +143,11 @@ $(NAME).o:
 .PHONY: msg
 msg:
 	@if [ "$(use_readline)" = "1" ]; then \
-		echo; echo "readline detected ($(readline_path)):"; \
+		if [ "$(BUILDER)" = "" ]; then \
+			echo; echo "readline detected ($(readline_path)):"; \
+		else \
+			echo; echo "readline detected via pkg-config"; \
+		fi; \
 		echo "command completion enabled"; echo ; \
 	else \
 		echo ; \

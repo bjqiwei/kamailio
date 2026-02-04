@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -55,7 +57,8 @@ int json_tr_init_buffers(void)
 {
 	int i;
 
-	_json_tr_buffer_list = (char **)malloc(JSON_TR_BUFFER_SLOTS * sizeof(char *));
+	_json_tr_buffer_list =
+			(char **)malloc(JSON_TR_BUFFER_SLOTS * sizeof(char *));
 
 	if(_json_tr_buffer_list == NULL)
 		return -1;
@@ -65,8 +68,8 @@ int json_tr_init_buffers(void)
 			return -1;
 	}
 
-	_json_parse_specs =
-			(pv_spec_t **)malloc(JSON_TR_ALLOC_PARSE_SIZE * sizeof(pv_spec_t *));
+	_json_parse_specs = (pv_spec_t **)malloc(
+			JSON_TR_ALLOC_PARSE_SIZE * sizeof(pv_spec_t *));
 	for(i = 0; i < JSON_TR_ALLOC_PARSE_SIZE; i++)
 		_json_parse_specs[i] = NULL;
 
@@ -123,11 +126,11 @@ char *json_tr_set_crt_buffer(void)
 }
 
 #define json_tr_string_clone_result                       \
-	do {                                                 \
+	do {                                                  \
 		if(val->rs.len > JSON_TR_BUFFER_SIZE - 1) {       \
-			LM_ERR("result is too big\n");               \
-			return -1;                                   \
-		}                                                \
+			LM_ERR("result is too big\n");                \
+			return -1;                                    \
+		}                                                 \
 		strncpy(_json_tr_buffer, val->rs.s, val->rs.len); \
 		val->rs.s = _json_tr_buffer;                      \
 	} while(0);
@@ -223,7 +226,7 @@ int json_tr_eval(
 	pv_value_t *pv;
 	pv_value_t v;
 	str v2 = {0, 0};
-	void *v1 = NULL;
+	char sep = '.';
 
 	if(val == NULL || (val->flags & PV_VAL_NULL))
 		return -1;
@@ -257,10 +260,10 @@ int json_tr_eval(
 			val->rs.len = pv->rs.len;
 
 			json_destroy_pv_value(pv);
-			json_free_pv_value(val);
 
 			break;
 		case TR_JSON_PARSE:
+		case TR_JSON_PARSEX:
 			if(!(val->flags & PV_VAL_STR))
 				return -1;
 
@@ -269,42 +272,43 @@ int json_tr_eval(
 				return -1;
 			}
 
-			pv = json_alloc_pv_value();
-			if(pv == NULL) {
-				LM_ERR("JSON encode transform : no more private memory\n");
-				return -1;
-			}
-
-
 			if(tp->type == TR_PARAM_STRING) {
-				v1 = tp->v.s.s;
-				if(fixup_spve_null(&v1, 1) != 0) {
-					LM_ERR("cannot get spve_value from TR_PARAM_STRING : "
-						   "%.*s\n",
-							tp->v.s.len, tp->v.s.s);
-					pkg_free(pv);
-					return -1;
+				if(str_search_char(&tp->v.s, '$') == NULL) {
+					v2 = tp->v.s;
+				} else {
+					if(pv_eval_str(msg, &v2, &tp->v.s) < 0) {
+						LM_ERR("cannot get the value from TR_PARAM_STRING : "
+							   "%.*s\n",
+								tp->v.s.len, tp->v.s.s);
+						return -1;
+					}
 				}
-				if(fixup_get_svalue(msg, (gparam_p)v1, &v2) != 0) {
-					LM_ERR("cannot get value from TR_PARAM_STRING\n");
-					fixup_free_spve_null(&v1, 1);
-					pkg_free(pv);
-					return -1;
-				}
-				fixup_free_spve_null(&v1, 1);
 				sv = v2;
 			} else {
 				if(pv_get_spec_value(msg, (pv_spec_p)tp->v.data, &v) != 0
 						|| (!(v.flags & PV_VAL_STR)) || v.rs.len <= 0) {
 					LM_ERR("value cannot get spec value in json transform\n");
-					json_destroy_pv_value(pv);
 					return -1;
 				}
 				sv = v.rs;
 			}
+			if(sv.s == NULL || sv.len < 1) {
+				LM_ERR("invalid value for: %.*s\n", tp->v.s.len, tp->v.s.s);
+				return -1;
+			}
 
+			pv = json_alloc_pv_value();
+			if(pv == NULL) {
+				LM_ERR("JSON parse transform : no more private memory\n");
+				return -1;
+			}
 
-			if(tr_json_get_field_ex(&val->rs, &sv, pv) != 1) {
+			if(subtype == TR_JSON_PARSEX) {
+				sep = sv.s[0];
+				sv.s++;
+				sv.len--;
+			}
+			if(tr_json_get_field_ex(&val->rs, &sv, sep, pv) != 1) {
 				LM_ERR("error getting json\n");
 				json_destroy_pv_value(pv);
 				return -1;
@@ -319,7 +323,6 @@ int json_tr_eval(
 			val->rs.len = pv->rs.len;
 
 			json_destroy_pv_value(pv);
-			json_free_pv_value(val);
 
 			break;
 
@@ -330,7 +333,7 @@ int json_tr_eval(
 	return 0;
 }
 
-#define _json_tr_parse_sparam(_p, _p0, _tp, _spec, _ps, _in, _s)                \
+#define _json_tr_parse_sparam(_p, _p0, _tp, _spec, _ps, _in, _s)               \
 	while(is_in_str(_p, _in) && (*_p == ' ' || *_p == '\t' || *_p == '\n'))    \
 		_p++;                                                                  \
 	if(*_p == PV_MARKER) { /* pseudo-variable */                               \
@@ -356,8 +359,8 @@ int json_tr_eval(
 		memset(_tp, 0, sizeof(tr_param_t));                                    \
 		_tp->type = TR_PARAM_SPEC;                                             \
 		_tp->v.data = (void *)_spec;                                           \
-		_json_parse_specs[_json_tr_parse_spec++] = _spec;                        \
-		_json_parse_params[_json_tr_parse_params++] = _tp;                       \
+		_json_parse_specs[_json_tr_parse_spec++] = _spec;                      \
+		_json_parse_params[_json_tr_parse_params++] = _tp;                     \
 	} else { /* string */                                                      \
 		_ps = _p;                                                              \
 		while(is_in_str(_p, _in) && *_p != '\t' && *_p != '\n'                 \
@@ -379,12 +382,12 @@ int json_tr_eval(
 		_tp->v.s.s = (char *)malloc((tp->v.s.len + 1) * sizeof(char));         \
 		strncpy(_tp->v.s.s, _ps, tp->v.s.len);                                 \
 		_tp->v.s.s[tp->v.s.len] = '\0';                                        \
-		_json_parse_params[_json_tr_parse_params++] = _tp;                       \
+		_json_parse_params[_json_tr_parse_params++] = _tp;                     \
 	}
 
 
 /*!
- * \brief Helper fuction to parse a JSON transformation
+ * \brief Helper function to parse a JSON transformation
  * \param in parsed string
  * \param t transformation
  * \return pointer to the end of the transformation in the string - '}', null on error
@@ -422,6 +425,23 @@ char *json_tr_parse(str *in, trans_t *t)
 		goto done;
 	} else if(name.len == 5 && strncasecmp(name.s, "parse", 5) == 0) {
 		t->subtype = TR_JSON_PARSE;
+		if(*p != TR_PARAM_MARKER) {
+			LM_ERR("invalid json transformation: %.*s!\n", in->len, in->s);
+			goto error;
+		}
+		p++;
+		_json_tr_parse_sparam(p, p0, tp, spec, ps, in, s);
+		t->params = tp;
+		tp = 0;
+		while(*p && (*p == ' ' || *p == '\t' || *p == '\n'))
+			p++;
+		if(*p != TR_RBRACKET) {
+			LM_ERR("invalid json transformation: %.*s!!\n", in->len, in->s);
+			goto error;
+		}
+		goto done;
+	} else if(name.len == 6 && strncasecmp(name.s, "parsex", 6) == 0) {
+		t->subtype = TR_JSON_PARSEX;
 		if(*p != TR_PARAM_MARKER) {
 			LM_ERR("invalid json transformation: %.*s!\n", in->len, in->s);
 			goto error;

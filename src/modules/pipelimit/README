@@ -8,8 +8,6 @@ Edited by
 
 Ovidiu Sas
 
-Edited by
-
 Daniel-Constantin Mierla
 
    Copyright © 2013 VoIPEmbedded Inc.
@@ -48,17 +46,20 @@ Daniel-Constantin Mierla
         5. Functions
 
               5.1. pl_check(name [, algorithm, limit])
-              5.2. pl_drop([ [min ], max ])
+              5.2. pl_active(name)
+              5.3. pl_drop([ [min ], max ])
 
         6. RPC Commands
 
               6.1. pl.list
               6.2. pl.stats
               6.3. pl.set_pipe
-              6.4. pl.get_pipes
-              6.5. pl.set_pid
-              6.6. pl.get_pid
-              6.7. pl.push_load
+              6.4. pl.reset_pipe
+              6.5. pl.rm_pipe
+              6.6. pl.get_pipes
+              6.7. pl.set_pid
+              6.8. pl.get_pid
+              6.9. pl.push_load
 
    List of Examples
 
@@ -78,7 +79,8 @@ Daniel-Constantin Mierla
    1.14. Set clean_unused parameter
    1.15. Set clean_unused parameter at runtime
    1.16. pl_check usage
-   1.17. pl_drop usage
+   1.17. pl_active usage
+   1.18. pl_drop usage
 
 Chapter 1. Admin Guide
 
@@ -109,17 +111,20 @@ Chapter 1. Admin Guide
    5. Functions
 
         5.1. pl_check(name [, algorithm, limit])
-        5.2. pl_drop([ [min ], max ])
+        5.2. pl_active(name)
+        5.3. pl_drop([ [min ], max ])
 
    6. RPC Commands
 
         6.1. pl.list
         6.2. pl.stats
         6.3. pl.set_pipe
-        6.4. pl.get_pipes
-        6.5. pl.set_pid
-        6.6. pl.get_pid
-        6.7. pl.push_load
+        6.4. pl.reset_pipe
+        6.5. pl.rm_pipe
+        6.6. pl.get_pipes
+        6.7. pl.set_pid
+        6.8. pl.get_pid
+        6.9. pl.push_load
 
 1. Overview
 
@@ -244,7 +249,7 @@ modparam("pipelimit", "db_url", "dbdriver://username:password@dbhost/dbname")
 
 4.3. plp_table_name (string)
 
-   Name of DB table where data definition for pipes is stores.
+   Name of DB table where data definition for pipes is stored.
 
    Default value is “pl_pipes”.
 
@@ -268,7 +273,7 @@ modparam("pipelimit", "plp_pipeid_column", "name")
 
    Name of 'limit' column.
 
-   Default value is “limit”.
+   Default value is “plimit”.
 
    Example 1.5. Set plp_limit_column parameter
 ...
@@ -364,7 +369,7 @@ kamcmd cfg.set_now_string pipelimit reply_reason "Limiting"
 
 4.12. clean_unused (int)
 
-   Clean unused pipes afetr this number of timer intervals.
+   Clean unused pipes after this number of timer intervals.
 
    Default value is 0 (cleanup disabled).
 
@@ -381,7 +386,8 @@ kamcmd cfg.set_now_int pipelimit clean_unused 10
 5. Functions
 
    5.1. pl_check(name [, algorithm, limit])
-   5.2. pl_drop([ [min ], max ])
+   5.2. pl_active(name)
+   5.3. pl_drop([ [min ], max ])
 
 5.1.  pl_check(name [, algorithm, limit])
 
@@ -462,7 +468,22 @@ with unexpected retcode=$var(check_result)\n");
         }
 ...
 
-5.2.  pl_drop([ [min ], max ])
+5.2.  pl_active(name)
+
+   Check the pipe 'name' was already created. Return 1 (true) if the pipe
+   is found, -1 (false) if the pipe is not found.
+
+   This function can be used from ANY_ROUTE.
+
+   Example 1.17. pl_active usage
+...
+        if (!pl_active("one")) {
+                # pipe does not exist
+                exit;
+        }
+...
+
+5.3.  pl_drop([ [min ], max ])
 
    For the current request, a "503 - Server Unavailable" reply is sent
    back. The reply may or may not have a "Retry-After" header. If no
@@ -479,7 +500,7 @@ with unexpected retcode=$var(check_result)\n");
    This function can be used from
    REQUEST_ROUTE|BRANCH_ROUTE|FAILURE_ROUTE|ONSEND_ROUTE.
 
-   Example 1.17. pl_drop usage
+   Example 1.18. pl_drop usage
 ...
         if (!pl_check("one")) {
                 # send back a "503 - Server Unavailable"
@@ -494,10 +515,12 @@ with unexpected retcode=$var(check_result)\n");
    6.1. pl.list
    6.2. pl.stats
    6.3. pl.set_pipe
-   6.4. pl.get_pipes
-   6.5. pl.set_pid
-   6.6. pl.get_pid
-   6.7. pl.push_load
+   6.4. pl.reset_pipe
+   6.5. pl.rm_pipe
+   6.6. pl.get_pipes
+   6.7. pl.set_pid
+   6.8. pl.get_pid
+   6.9. pl.push_load
 
 6.1.  pl.list
 
@@ -525,7 +548,7 @@ kamctl rpc pl.list testid
 
    RPC Command Format:
 ...
-kamcmd pl.stats
+kamctl rpc pl.stats
 ...
 
 6.3.  pl.set_pipe
@@ -541,10 +564,38 @@ kamcmd pl.stats
 
    RPC Command Format:
 ...
-kamcmd pl.set_pipe 2 RED 10
+kamctl rpc pl.set_pipe 2 RED 10
 ...
 
-6.4.  pl.get_pipes
+6.4.  pl.reset_pipe
+
+   Reset the values associated with the pipe.
+
+   Name: pl.reset_pipe
+
+   Parameters:
+     * pipe_id - pipe id.
+
+   RPC Command Format:
+...
+kamctl rpc pl.reset_pipe p01
+...
+
+6.5.  pl.rm_pipe
+
+   Remove the pipe structure matching the given pipe id.
+
+   Name: pl.rm_pipe
+
+   Parameters:
+     * pipe_id - pipe id.
+
+   RPC Command Format:
+...
+kamctl rpc pl.rm_pipe p01
+...
+
+6.6.  pl.get_pipes
 
    Gets the list of in use pipes.
 
@@ -554,10 +605,10 @@ kamcmd pl.set_pipe 2 RED 10
 
    RPC Command Format:
 ...
-kamcmd pl.get_pipes
+kamctl rpc pl.get_pipes
 ...
 
-6.5.  pl.set_pid
+6.7.  pl.set_pid
 
    Sets the PID Controller parameters for the Feedback Algorithm.
 
@@ -570,10 +621,10 @@ kamcmd pl.get_pipes
 
    RPC Command Format:
 ...
-kamcmd pl.set_pid 0.5 0.5 0.5
+kamctl rpc pl.set_pid 0.5 0.5 0.5
 ...
 
-6.6.  pl.get_pid
+6.8.  pl.get_pid
 
    Gets the list of in use PID Controller parameters.
 
@@ -583,10 +634,10 @@ kamcmd pl.set_pid 0.5 0.5 0.5
 
    RPC Command Format:
 ...
-kamcmd pl.get_pid
+kamctl rpc pl.get_pid
 ...
 
-6.7.  pl.push_load
+6.9.  pl.push_load
 
    Force the value of the load parameter. This command is useful for
    testing the Feedback algorithm.
@@ -594,10 +645,10 @@ kamcmd pl.get_pid
    Name: pl.push_load
 
    Parameters:
-     * load - the forced value of load (it must be greater then 0.0 and
-       smaller then 1.0).
+     * load - the forced value of load (it must be greater than 0.0 and
+       smaller than 1.0).
 
    RPC Command Format:
 ...
-kamcmd pl.push_load 0.85
+kamctl rpc pl.push_load 0.85
 ...

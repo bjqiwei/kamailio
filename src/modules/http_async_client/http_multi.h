@@ -37,7 +37,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <curl/curl.h>
 #include <event2/event.h>
 #include <fcntl.h>
@@ -48,22 +48,28 @@
 #include "hm_hash.h"
 
 
+#ifndef CURLPIPE_NOTHING
+#define CURLPIPE_NOTHING 0L
+#endif
+
 extern stat_var *requests;
 extern stat_var *replies;
 extern stat_var *errors;
 extern stat_var *timeouts;
 extern int tls_version;
 extern int curl_verbose;
+extern int curl_follow_redirect;
 
 void set_curl_mem_callbacks(void);
-int init_http_multi();
+int init_http_multi(struct event_base *evbase, struct http_m_global *wg);
 int multi_timer_cb(CURLM *multi, long timeout_ms, struct http_m_global *g);
 void timer_cb(int fd, short kind, void *userp);
 int sock_cb(CURL *e, curl_socket_t s, int what, void *cbp, void *sockp);
 int check_mcode(CURLMcode code, char *error);
-int new_request(str *query, http_m_params_t *query_params, http_multi_cbe_t cb, void *param);
+int new_request(str *query, http_m_params_t *query_params, http_multi_cbe_t cb,
+		void *param);
 void check_multi_info(struct http_m_global *g);
-void setsock(struct http_m_cell *cell, curl_socket_t s, CURL* e, int act);
+void setsock(struct http_m_cell *cell, curl_socket_t s, CURL *e, int act);
 void addsock(curl_socket_t s, CURL *easy, int action, struct http_m_global *g);
 void event_cb(int fd, short kind, void *userp);
 void reply_error(struct http_m_cell *cell);

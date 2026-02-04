@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -38,10 +40,10 @@ typedef struct rms_sdp_info
 
 int rms_get_sdp_info(rms_sdp_info_t *sdp_info, struct sip_msg *msg);
 int rms_sdp_set_body(struct sip_msg *msg, str *new_body);
-int rms_sdp_prepare_new_body(rms_sdp_info_t *, int payload_type_number);
+int rms_sdp_prepare_new_body(rms_sdp_info_t *, PayloadType *);
 void rms_sdp_info_init(rms_sdp_info_t *sdp_info);
 int rms_sdp_info_clone(rms_sdp_info_t *dst, rms_sdp_info_t *src);
 void rms_sdp_info_free(rms_sdp_info_t *sdp_info);
-PayloadType *rms_sdp_check_payload(rms_sdp_info_t *);
+PayloadType *rms_sdp_select_payload(rms_sdp_info_t *);
 
 #endif

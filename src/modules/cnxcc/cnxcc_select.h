@@ -4,6 +4,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,6 +24,9 @@
 
 #ifndef CNXCC_SELECT_H_
 #define CNXCC_SELECT_H_
+
+#include "../../core/str.h"
+#include "../../core/select.h"
 
 int sel_root(str *res, select_t *s, struct sip_msg *msg);
 int sel_channels(str *res, select_t *s, struct sip_msg *msg);

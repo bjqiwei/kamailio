@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -34,7 +36,11 @@
 #include "../../core/rpc.h"
 #include "ws_conn.h"
 
-typedef enum { LOCAL_CLOSE = 0, REMOTE_CLOSE } ws_close_type_t;
+typedef enum
+{
+	LOCAL_CLOSE = 0,
+	REMOTE_CLOSE
+} ws_close_type_t;
 
 enum
 {
@@ -49,8 +55,8 @@ extern int ws_keepalive_mechanism;
 #define DEFAULT_KEEPALIVE_TIMEOUT 180 /* seconds */
 
 extern str ws_ping_application_data;
-#define DEFAULT_PING_APPLICATION_DATA SERVER_HDR
-#define DEFAULT_PING_APPLICATION_DATA_LEN SERVER_HDR_LEN
+#define DEFAULT_PING_APPLICATION_DATA SRVAPP_SIGNATURE
+#define DEFAULT_PING_APPLICATION_DATA_LEN SRVAPP_SIGNATURE_LEN
 
 extern stat_var *ws_failed_connections;
 extern stat_var *ws_local_closed_connections;

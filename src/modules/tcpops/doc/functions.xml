@@ -44,6 +44,40 @@
 			]]></programlisting>
 		</example>
 	</section>
+	<section id="tcpops.f.tcp_con_alive">
+		<title>
+			<function>tcp_con_alive(addr)</function>
+		</title>
+		<para>
+			Check the connection based on target addrt.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+			<listitem>
+				<para><emphasis>addr</emphasis> - target "host:port" or SIP address.
+				The port can be omitted (default to 5060) and the parameter can
+				contain variables.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>Return values:</para>
+		<para>1: connection was found</para>
+		<para>-1: connection was not found or an error occurred</para>
+		<example>
+			<title><function>tcp_con_alive</function> usage</title>
+			<programlisting><![CDATA[
+...
+	if(!tcp_con_alive("1.2.3.4:5060")) {
+		xlog("connection not found\n");
+	}
+	if(!tcp_con_alive("sip:2.3.4.5:5070")) {
+		xlog("connection not found\n");
+	}
+
+...
+			]]></programlisting>
+		</example>
+	</section>
 	<section id="tcpops.f.tcp_conid_state">
 		<title>
 			<function>tcp_conid_state(conid)</function>
@@ -102,12 +136,12 @@
 			</listitem>
 			<listitem>
 				<para><emphasis>count</emphasis>: number of non-acked keepalive before
-				resetting the connection. 
+				resetting the connection.
 				</para>
 			</listitem>
 			<listitem>
 				<para><emphasis>interval</emphasis> (seconds): time between two keepalive
-				probes. 
+				probes.
 				</para>
 			</listitem>
 		</itemizedlist>
@@ -135,7 +169,7 @@ onreply_route[foo] {
 			]]></programlisting>
 		</example>
 	</section>
-	
+
 	 <section id="tcpops.f.tcp_keepalive_disable">
 		<title>
 			<function>tcp_keepalive_disable([conid])</function>
@@ -203,7 +237,7 @@ onreply_route[foo] {
                         <programlisting><![CDATA[
 ...
 # use 10s as default lifetime
-tcp_connection_lifetime=10 
+tcp_connection_lifetime=10
 ...
 
 request_route {
@@ -287,11 +321,128 @@ event_route[tcp:closed] {
 			<title><function>tcp_get_conid</function> usage</title>
 			<programlisting><![CDATA[
 ...
-	if(tcp_conid_alive("127.0.0.1:5060", "$var(conid)")) {
+	if(tcp_get_conid("127.0.0.1:5060", "$var(conid)")) {
 		xlog("connection id is: $var(conid)\n");
 	}
 ...
 			]]></programlisting>
 		</example>
 	</section>
+	<section id="tcpops.f.tcp_set_otcpid">
+		<title>
+			<function>tcp_set_otcpid(conid)</function>
+		</title>
+		<para>
+			Set the value for outbound tcp connection id.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+			<listitem>
+				<para><emphasis>conid</emphasis> - the value of tcp connection id.
+				It can be an integer number or a variable holding an integer value.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>Return values:</para>
+		<itemizedlist>
+			<listitem>
+			<para>1: success</para>
+			</listitem>
+			<listitem>
+			<para>-1: failure</para>
+			</listitem>
+		</itemizedlist>
+		<example>
+			<title><function>tcp_set_otcpid</function> usage</title>
+			<programlisting><![CDATA[
+...
+	$var(conid) = 10;
+	tcp_set_otcpid("$var(conid)");
+...
+			]]></programlisting>
+		</example>
+	</section>
+	<section id="tcpops.f.tcp_set_otcpid_flag">
+		<title>
+			<function>tcp_set_otcpid_flag(mode)</function>
+		</title>
+		<para>
+			Set or reset the internal flag for using or not the outbound tcp
+			connection id for sending out. The outbound connection id can be
+			set by module or by config using tcp_set_otcpid(...) function. An
+			example of a module setting the otcpid is registrar via lookup location
+			function, which sets the field to the connection id used to receive
+			the registration request.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+			<listitem>
+				<para><emphasis>mode</emphasis> - if 0, then the flag is reset,
+				otherwise it is set.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>Return values:</para>
+		<itemizedlist>
+			<listitem>
+			<para>1: success</para>
+			</listitem>
+			<listitem>
+			<para>-1: failure</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			Note: if you set the flag to use the outbound tcp connection id,
+			then custom config changes to the destination address, like
+			updating the r-uri ($ru) or dst uri ($du) are not resetting it, so
+			the same already set connection id is used and the SIP request
+			might be sent to the unexpected destination. Reset the flag in such
+			case, if you set it previously.
+		</para>
+		<example>
+			<title><function>tcp_set_otcpid_flag</function> usage</title>
+			<programlisting><![CDATA[
+...
+	$var(cmode) = 1;
+	tcp_set_otcpid_flag("$var(cmode)");
+...
+			]]></programlisting>
+		</example>
+	</section>
+	<section id="tcpops.f.tcp_close_connection">
+		<title>
+			<function>tcp_close_connection([conid])</function>
+		</title>
+		<para>
+			Trigger a close of the connection corresponding to current SIP
+			message or to connection id 'conid'.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+			<listitem>
+				<para><emphasis>conid</emphasis> - the value of tcp connection id.
+				It can be an integer number or a variable holding an integer value.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>Return values:</para>
+		<itemizedlist>
+			<listitem>
+			<para>1: success</para>
+			</listitem>
+			<listitem>
+			<para>-1 (or other negative values): failure</para>
+			</listitem>
+		</itemizedlist>
+		<example>
+			<title><function>tcp_close_connection</function> usage</title>
+			<programlisting><![CDATA[
+...
+	$var(conid) = 10;
+	tcp_close_connection("$var(conid)");
+...
+			]]></programlisting>
+		</example>
+	</section>
+
 </section>

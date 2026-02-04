@@ -115,7 +115,7 @@
 	<section>
 		<title>External Libraries or Applications</title>
 		<para>
-		The following libraries or applications must be installed before 
+		The following libraries or applications must be installed before
 		running &kamailio; with this module loaded:
 			<itemizedlist>
 			<listitem>
@@ -174,7 +174,7 @@ modparam("pipelimit", "db_url", "&exampledb;")
 	<section id="pipelimit.p.plp_table_name">
 	    <title><varname>plp_table_name</varname> (string)</title>
 	    <para>
-			Name of DB table where data definition for pipes is stores.
+			Name of DB table where data definition for pipes is stored.
 	    </para>
 	    <para>
 		<emphasis>
@@ -218,7 +218,7 @@ modparam("pipelimit", "plp_pipeid_column", "name")
 	    </para>
 	    <para>
 		<emphasis>
-		    Default value is <quote>limit</quote>.
+		    Default value is <quote>plimit</quote>.
 		</emphasis>
 	    </para>
 	    <example>
@@ -383,7 +383,7 @@ modparam("pipelimit", "reply_reason", "Limiting")
 	<section id="pipelimit.p.clean_unused">
 		<title><varname>clean_unused</varname> (int)</title>
 		<para>
-		Clean unused pipes afetr this number of timer intervals.
+		Clean unused pipes after this number of timer intervals.
 		</para>
 		<para>
 		<emphasis>
@@ -420,13 +420,13 @@ modparam("pipelimit", "clean_unused", 10)
 		<para>
 		Check the current request against the 'name' pipe.
 		</para>
-		<para>	
+		<para>
 		If algorithm and limit are provided, the function attempts to create a
 		new pipe if one with that name doesn't exit. If it exists, no changes
 		to algorithm is done and the pipe limit is set to the 'limit' parameter
 		value, if this is greater than 0. Algorithm is case sensitive.
 		</para>
-		<para>	
+		<para>
 		The pipe name can be provided via a pseudo variable.
 		</para>
 		<para>The method will return:
@@ -511,6 +511,30 @@ with unexpected retcode=$var(check_result)\n");
 </programlisting>
 		</example>
 	</section>
+	<section id="pipelimit.f.pl_active">
+		<title>
+		<function moreinfo="none">pl_active(name)</function>
+		</title>
+		<para>
+		Check the pipe 'name' was already created. Return 1 (true) if the pipe
+		is found, -1 (false) if the pipe is not found.
+		</para>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>pl_active</function> usage</title>
+		<programlisting format="linespecific">
+...
+	if (!pl_active("one")) {
+		# pipe does not exist
+		exit;
+	}
+...
+</programlisting>
+		</example>
+	</section>
+
 	<section id="pipelimit.f.pl_drop">
 		<title>
 		<function moreinfo="none">pl_drop([ [min ], max ])</function>
@@ -597,7 +621,7 @@ kamctl rpc pl.list testid
 		</para>
 		<programlisting  format="linespecific">
 ...
-kamcmd pl.stats
+kamctl rpc pl.stats
 ...
 		</programlisting>
 	</section>
@@ -630,7 +654,57 @@ kamcmd pl.stats
 		</para>
 		<programlisting  format="linespecific">
 ...
-kamcmd pl.set_pipe 2 RED 10
+kamctl rpc pl.set_pipe 2 RED 10
+...
+		</programlisting>
+	</section>
+	<section id="pipelimit.r.pl.reset_pipe">
+		<title>
+		<function moreinfo="none">pl.reset_pipe</function>
+		</title>
+		<para>
+		Reset the values associated with the pipe.
+		</para>
+		<para>
+		Name: <emphasis>pl.reset_pipe</emphasis>
+		</para>
+		<para>Parameters:</para>
+		<itemizedlist>
+			<listitem><para>
+			<emphasis>pipe_id</emphasis> - pipe id.
+			</para></listitem>
+		</itemizedlist>
+		<para>
+		RPC Command Format:
+		</para>
+		<programlisting  format="linespecific">
+...
+kamctl rpc pl.reset_pipe p01
+...
+		</programlisting>
+	</section>
+	<section id="pipelimit.r.pl.rm_pipe">
+		<title>
+		<function moreinfo="none">pl.rm_pipe</function>
+		</title>
+		<para>
+		Remove the pipe structure matching the given pipe id.
+		</para>
+		<para>
+		Name: <emphasis>pl.rm_pipe</emphasis>
+		</para>
+		<para>Parameters:</para>
+		<itemizedlist>
+			<listitem><para>
+			<emphasis>pipe_id</emphasis> - pipe id.
+			</para></listitem>
+		</itemizedlist>
+		<para>
+		RPC Command Format:
+		</para>
+		<programlisting  format="linespecific">
+...
+kamctl rpc pl.rm_pipe p01
 ...
 		</programlisting>
 	</section>
@@ -650,7 +724,7 @@ kamcmd pl.set_pipe 2 RED 10
 		</para>
 		<programlisting  format="linespecific">
 ...
-kamcmd pl.get_pipes
+kamctl rpc pl.get_pipes
 ...
 		</programlisting>
 	</section>
@@ -681,7 +755,7 @@ kamcmd pl.get_pipes
 		</para>
 		<programlisting  format="linespecific">
 ...
-kamcmd pl.set_pid 0.5 0.5 0.5
+kamctl rpc pl.set_pid 0.5 0.5 0.5
 ...
 		</programlisting>
 	</section>
@@ -701,7 +775,7 @@ kamcmd pl.set_pid 0.5 0.5 0.5
 		</para>
 		<programlisting  format="linespecific">
 ...
-kamcmd pl.get_pid
+kamctl rpc pl.get_pid
 ...
 		</programlisting>
 	</section>
@@ -720,7 +794,7 @@ kamcmd pl.get_pid
 		<itemizedlist>
 			<listitem><para>
 			<emphasis>load</emphasis> - the forced value of load
-			(it must be greater then 0.0 and smaller then 1.0).
+			(it must be greater than 0.0 and smaller than 1.0).
 			</para></listitem>
 		</itemizedlist>
 		<para>
@@ -728,7 +802,7 @@ kamcmd pl.get_pid
 		</para>
 		<programlisting  format="linespecific">
 ...
-kamcmd pl.push_load 0.85
+kamctl rpc pl.push_load 0.85
 ...
 		</programlisting>
 	</section>

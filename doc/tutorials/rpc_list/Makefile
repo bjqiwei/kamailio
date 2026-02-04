@@ -40,7 +40,6 @@ files_list= \
 		$(COREPATH)/modules/counters/counters.c:counters \
 		$(COREPATH)/modules/cplc/cpl_loader.c:cplc \
 		$(COREPATH)/modules/ctl/ctl.c:ctl \
-		$(COREPATH)/modules/db_berkeley/db_berkeley.c:db_berkeley \
 		$(COREPATH)/modules/db_flatstore/flat_rpc.c:db_flatstore \
 		$(COREPATH)/modules/db_flatstore/km_flatstore_mod.c:db_flatstore \
 		$(COREPATH)/modules/db_text/db_text.c:db_text \
@@ -136,19 +135,19 @@ c_defsX=-DNAME='\"kamailio\"' -DVERSION='\"5.1.0-dev3\"' -DARCH='\"x86_64\"' \
 	   -DOS='linux_' -DOS_QUOTED='\"linux\"' -DCOMPILER='\"gcc 4.9.2\"' \
 	   -D__CPU_x86_64 -D__OS_linux -DSER_VER=5001000 \
 	   -DCFG_DIR='\"/usr/local/etc/kamailio/\"' \
-	   -DRUN_DIR='\"/var/run/kamailio/\"' -DPKG_MALLOC -DSHM_MEM -DSHM_MMAP \
+	   -DRUN_DIR='\"/run/kamailio/\"' -DPKG_MALLOC -DSHM_MEM -DSHM_MMAP \
 	   -DDNS_IP_HACK -DUSE_MCAST -DUSE_TCP -DDISABLE_NAGLE -DHAVE_RESOLV_RES \
-	   -DUSE_DNS_CACHE -DUSE_DNS_FAILOVER -DUSE_DST_BLACKLIST -DUSE_NAPTR \
-	   -DWITH_XAVP -DMEM_JOIN_FREE -DF_MALLOC -DQ_MALLOC -DTLSF_MALLOC \
+	   -DUSE_DNS_CACHE -DUSE_DNS_FAILOVER -DUSE_DST_BLOCKLIST -DUSE_NAPTR \
+	   -DMEM_JOIN_FREE -DF_MALLOC -DQ_MALLOC -DTLSF_MALLOC \
 	   -DDBG_SR_MEMORY -DUSE_TLS -DTLS_HOOKS -DUSE_CORE_STATS -DSTATISTICS \
 	   -DMALLOC_STATS -DWITH_AS_SUPPORT -DUSE_SCTP -DFAST_LOCK -DADAPTIVE_WAIT \
 	   -DADAPTIVE_WAIT_LOOPS=1024 -DCC_GCC_LIKE_ASM -DHAVE_GETHOSTBYNAME2 \
 	   -DHAVE_UNION_SEMUN -DHAVE_SCHED_YIELD -DHAVE_MSG_NOSIGNAL \
 	   -DHAVE_MSGHDR_MSG_CONTROL -DHAVE_ALLOCA_H -DHAVE_TIMEGM \
 	   -DHAVE_SCHED_SETSCHEDULER -DHAVE_IP_MREQN -DHAVE_EPOLL -DHAVE_SIGIO_RT \
-	   -DSIGINFO64_WORKARROUND -DUSE_FUTEX -DHAVE_SELECT
+	   -DSIGINFO64_WORKAROUND -DUSE_FUTEX -DHAVE_SELECT
 
-c_defs=$(subst ^^,='\",$(subst ",\"',$(subst =",^^,$(shell make -s -C ../../../src printcdefs))))
+c_defs=$(subst ^^,='\",$(subst ",\"',$(subst =",^^,$(shell $(MAKE) -s -C ../../../src printcdefs))))
 
 c_defs+= -DMOD_NAME='\"rpcgen\"'
 c_defs+= -I$(COREPATH)/modules/app_sqlang/squirrel/include
@@ -176,7 +175,7 @@ get_listed_grp=$(word 2, $(subst :, ,$(1)))
 # get module interface define
 get_modiface=$(word 3, $(subst :, ,$(1)))
 
-find_modiface=$(if $(findstring modules,$(1)),$(shell make -s -C $(dir $(1)) printmiface),-DNONE)
+find_modiface=$(if $(findstring modules,$(1)),$(shell $(MAKE) -s -C $(dir $(1)) printmiface),-DNONE)
 
 # get base file name from file:grp: get_bname(file:grp)
 # => basename(file) without extension (e.g. get_bname(foo/bar.c:x) => bar)

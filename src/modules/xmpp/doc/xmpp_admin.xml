@@ -10,9 +10,9 @@
 <!-- Module User's Guide -->
 
 <chapter xmlns:xi="http://www.w3.org/2001/XInclude">
-	
+
 	<title>&adminguide;</title>
-	
+
 	<section>
 	<title>Overview</title>
 	<para>
@@ -67,19 +67,19 @@
 		</listitem>
 		<listitem>
 			<para>listen = your ip;</para>
-		</listitem> 
+		</listitem>
 		<listitem>
 			<para>alias=&kamailio; SIP domain and alias=gateway domain;</para>
 		</listitem>
 		<listitem>
 			<para>in the following section of the configuration file, change to your gateway domain:</para>
-		</listitem>	
+		</listitem>
 	</itemizedlist>
 	<programlisting format="linespecific"> <emphasis>	<![CDATA[ ### ---8<--- cut here ---8<--- ###
 	if ($rd =="sip-xmpp.kamailio.org") {
 		if (!t_newtran()) {
 			sl_reply_error();
-	...........]]>	</emphasis> </programlisting> 	
+	...........]]>	</emphasis> </programlisting>
 	<itemizedlist>
 		<listitem>
 			<para>
@@ -97,13 +97,13 @@
 		</listitem>
 		<listitem>
 			<para>The gateway SIP domain is sip-xmpp.kamailio.org</para>
-		</listitem>	
+		</listitem>
 		<listitem>
 			<para>The XMPP server is hosting the XMPP domain xmpp.kamailio.org</para>
-		</listitem>	
+		</listitem>
 		<listitem>
 			<para>The Component is hosting the XMPP domain xmpp-sip.kamailio.org</para>
-		</listitem>	
+		</listitem>
 	</itemizedlist>
 	<para>
 		In the XMPP stand-alone server mode, the XMPP module is a minimal XMPP/Jabber server.
@@ -121,11 +121,11 @@
 		</listitem>
 		<listitem>
 			<para>The gateway is hosting the SIP domain sip-xmpp.kamailio.org;</para>
-		</listitem>	
+		</listitem>
 		<listitem>
 			<para>The "XMPP server" is running on xmpp-sip.kamailio.org.</para>
 		</listitem>
-	</itemizedlist>	
+	</itemizedlist>
 	<para>
 		Unless 'gwmap' parameter is set, in both modes (server or component), the
 		destination address must have the same pattern:
@@ -182,7 +182,7 @@
 	<section>
 	<title>Parameters</title>
 	<section>
-		<title><varname>backend(string)</varname></title>
+		<title><varname>backend</varname> (string)</title>
 		<para>
 		The mode you are using the module; it can be either "component" or "server".
 		</para>
@@ -230,7 +230,7 @@
 		<para>
 			The domain of the SIP-to-XMPP gateway - it has to be in DNS or SIP UA has to
 			use outbound proxy to SIP-to-XMPP gateway IP address. It has to be used
-			as domain in the the destination address of the messages sent by SIP users
+			as domain in the destination address of the messages sent by SIP users
 			to XMPP users:
 			"sip:username<![CDATA[<]]>delim<![CDATA[>]]>jabber_server@gateway_domain".
 		</para>
@@ -321,14 +321,14 @@
 			<emphasis>
 				This is the password for the component interface on the XMPP server,
 				when connecting as a component. Default password is "secret".
-				When connecting to jabberd2, 
+				When connecting to jabberd2,
 				you need to make sure this is the password configured in the file
 				"c2s.xml". This is how the default configuration for the jabberd2
 				looks like:
 			</emphasis>
 			<programlisting format="linespecific">
 		<![CDATA[	<router>
-	............... 
+	...............
 	<!-- Username/password to authenticate as --&gt;
     <user>jabberd</user>;          <!-- default: jabberd -->;
     <pass>secret</pass>;           <!-- default: secret -->;	]]>
@@ -416,7 +416,7 @@
 			Converts SIP messages to XMPP(jabber) messages, in order to be relayed
 			to a XMPP(jabber) client.
 		</para>
-		
+
 		<example>
 		<title><function>xmpp_send_message()</function> usage</title>
 		<programlisting format="linespecific">
@@ -438,7 +438,7 @@ xmpp_send_message();
 		</para>
 		<programlisting format="linespecific">
 ....
-<xi:include href="openser-xmpp.cfg" parse="text"/>
+<xi:include href="kamailio-xmpp.cfg" parse="text"/>
 ....
 </programlisting>
 

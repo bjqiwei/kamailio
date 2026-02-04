@@ -20,8 +20,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _HASH_H
-#define _HASH_H
+#ifndef _UID_DOMAIN_HASH_H_
+#define _UID_DOMAIN_HASH_H_
 
 #include <stdio.h>
 #include "uid_domain_mod.h"
@@ -32,34 +32,35 @@
 /*
  * Hash table entry
  */
-struct hash_entry {
-	str key;                  /* Hash key */
-	domain_t* domain;         /* Pointer to the domain structure */
-	struct hash_entry* next;  /* Next element in hash table colision slot */
+struct hash_entry
+{
+	str key;				 /* Hash key */
+	domain_t *domain;		 /* Pointer to the domain structure */
+	struct hash_entry *next; /* Next element in hash table colision slot */
 };
 
 
 /*
  * Generate hash table, use domain names as hash keys
  */
-int gen_domain_table(struct hash_entry** table, domain_t* list);
+int gen_domain_table(struct hash_entry **table, domain_t *list);
 
 
 /*
  * Lookup key in the table
  */
-int hash_lookup(domain_t** d, struct hash_entry** table, str* key);
+int hash_lookup(domain_t **d, struct hash_entry **table, str *key);
 
 
 /*
  * Generate hash table, use did as hash key
  */
-int gen_did_table(struct hash_entry** table, domain_t* list);
+int gen_did_table(struct hash_entry **table, domain_t *list);
 
 
 /*
  * Free memory allocated for entire hash table
  */
-void free_table(struct hash_entry** table);
+void free_table(struct hash_entry **table);
 
 #endif /* _HASH_H */

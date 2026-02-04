@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -26,7 +28,8 @@
  */
 
 /*!
- * \defgroup presence_xml Presence_xml :: This module implements a range of XML-based SIP event packages for presence
+ * \defgroup presence_xml Presence_xml :: This module implements a range
+ *   of XML-based SIP event packages for presence
  */
 
 
@@ -57,6 +60,7 @@
 #include "api.h"
 
 MODULE_VERSION
+
 #define S_TABLE_VERSION 4
 
 /** module functions */
@@ -70,33 +74,34 @@ static void free_xs_list(xcap_serv_t *xs_list, int mem_type);
 static int xcap_doc_updated(int doc_type, str xid, char *doc);
 
 static int fixup_presxml_check(void **param, int param_no);
+static int fixup_free_presxml_check(void **param, int param_no);
 static int w_presxml_check_basic(
 		sip_msg_t *msg, char *presentity_uri, char *status);
 static int w_presxml_check_activities(
 		sip_msg_t *msg, char *presentity_uri, char *activities);
 
 /** module variables ***/
-add_event_t pres_add_event;
-update_watchers_t pres_update_watchers;
-pres_get_sphere_t pres_get_sphere;
-
-contains_event_t pres_contains_event;
-pres_get_presentity_t pres_get_presentity;
-pres_free_presentity_t pres_free_presentity;
+presence_api_t psapi = {0};
 
 /* Module parameter variables */
-str xcap_table = str_init("xcap");
-static str presxml_db_url = str_init(DEFAULT_DB_URL);
-int force_active = 0;
-int force_dummy_presence = 0;
-int integrated_xcap_server = 0;
+str pxml_xcap_table = str_init("xcap");
+static str pxml_db_url = str_init(DEFAULT_DB_URL);
+int pxml_force_active = 0;
+int pxml_force_dummy_presence = 0;
+int pxml_integrated_xcap_server = 0;
 xcap_serv_t *xs_list = NULL;
-int disable_presence = 0;
-int disable_winfo = 0;
-int disable_bla = 1;
-int passive_mode = 0;
-int disable_xcapdiff = 0;
+int pxml_disable_presence = 0;
+int pxml_disable_winfo = 0;
+int pxml_disable_bla = 1;
+int pxml_disable_xcapdiff = 0;
+static int pxml_passive_mode = 0;
 str xcapauth_userdel_reason = str_init("probation");
+
+int pxml_force_single_body = 0;
+str pxml_single_body_priorities = str_init("Available|Ringing|On the Phone");
+str pxml_single_body_lookup_element = str_init("note");
+
+unsigned int pxml_default_expires = 3600;
 
 /** SL API structure */
 sl_api_t slb;
@@ -112,9 +117,9 @@ xcapGetNewDoc_t xcap_GetNewDoc;
 /* clang-format off */
 static cmd_export_t cmds[]={
 	{ "pres_check_basic",		(cmd_function)w_presxml_check_basic, 2,
-		fixup_presxml_check, 0, ANY_ROUTE},
+		fixup_presxml_check, fixup_free_presxml_check, ANY_ROUTE},
 	{ "pres_check_activities",	(cmd_function)w_presxml_check_activities, 2,
-		fixup_presxml_check, 0, ANY_ROUTE},
+		fixup_presxml_check, fixup_free_presxml_check, ANY_ROUTE},
 	{ "bind_presence_xml",		(cmd_function)bind_presence_xml, 1,
 		0, 0, 0},
 	{ 0, 0, 0, 0, 0, 0}
@@ -123,18 +128,22 @@ static cmd_export_t cmds[]={
 
 /* clang-format off */
 static param_export_t params[]={
-	{ "db_url",		PARAM_STR, &presxml_db_url},
-	{ "xcap_table",		PARAM_STR, &xcap_table},
-	{ "force_active",	INT_PARAM, &force_active },
-	{ "integrated_xcap_server", INT_PARAM, &integrated_xcap_server},
-	{ "xcap_server",     	PARAM_STRING|USE_FUNC_PARAM,(void*)pxml_add_xcap_server},
-	{ "disable_presence",	INT_PARAM, &disable_presence },
-	{ "disable_winfo",		INT_PARAM, &disable_winfo },
-	{ "disable_bla",		INT_PARAM, &disable_bla },
-	{ "disable_xcapdiff",	INT_PARAM, &disable_xcapdiff },
-	{ "passive_mode",		INT_PARAM, &passive_mode },
+	{ "db_url",		PARAM_STR, &pxml_db_url},
+	{ "xcap_table",		PARAM_STR, &pxml_xcap_table},
+	{ "force_active",	PARAM_INT, &pxml_force_active },
+	{ "integrated_xcap_server", PARAM_INT, &pxml_integrated_xcap_server},
+	{ "xcap_server",     	PARAM_STRING|PARAM_USE_FUNC,(void*)pxml_add_xcap_server},
+	{ "disable_presence",	PARAM_INT, &pxml_disable_presence },
+	{ "disable_winfo",		PARAM_INT, &pxml_disable_winfo },
+	{ "disable_bla",		PARAM_INT, &pxml_disable_bla },
+	{ "disable_xcapdiff",	PARAM_INT, &pxml_disable_xcapdiff },
+	{ "passive_mode",		PARAM_INT, &pxml_passive_mode },
 	{ "xcapauth_userdel_reason", PARAM_STR, &xcapauth_userdel_reason},
-	{ "force_dummy_presence",       INT_PARAM, &force_dummy_presence },
+	{ "force_dummy_presence",       PARAM_INT, &pxml_force_dummy_presence },
+	{ "force_presence_single_body", PARAM_INT, &pxml_force_single_body },
+	{ "presence_single_body_priorities",  PARAM_STR, &pxml_single_body_priorities },
+	{ "presence_single_body_lookup_element", PARAM_STR, &pxml_single_body_lookup_element },
+	{ "default_expires", PARAM_INT, &pxml_default_expires },
 	{ 0, 0, 0}
 };
 /* clang-format on */
@@ -160,14 +169,12 @@ struct module_exports exports= {
  */
 static int mod_init(void)
 {
-	bind_presence_t bind_presence;
-	presence_api_t pres;
-
-	if(passive_mode == 1)
+	if(pxml_passive_mode == 1) {
 		return 0;
+	}
 
-	LM_DBG("db_url=%s (len=%d addr=%p)\n", ZSW(presxml_db_url.s),
-			presxml_db_url.len, presxml_db_url.s);
+	LM_DBG("db_url=%s (len=%d addr=%p)\n", ZSW(pxml_db_url.s), pxml_db_url.len,
+			pxml_db_url.s);
 
 	/* bind the SL API */
 	if(sl_load_api(&slb) != 0) {
@@ -175,24 +182,13 @@ static int mod_init(void)
 		return -1;
 	}
 
-	bind_presence = (bind_presence_t)find_export("bind_presence", 1, 0);
-	if(!bind_presence) {
-		LM_ERR("Can't bind presence\n");
-		return -1;
-	}
-	if(bind_presence(&pres) < 0) {
-		LM_ERR("Can't bind to presence module\n");
+	if(presence_load_api(&psapi) != 0) {
+		LM_ERR("cannot bind to presence api\n");
 		return -1;
 	}
 
-	pres_get_sphere = pres.get_sphere;
-	pres_add_event = pres.add_event;
-	pres_update_watchers = pres.update_watchers_status;
-	pres_contains_event = pres.contains_event;
-	pres_get_presentity = pres.get_presentity;
-	pres_free_presentity = pres.free_presentity;
-	if(pres_add_event == NULL || pres_update_watchers == NULL) {
-		LM_ERR("Can't import add_event\n");
+	if(psapi.add_event == NULL || psapi.update_watchers_status == NULL) {
+		LM_ERR("required presence api not available\n");
 		return -1;
 	}
 	if(xml_add_events() < 0) {
@@ -200,9 +196,9 @@ static int mod_init(void)
 		return -1;
 	}
 
-	if(force_active == 0) {
+	if(pxml_force_active == 0) {
 		/* binding to mysql module  */
-		if(db_bind_mod(&presxml_db_url, &pxml_dbf)) {
+		if(db_bind_mod(&pxml_db_url, &pxml_dbf)) {
 			LM_ERR("Database module not found\n");
 			return -1;
 		}
@@ -213,19 +209,19 @@ static int mod_init(void)
 			return -1;
 		}
 
-		pxml_db = pxml_dbf.init(&presxml_db_url);
+		pxml_db = pxml_dbf.init(&pxml_db_url);
 		if(!pxml_db) {
 			LM_ERR("while connecting to database\n");
 			return -1;
 		}
 
 		if(db_check_table_version(
-				   &pxml_dbf, pxml_db, &xcap_table, S_TABLE_VERSION)
+				   &pxml_dbf, pxml_db, &pxml_xcap_table, S_TABLE_VERSION)
 				< 0) {
-			DB_TABLE_VERSION_ERROR(xcap_table);
+			DB_TABLE_VERSION_ERROR(pxml_xcap_table);
 			goto dberror;
 		}
-		if(!integrated_xcap_server) {
+		if(!pxml_integrated_xcap_server) {
 			xcap_api_t xcap_api;
 			bind_xcap_t bind_xcap;
 
@@ -274,21 +270,22 @@ static int child_init(int rank)
 {
 	LM_DBG("[%d]  pid [%d]\n", rank, getpid());
 
-	if(passive_mode == 1)
+	if(pxml_passive_mode == 1) {
 		return 0;
+	}
 
 	if(rank == PROC_INIT || rank == PROC_MAIN || rank == PROC_TCP_MAIN)
 		return 0; /* do nothing for the main process */
 
-	if(force_active == 0) {
+	if(pxml_force_active == 0) {
 		if(pxml_db)
 			return 0;
-		pxml_db = pxml_dbf.init(&presxml_db_url);
+		pxml_db = pxml_dbf.init(&pxml_db_url);
 		if(pxml_db == NULL) {
 			LM_ERR("while connecting database\n");
 			return -1;
 		}
-		if(pxml_dbf.use_table(pxml_db, &xcap_table) < 0) {
+		if(pxml_dbf.use_table(pxml_db, &pxml_xcap_table) < 0) {
 			LM_ERR("in use_table SQL operation\n");
 			return -1;
 		}
@@ -376,7 +373,7 @@ static int shm_copy_xcap_list(void)
 
 	xs = xs_list;
 	if(xs == NULL) {
-		if(force_active == 0 && !integrated_xcap_server) {
+		if(pxml_force_active == 0 && !pxml_integrated_xcap_server) {
 			LM_ERR("no xcap_server parameter set\n");
 			return -1;
 		}
@@ -441,7 +438,7 @@ static int xcap_doc_updated(int doc_type, str xid, char *doc)
 	rules_doc.s = doc;
 	rules_doc.len = strlen(doc);
 
-	if(pres_update_watchers(xid, &ev, &rules_doc) < 0) {
+	if(psapi.update_watchers_status(&xid, &ev, &rules_doc) < 0) {
 		LM_ERR("updating watchers in presence\n");
 		return -1;
 	}
@@ -467,6 +464,16 @@ static int fixup_presxml_check(void **param, int param_no)
 		return fixup_spve_null(param, 1);
 	} else if(param_no == 2) {
 		return fixup_spve_null(param, 1);
+	}
+	return 0;
+}
+
+static int fixup_free_presxml_check(void **param, int param_no)
+{
+	if(param_no == 1) {
+		return fixup_free_spve_null(param, 1);
+	} else if(param_no == 2) {
+		return fixup_free_spve_null(param, 1);
 	}
 	return 0;
 }

@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -17,8 +19,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
-#include "defs.h"
 
 
 #ifndef __lock_h
@@ -58,7 +58,6 @@ void lock_cleanup(void);
 
 int init_cell_lock(struct cell *cell);
 int init_entry_lock(struct s_table *ht, struct entry *entry);
-int init_async_lock(struct cell *cell);
 
 
 int release_cell_lock(struct cell *cell);

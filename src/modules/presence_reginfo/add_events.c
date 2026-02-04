@@ -6,6 +6,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -27,6 +29,9 @@
 #include "../../core/parser/parse_content.h"
 #include "../presence/event_list.h"
 #include "presence_reginfo.h"
+#include "notify_body.h"
+
+extern int pres_reginfo_aggregate_presentities;
 
 int reginfo_add_events(void)
 {
@@ -39,12 +44,22 @@ int reginfo_add_events(void)
 
 	event.content_type.s = "application/reginfo+xml";
 	event.content_type.len = 23;
-	event.default_expires= 3600;
+	event.default_expires = pres_reginfo_default_expires;
 	event.type = PUBL_TYPE;
 	event.req_auth = 0;
 	event.evs_publ_handl = 0;
 
-	if (pres_add_event(&event) < 0) {
+
+	if(pres_reginfo_aggregate_presentities) {
+		/* aggregate XML body and free() function */
+		event.agg_nbody = reginfo_agg_nbody;
+		event.free_body = free_xml_body;
+		/* modify XML body for each watcher to set the correct "version" */
+		event.aux_body_processing = reginfo_body_setversion;
+		event.aux_free_body = free_xml_body;
+	}
+
+	if(pres_add_event(&event) < 0) {
 		LM_ERR("failed to add event \"reginfo\"\n");
 		return -1;
 	}

@@ -43,9 +43,11 @@ static int mod_init(void);
 static void mod_destroy(void);
 
 static int w_phonenum_match(struct sip_msg *msg, char *str1, char *str2);
-static int w_phonenum_match_cn(struct sip_msg *msg, char *str1, char *str2,
-		char *str3);
+static int w_phonenum_match_cn(
+		struct sip_msg *msg, char *str1, char *str2, char *str3);
 static int phonenum_match(sip_msg_t *msg, str *tomatch, str *pvclass);
+
+static int phonenum_resid_param(modparam_t type, void *val);
 
 /* clang-format off */
 static pv_export_t mod_pvs[] = {
@@ -56,14 +58,15 @@ static pv_export_t mod_pvs[] = {
 
 static cmd_export_t cmds[]={
 	{"phonenum_match", (cmd_function)w_phonenum_match, 2, fixup_spve_spve,
-		0, ANY_ROUTE},
+		fixup_free_spve_spve, ANY_ROUTE},
 	{"phonenum_match_cn", (cmd_function)w_phonenum_match_cn, 3, fixup_spve_all,
-		0, ANY_ROUTE},
+		fixup_free_spve_all, ANY_ROUTE},
 	{0, 0, 0, 0, 0, 0}
 };
 
 static param_export_t params[]={
 	{"smode", PARAM_INT, &phonenum_smode},
+	{"resid", PARAM_STR|PARAM_USE_FUNC, &phonenum_resid_param},
 	{0, 0, 0}
 };
 
@@ -102,6 +105,21 @@ static void mod_destroy(void)
 	phonenum_destroy_pv();
 }
 
+/**
+ *
+ */
+static int phonenum_resid_param(modparam_t type, void *val)
+{
+	str rname;
+
+	rname = *((str *)val);
+	if(sr_phonenum_add_resid(&rname) < 0) {
+		LM_ERR("failed to register result container with id: %.*s\n", rname.len,
+				rname.s);
+		return -1;
+	}
+	return 0;
+}
 
 static int phonenum_match(sip_msg_t *msg, str *tomatch, str *pvclass)
 {
@@ -132,15 +150,16 @@ static int w_phonenum_match(sip_msg_t *msg, char *target, char *pvname)
 	return phonenum_match(msg, &tomatch, &pvclass);
 }
 
-static int phonenum_match_cn(sip_msg_t *msg, str *tomatch, str *cnc, str *pvclass)
+static int phonenum_match_cn(
+		sip_msg_t *msg, str *tomatch, str *cnc, str *pvclass)
 {
 	phonenum_pv_reset(pvclass);
 
 	return phonenum_update_pv(tomatch, cnc, pvclass);
 }
 
-static int w_phonenum_match_cn(sip_msg_t *msg, char *target, char *cncstr,
-		char *pvname)
+static int w_phonenum_match_cn(
+		sip_msg_t *msg, char *target, char *cncstr, char *pvname)
 {
 	str tomatch = STR_NULL;
 	str pvclass = STR_NULL;
@@ -175,6 +194,11 @@ static sr_kemi_t sr_kemi_phonenum_exports[] = {
 	{ str_init("phonenum"), str_init("match"),
 		SR_KEMIP_INT, phonenum_match,
 		{ SR_KEMIP_STR, SR_KEMIP_STR, SR_KEMIP_NONE,
+			SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
+	},
+	{ str_init("phonenum"), str_init("match_cn"),
+		SR_KEMIP_INT, phonenum_match_cn,
+		{ SR_KEMIP_STR, SR_KEMIP_STR, SR_KEMIP_STR,
 			SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
 	},
 

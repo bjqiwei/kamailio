@@ -2,7 +2,7 @@
 # LDAP_H350
 #
 # 
-# WARNING: do not run this directly, it should be run by the master Makefile
+# WARNING: do not run this directly, it should be run by the main Makefile
 
 include ../../Makefile.defs
 
@@ -18,5 +18,7 @@ ifeq ($(OS),solaris)
        DEFS+=-I$(LOCALBASE)/include -I/usr/sfw/include -I/usr/local/include -I/opt/sfw/include -I/opt/csw/include
        LIBS=-L$(LOCALBASE)/lib -L/usr/sfw/lib -L/usr/local/lib -L/opt/sfw/lib -I/opt/csw/lib -lldap 
 endif
+
+DEFS+=-DLDAP_DEPRECATED=1
 
 include ../../Makefile.modules

@@ -4,6 +4,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,7 +24,9 @@
 #ifndef CNXCC_SIP_MSG_FAKER_H_
 #define CNXCC_SIP_MSG_FAKER_H_
 
-int faked_msg_init_with_dlg_info(str *callid, str *from_uri, str *from_tag,
-		str *to_uri, str *to_tag, struct sip_msg **msg);
+#include "../../core/str.h"
+
+int cnxcc_faked_msg_init_with_dlg_info(str *callid, str *from_uri,
+		str *from_tag, str *to_uri, str *to_tag, struct sip_msg **msg);
 
 #endif /* CNXCC_SIP_MSG_FAKER_H_ */

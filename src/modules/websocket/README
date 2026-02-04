@@ -72,8 +72,8 @@ Peter Dunkley
    1.9. Set cors_mode parameter
    1.10. Set verbose_list parameter
    1.11. Set event_callback parameter
-   1.12. Set timer_intervalparameter
-   1.13. Set rm_timer_intervalparameter
+   1.12. Set timer_interval parameter
+   1.13. Set rm_delay_intervalparameter
    1.14. ws_handle_handshake usage
    1.15. ws_close usage
    1.16. event_route[websocket:closed] usage
@@ -162,6 +162,10 @@ Chapter 1. Admin Guide
 
    Example 1.1. event_route[xhttp:request]
 ...
+tcp_accept_no_cl=yes
+listen=tcp:127.0.0.17:80
+listen=tls:127.0.0.17:443
+...
 loadmodule "sl.so"
 loadmodule "xhttp.so"
 loadmodule "msrp.so"  # Only required if using MSRP over WebSockets
@@ -245,6 +249,7 @@ event_route[xhttp:request] {
 ...
 loadmodule "sl.so"
 loadmodule "tm.so"
+loadmodule "xhttp.so"
 ...
 loadmodule "websocket.so"
 ...
@@ -276,7 +281,7 @@ request_route {
 # Handle requests within SIP dialogs
 route[WITHINDLG] {
         if (has_totag()) {
-                # sequential request withing a dialog should
+                # sequential request within a dialog should
                 # take the path determined by record-routing
                 if (loose_route()) {
                         if ($du == "") {
@@ -427,9 +432,11 @@ modparam("websocket", "ping_application_data", "WebSockets rock")
    A bitmap that allows you to control the sub-protocols supported by the
    WebSocket server.
      * 1 - sip (RFC 7118)
-     * 2 - msrp (RFC 7977) - msrp.so must be loaded before websocket.so
+     * 2 - msrp (RFC 7977) - the msrp module must be loaded before the
+       websocket module
 
-   Default value is 1 when msrp.so is not loaded 3 when msrp.so is loaded.
+   Default value is 1 when msrp module is not loaded, 3 when msrp module
+   is loaded.
 
    Example 1.8. Set sub_protocols parameter
 ...
@@ -442,10 +449,10 @@ modparam("websocket", "sub_protocols", 2)
    behaviour of the WebSocket server.
      * 0 - Do not add an "Access-Control-Allow-Origin:" header to the
        response accepting the WebSocket handshake.
-     * 1 - Add a "Access-Control-Allow-Origin: *" header to the response
+     * 1 - Add an "Access-Control-Allow-Origin: *" header to the response
        accepting the WebSocket handshake.
-     * 2 - Add a "Access-Control-Allow-Origin:" header containing the same
-       body as the "Origin:" header from the request to the response
+     * 2 - Add an "Access-Control-Allow-Origin:" header containing the
+       same body as the "Origin:" header from the request to the response
        accepting the WebSocket handshake. If there is no "Origin:" header
        in the request no header will be added to the response.
 
@@ -497,7 +504,7 @@ end
 
    Default value is 1.
 
-   Example 1.12. Set timer_intervalparameter
+   Example 1.12. Set timer_interval parameter
 ...
 modparam("websocket", "timer_interval", 5)
 ...
@@ -509,7 +516,7 @@ modparam("websocket", "timer_interval", 5)
 
    Default value is 5.
 
-   Example 1.13. Set rm_timer_intervalparameter
+   Example 1.13. Set rm_delay_intervalparameter
 ...
 modparam("websocket", "rm_delay_interval", 2)
 ...
@@ -588,7 +595,7 @@ Note
 
    RPC Command Usage:
 ...
-kamcmd ws.dump used_asc
+kamctl rpc ws.dump used_asc
 ...
 
 6.2. ws.close
@@ -602,7 +609,7 @@ kamcmd ws.dump used_asc
 
    RPC Command Usage:
 ...
-kamcmd ws.close: 1
+kamctl rpc ws.close: 1
 ...
 
 6.3. ws.ping
@@ -616,7 +623,7 @@ kamcmd ws.close: 1
 
    RPC Command Usage:
 ...
-kamcmd ws.ping 1
+kamctl rpc ws.ping 1
 ...
 
 6.4. ws.pong
@@ -630,7 +637,7 @@ kamcmd ws.ping 1
 
    RPC Command Usage:
 ...
-kamcmd ws.pong 1
+kamctl rpc ws.pong 1
 ...
 
 6.5. ws.disable
@@ -643,7 +650,7 @@ kamcmd ws.pong 1
 
    RPC Command Usage:
 ...
-kamcmd ws.disable
+kamctl rpc ws.disable
 ...
 
 6.6. ws.enable
@@ -660,7 +667,7 @@ Note
 
    RPC Command Format:
 ...
-kamcmd ws.enable
+kamctl rpc ws.enable
 ...
 
 7. Event routes
@@ -670,8 +677,8 @@ kamcmd ws.enable
 7.1.  websocket:closed
 
    When defined, the module calls event_route[websocket:closed] when a
-   connection closes. The connection may be identified using the the $si
-   and $sp pseudo-variables.
+   connection closes. The connection may be identified using the $si and
+   $sp pseudo-variables.
 
    Example 1.16. event_route[websocket:closed] usage
 ...

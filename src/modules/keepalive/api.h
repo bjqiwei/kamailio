@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -37,14 +39,24 @@ typedef int ka_state;
 #define KA_STATE_UP 1
 #define KA_STATE_DOWN 2
 
-typedef int (*ka_add_dest_f)(str *uri, str *owner, int flags,
-		ka_statechanged_f callback, void *user_attr);
+typedef int (*ka_add_dest_f)(str *uri, str *owner, int flags, int ping_interval,
+		ka_statechanged_f statechanged_clb, ka_response_f response_clb,
+		void *user_attr);
 typedef ka_state (*ka_dest_state_f)(str *uri);
+typedef int (*ka_del_destination_f)(str *uri, str *owner);
+typedef int (*ka_find_destination_f)(
+		str *uri, str *owner, ka_dest_t **target, ka_dest_t **head);
+typedef int (*ka_lock_destination_list_f)();
+typedef int (*ka_unlock_destination_list_f)();
 
 typedef struct keepalive_api
 {
 	ka_add_dest_f add_destination;
 	ka_dest_state_f destination_state;
+	ka_del_destination_f del_destination;
+	ka_find_destination_f find_destination;
+	ka_lock_destination_list_f lock_destination_list;
+	ka_unlock_destination_list_f unlock_destination_list;
 } keepalive_api_t;
 
 typedef int (*bind_keepalive_f)(keepalive_api_t *api);

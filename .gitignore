@@ -8,6 +8,8 @@ makecfg.lst
 config.mak
 modules.lst
 # ignore dependency files
+build*/*
+
 *.d
 # ignore binary files and objects
 /ser
@@ -50,3 +52,6 @@ libiname.lst
 *.7
 # vscode tmp files
 .vscode
+# compiling tools files
+.clangd
+compile_commands.json

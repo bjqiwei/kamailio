@@ -308,7 +308,7 @@ if (!autheph_www("$fd")) {
 4.3.  autheph_check(realm)
 
    This function combines the functionalities of autheph_www and
-   autheph_proxy, the first being exectuted if the SIP request is a
+   autheph_proxy, the first being executed if the SIP request is a
    REGISTER, the second for the rest.
 
 Note
@@ -484,7 +484,7 @@ Note
 
    RPC Command Example:
 ...
-kamcmd autheph.add_secret mysecret
+kamctl rpc autheph.add_secret mysecret
 
 5.2. autheph.dump_secrets
 
@@ -497,7 +497,7 @@ kamcmd autheph.add_secret mysecret
 
    RPC Command Example:
 ...
-kamcmd autheph.dump_secrets
+kamctl rpc autheph.dump_secrets
 ...
 
 5.3. autheph.rm_secret
@@ -518,5 +518,5 @@ Note
 
    RPC Command Example:
 ...
-kamcmd autheph.rm_secret 0
+kamctl rpc autheph.rm_secret 0
 ...

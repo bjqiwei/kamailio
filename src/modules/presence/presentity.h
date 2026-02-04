@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -13,8 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
- * along with this program; if not, write to the Free Software 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
@@ -22,7 +24,7 @@
 /*!
  * \file
  * \brief Kamailio presence module :: Presentity handling
- * \ingroup presence 
+ * \ingroup presence
  */
 
 
@@ -33,7 +35,7 @@
 #include "../../core/parser/msg_parser.h"
 #include "event_list.h"
 
-extern char prefix;
+extern char pres_prefix;
 
 typedef struct presentity
 {
@@ -55,7 +57,7 @@ presentity_t *new_presentity(str *domain, str *user, int expires,
 /* update presentity in database */
 int update_presentity(struct sip_msg *msg, presentity_t *p, str *body,
 		int t_new, int *sent_reply, char *sphere, str *etag_override, str *ruid,
-		int replace);
+		int replace, int skip_notify);
 
 /* update presentity in database using API */
 int _api_update_presentity(str *event, str *realm, str *user, str *etag,
@@ -66,9 +68,9 @@ void free_presentity(presentity_t *p);
 
 char *generate_ETag(int publ_count);
 
-int pres_htable_restore(void);
+int pres_htable_db_restore(void);
 
-char *extract_sphere(str body);
+char *extract_sphere(str *body);
 
 char *get_sphere(str *pres_uri);
 typedef char *(*pres_get_sphere_t)(str *pres_uri);

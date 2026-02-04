@@ -21,7 +21,7 @@ Marius Zbihlei
 
    List of Examples
 
-   1.1. Set enable_full_lr parameter
+   1.1. Set general_query_flags parameter
 
 Chapter 1. Admin Guide
 
@@ -80,9 +80,9 @@ Chapter 1. Admin Guide
 
    Set this parameter to an integer value containing of an ORed result of
    one or more of the following values (constant present only for
-   documentation process, as they are mostly mapped to libval
-   flags).Setting this parameter will cause the libval defaults to be
-   completely overwritten
+   documentation process, as they are mostly mapped to libval flags).
+   Setting this parameter will cause the libval defaults to be completely
+   overwritten
 
    QUERY_DONT_VALIDATE == 1<<0 causes the validator to disable validation
    for this query.
@@ -116,7 +116,7 @@ Chapter 1. Admin Guide
 
    Default value is 0(no changes)
 
-   Example 1.1. Set enable_full_lr parameter
+   Example 1.1. Set general_query_flags parameter
  ...
  modparam("dnssec", "general_query_flags", 1) # QUERY_DONT_VALIDATE disable vali
 dation

@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -15,8 +17,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
- * along with this program; if not, write to the Free Software 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
@@ -27,6 +29,7 @@
 #include "../../core/dprint.h"
 #include "../../core/error.h"
 #include "../../core/sr_module.h"
+#include "../../core/str_list.h"
 #include "../../modules/tm/tm_load.h"
 #include "../../core/parser/parse_uri.h"
 #include "../../modules/sl/sl.h"
@@ -36,21 +39,24 @@
 #define DEFAULT_NUM_WORKERS 2
 #define MIN_PING_INTERVAL 5
 
-extern int num_workers;
-extern int worker_usleep;
-extern dmq_worker_t *workers;
+extern int dmq_num_workers;
+extern int dmq_worker_usleep;
+extern dmq_worker_t *dmq_workers;
 extern dmq_peer_t *dmq_notification_peer;
 extern str dmq_server_address;
-extern dmq_peer_list_t *peer_list;
+extern dmq_peer_list_t *dmq_peer_list;
 extern str dmq_request_method;
 extern str dmq_server_socket;
-extern struct sip_uri dmq_server_uri;
-extern str dmq_notification_address;
-extern int multi_notify;
-extern struct sip_uri dmq_notification_uri;
+extern sip_uri_t dmq_server_uri;
+extern str_list_t *dmq_notification_address_list;
+extern int dmq_multi_notify;
+extern int dmq_remove_inactive;
+extern int dmq_fail_count_enabled;
+extern int dmq_fail_count_threshold_not_active;
+extern int dmq_fail_count_threshold_disabled;
 /* sl and tm */
-extern struct tm_binds tmb;
-extern sl_api_t slb;
+extern struct tm_binds _dmq_tmb;
+extern sl_api_t _dmq_slb;
 
 extern str dmq_200_rpl;
 extern str dmq_400_rpl;

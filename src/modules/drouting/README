@@ -6,8 +6,6 @@ Edited by
 
 Ovidiu Sas
 
-Edited by
-
 Anca-Maria Vamanu
 
    Copyright © 2005-2008 Voice Sistem SRL
@@ -169,10 +167,10 @@ Chapter 1. Admin Guide
 1.1. Introduction
 
    Dynamic Routing is a module for selecting (based on multiple criteria)
-   the the best gateway/destination to be used for delivering a certain
-   call. Least Cost Routing (LCR) is a special case of dynamic routing -
-   when the rules are ordered based on costs. Dynamic Routing comes with
-   many features regarding routing rule selection:
+   the best gateway/destination to be used for delivering a certain call.
+   Least Cost Routing (LCR) is a special case of dynamic routing - when
+   the rules are ordered based on costs. Dynamic Routing comes with many
+   features regarding routing rule selection:
      * prefix based
      * caller/group based
      * time based
@@ -307,18 +305,18 @@ Chapter 1. Admin Guide
        draft 09):
        Table 1.4. Time recurrence attributes
 
-     Attribute                            Description
-     dastard    Start of interval (RFC 2445 DATE-TIME)
-     duration   Length of interval (RFC 2445 DURATION)
-     freq       Frequency of recurrence (secondly,minutely,hourly, daily,weekly,
-                monthly, or yearly).
-     until      bound of recurrence (RFC 2445 DATE-TIME)
-     interval   How often the recurrence repeats
-     byday      List of days of the week
-     bymonthday List of days of the month
-     byyearday  List of days of the year
-     byweekno   List of weeks of the year
-     bymonth    List of months of the year
+   Attribute Description
+   dastard Start of interval (RFC 2445 DATE-TIME)
+   duration Length of interval (RFC 2445 DURATION)
+   freq Frequency of recurrence (secondly,minutely,hourly, daily,weekly,
+   monthly, or yearly).
+   until bound of recurrence (RFC 2445 DATE-TIME)
+   interval How often the recurrence repeats
+   byday List of days of the week
+   bymonthday List of days of the month
+   byyearday List of days of the year
+   byweekno List of weeks of the year
+   bymonth List of months of the year
        The value stored in database has the format of:
        <dtstart>|<duration>|<freq>|<until>|<interval>|<byday>|<bymonthday>
        |<byyearday>|<byweekno>|<bymonth>
@@ -468,7 +466,7 @@ Chapter 1. Admin Guide
        gateway is added to the request URI and then the request is
        forwarded.
 
-   If no rule is found to match the selection criteria an default action
+   If no rule is found to match the selection criteria a default action
    must be taken (e.g., error response sent back). If the gateway in the
    chain has no prefix the request is forwarded without adding any prefix
    to the request URI.
@@ -509,7 +507,7 @@ Chapter 1. Admin Guide
 
    The database url.
 
-   Default value is “NULL”.
+   Default value is “mysql://kamailioro:kamailioro@localhost/kamailio”.
 
    Example 1.1. Set db_url parameter
 ...
@@ -553,8 +551,8 @@ modparam("drouting", "drg_table", "groups")
 3.5. drl_table(str)
 
    The name of the db table storing definitions of destination lists (to
-   be used directly by the routing rules). You will have a identifier to a
-   group of gateways instead of having all the members of the group as a
+   be used directly by the routing rules). You will have an identifier to
+   a group of gateways instead of having all the members of the group as
    individual elements. Very useful to reuse a list of gateways in
    different places.
 
@@ -819,7 +817,7 @@ if (is_from_gw("3","1") {
    It takes no parameter.
 
    RPC Command Format:
-        kamcmd drouting.reload
+        kamctl rpc drouting.reload
 
 6. Installation
 

@@ -88,7 +88,7 @@ setsflag("$var(flag)");
 		<section id="kex.f.issflagset">
 		<title><function moreinfo="none">issflagset(flag)</function></title>
 		<para>
-			Return true of the script flag is set.
+			Return true if the script flag is set.
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
@@ -179,7 +179,7 @@ setbflag("$var(flag)", "1");
 		<section id="kex.f.isbflagset">
 		<title><function moreinfo="none">isbflagset(flag [, branch])</function></title>
 		<para>
-			Return true of the branch flag is set.
+			Return true if the branch flag is set.
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
@@ -360,7 +360,8 @@ pv_printf("$avp(x)", "From: $fU - To: $tU");
 		<listitem>
 			<para>
 				<emphasis>uri</emphasis> - Valid SIP URI or IP address to
-				check against the list of local IP addresses or domains.
+				check against the list of local IP addresses or domains, matching
+				as well the port and protocol if they are provided.
 				The parameter value can contain pseudo-variables.
 			</para>
 		</listitem>
@@ -373,6 +374,37 @@ pv_printf("$avp(x)", "From: $fU - To: $tU");
 		<programlisting format="linespecific">
 ...
 if(is_myself("$fu")) {
+    ...
+}
+...
+</programlisting>
+		</example>
+		</section>
+		<section id="kex.f.is_myhost">
+		<title><function moreinfo="none">is_myhost(uri)</function></title>
+		<para>
+			Check if the host part of the parameter matches a local domain
+			or IP address.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+		<listitem>
+			<para>
+				<emphasis>uri</emphasis> - Valid SIP URI, hostname of IP address to
+				check against the list of local IP addresses or domains. If it
+				is a SIP URI, the port and protocol are ignored.
+				The parameter value can contain pseudo-variables.
+			</para>
+		</listitem>
+		</itemizedlist>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>is_myhost</function> usage</title>
+		<programlisting format="linespecific">
+...
+if(is_myhost("$tu")) {
     ...
 }
 ...
@@ -461,7 +493,7 @@ resetdebug();
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; core.arg
+&kamctl; rpc core.arg
 ...
 		</programlisting>
     </section>
@@ -489,6 +521,15 @@ resetdebug();
 		Verbose info, including version number, compile flags, compiler, repository, hash
 		</para>
 	</section>
+	<section id="kex.r.core.runinfo">
+		<title>
+		<function moreinfo="none">core.runinfo</function>
+		</title>
+		<para>
+		Runtime details like running version, uptime, ...
+		</para>
+	</section>
+
 	<section id="kex.r.core.kill">
 		<title>
 		<function moreinfo="none">core.kill</function>
@@ -505,7 +546,7 @@ resetdebug();
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; core.kill
+&kamctl; rpc core.kill
 ...
 		</programlisting>
     </section>
@@ -557,13 +598,13 @@ resetdebug();
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; core.pwd
+&kamctl; rpc core.pwd
 ...
 		</programlisting>
     </section>
-	<section id="kex.r.core.shmem">
+	<section id="kex.r.core.shmmem">
 		<title>
-		<function moreinfo="none">core.shmem</function>
+		<function moreinfo="none">core.shmmem</function>
 		</title>
 		<para>
 		Returns shared memory info. It has an optional parameter that specifies
@@ -627,7 +668,7 @@ resetdebug();
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; core.uptime
+&kamctl; rpc core.uptime
 ...
 		</programlisting>
     </section>
@@ -647,7 +688,7 @@ resetdebug();
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; core.version
+&kamctl; rpc core.version
 ...
 		</programlisting>
     </section>
@@ -667,7 +708,7 @@ resetdebug();
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; core.ppdefines
+&kamctl; rpc core.ppdefines
 ...
 		</programlisting>
     </section>
@@ -687,7 +728,92 @@ resetdebug();
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; core.modules
+&kamctl; rpc core.modules
+...
+		</programlisting>
+    </section>
+	<section id="kex.r.modparam.getn">
+		<title>
+		<function moreinfo="none">modparam.getn</function>
+		</title>
+		<para>
+		Get the value of a module parameter with integer value.
+		</para>
+		<para>
+		Name: <emphasis>modparam.getn</emphasis>
+		</para>
+		<para>Parameters: <emphasis>module_name</emphasis> and
+		<emphasis>parameter_name</emphasis>.</para>
+		<para>
+		RPC Command Format:
+		</para>
+		<programlisting  format="linespecific">
+...
+kamcli rpc modparam.getn tls keylog_mode
+...
+		</programlisting>
+    </section>
+	<section id="kex.r.modparam.gets">
+		<title>
+		<function moreinfo="none">modparam.gets</function>
+		</title>
+		<para>
+		Get the value of a module parameter with string value.
+		</para>
+		<para>
+		Name: <emphasis>modparam.gets</emphasis>
+		</para>
+		<para>Parameters: <emphasis>module_name</emphasis> and
+		<emphasis>parameter_name</emphasis>.</para>
+		<para>
+		RPC Command Format:
+		</para>
+		<programlisting  format="linespecific">
+...
+kamcli rpc modparam.gets tls config
+...
+		</programlisting>
+    </section>
+	<section id="kex.r.modparam.setn">
+		<title>
+		<function moreinfo="none">modparam.setn</function>
+		</title>
+		<para>
+		Set the value of a module parameter with integer value stored in shared
+		memory.
+		</para>
+		<para>
+		Name: <emphasis>modparam.setn</emphasis>
+		</para>
+		<para>Parameters: <emphasis>module_name</emphasis>,
+		<emphasis>parameter_name</emphasis> and <emphasis>value</emphasis>.</para>
+		<para>
+		RPC Command Format:
+		</para>
+		<programlisting  format="linespecific">
+...
+kamcli rpc modparam.setn tls keylog_mode 15
+...
+		</programlisting>
+    </section>
+	<section id="kex.r.modparam.list">
+		<title>
+		<function moreinfo="none">modparam.list</function>
+		</title>
+		<para>
+		List the parameters of the loaded modules.
+		</para>
+		<para>
+		Name: <emphasis>modparam.list</emphasis>
+		</para>
+		<para>Parameters: <emphasis>module_name</emphasis> (optional).</para>
+		<para>
+		RPC Command Format:
+		</para>
+		<programlisting  format="linespecific">
+...
+kamcli rpc modparam.list
+kamcli rpc modparam.list tls
 ...
 		</programlisting>
     </section>
@@ -727,10 +853,24 @@ resetdebug();
 		Examples:
 		</para>
         <programlisting  format="linespecific">
-		&kamcmd; pkg.stats
-		&kamcmd; pkg.stats pid 1234
-		&kamcmd; pkg.stats rank 1
-		&kamcmd; pkg.stats index 10
+		&kamctl; rpc pkg.stats
+		&kamctl; rpc pkg.stats pid 1234
+		&kamctl; rpc pkg.stats rank 1
+		&kamctl; rpc pkg.stats index 10
+		</programlisting>
+    </section>
+	<section id="kex.r.pkg.info">
+		<title>
+		<function moreinfo="none">pkg.info</function>
+		</title>
+		<para>
+			Get pkg manager details.
+		</para>
+		<para>
+		Example:
+		</para>
+        <programlisting  format="linespecific">
+		&kamcli; rpc pkg.info
 		</programlisting>
     </section>
 	<section id="kex.r.stats.get_statistics">
@@ -739,9 +879,9 @@ resetdebug();
 		</title>
 		<para>Print the list of available internal statistics.</para>
 		<para>NOTE: the result is an array of strings that have the list of
-		statistics formated like "name = value", being propagated over the time
-		from the MI variant. Use "stats.fetch" command to have a more
-		JSON-friendly output.</para>
+		statistics formatted like "name = value", being propagated over the time
+		from the MI variant. Use "stats.fetch" or "stats.fetchn"commands to have
+		a more JSON-friendly output.</para>
 		<para>Parameters: <emphasis>statsid</emphasis> - which statistics to
 		be printed. If set to 'all' then all statistics are printed; if
 		set to 'statsgroup:' then all statistics in the group are printed;
@@ -749,10 +889,10 @@ resetdebug();
 		is printed.</para>
 		<para>Examples:</para>
         <programlisting  format="linespecific">
-		&kamcmd; stats.get_statistics all
-		&kamcmd; stats.get_statistics core:
-		&kamcmd; stats.get_statistics unsupported_methods
-		&kamcmd; stats.get_statistics shmem: fwd_requests fwd_replies
+		&kamctl; rpc stats.get_statistics all
+		&kamctl; rpc stats.get_statistics core:
+		&kamctl; rpc stats.get_statistics unsupported_methods
+		&kamctl; rpc stats.get_statistics shmem: fwd_requests fwd_replies
 		</programlisting>
     </section>
 	<section id="kex.r.stats.fetch">
@@ -762,7 +902,7 @@ resetdebug();
 		<para>Print the list of available internal statistics with a more
 		json friendly output. Each printed statistic is a field in the output
 		structure: {"statsgroup.statsname" : "statsvalue"}. The value is
-		represented as string to accomodate large numbers.</para>
+		represented as string to accommodate large numbers.</para>
 		<para>Parameters: <emphasis>statsid</emphasis> - which statistics to
 		be printed. If set to 'all' then all statistics are printed; if
 		set to 'statsgroup:' then all statistics in the group are printed;
@@ -771,11 +911,34 @@ resetdebug();
 		'statsgroup:statsname').</para>
 		<para>Examples:</para>
         <programlisting  format="linespecific">
-		&kamcmd; stats.fetch all
-		&kamcmd; stats.fetch core:
-		&kamcmd; stats.fetch unsupported_methods
-		&kamcmd; stats.fetch shmem.free_size
-		&kamcmd; stats.fetch shmem: fwd_requests fwd_replies
+		&kamctl; rpc stats.fetch all
+		&kamctl; rpc stats.fetch core:
+		&kamctl; rpc stats.fetch unsupported_methods
+		&kamctl; rpc stats.fetch shmem.free_size
+		&kamctl; rpc stats.fetch shmem: fwd_requests fwd_replies
+		</programlisting>
+	</section>
+	<section id="kex.r.stats.fetchn">
+		<title>
+		<function moreinfo="none">stats.fetchn</function>
+		</title>
+		<para>Print the list of available internal statistics with a more
+		json friendly output. Each printed statistic is a field in the output
+		structure: {"statsgroup.statsname" : statsvalue}. The value is
+		represented as number.</para>
+		<para>Parameters: <emphasis>statsid</emphasis> - which statistics to
+		be printed. If set to 'all' then all statistics are printed; if
+		set to 'statsgroup:' then all statistics in the group are printed;
+		if set to 'statsname' then the statistics identified by the name
+		is printed (can be also 'statsgroup.stastname' or
+		'statsgroup:statsname').</para>
+		<para>Examples:</para>
+        <programlisting  format="linespecific">
+		&kamctl; rpc stats.fetchn all
+		&kamctl; rpc stats.fetchn core:
+		&kamctl; rpc stats.fetchn unsupported_methods
+		&kamctl; rpc stats.fetchn shmem.free_size
+		&kamctl; rpc stats.fetchn shmem: fwd_requests fwd_replies
 		</programlisting>
     </section>
 	<section id="kex.r.stats.reset_statistics">
@@ -788,10 +951,10 @@ resetdebug();
 		</para>
 		<para>Examples:</para>
         <programlisting  format="linespecific">
-		&kamcmd; stats.reset_statistics all
-		&kamcmd; stats.reset_statistics core:
-		&kamcmd; stats.reset_statistics unsupported_methods
-		&kamcmd; stats.reset_statistics shmem: fwd_requests fwd_replies
+		&kamctl; rpc stats.reset_statistics all
+		&kamctl; rpc stats.reset_statistics core:
+		&kamctl; rpc stats.reset_statistics unsupported_methods
+		&kamctl; rpc stats.reset_statistics shmem: fwd_requests fwd_replies
 		</programlisting>
     </section>
 	<section id="kex.r.stats.clear_statistics">
@@ -804,10 +967,10 @@ resetdebug();
 		</para>
 		<para>Examples:</para>
         <programlisting  format="linespecific">
-		&kamcmd; stats.reset_statistics all
-		&kamcmd; stats.reset_statistics core:
-		&kamcmd; stats.reset_statistics unsupported_methods
-		&kamcmd; stats.reset_statistics shmem: fwd_requests fwd_replies
+		&kamctl; rpc stats.reset_statistics all
+		&kamctl; rpc stats.reset_statistics core:
+		&kamctl; rpc stats.reset_statistics unsupported_methods
+		&kamctl; rpc stats.reset_statistics shmem: fwd_requests fwd_replies
 		</programlisting>
     </section>
 	<section id="kex.r.system.listMethods">
@@ -826,7 +989,7 @@ resetdebug();
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; system.listMethods
+&kamctl; rpc system.listMethods
 ...
 		</programlisting>
     </section>
@@ -866,7 +1029,7 @@ resetdebug();
 		<itemizedlist>
 		<listitem>
 			<para>
-				<emphasis>module_name</emphasis> - print statistics for specific module. Either 
+				<emphasis>module_name</emphasis> - print statistics for specific module. Either
 				a module name (like "usrloc") or "core" for the &kamailio; core.
 			</para>
 		</listitem>
@@ -899,10 +1062,10 @@ resetdebug();
 		Examples:
 		</para>
         <programlisting  format="linespecific">
-		&kamcmd; mod.stats core all
-		&kamcmd; mod.stats userblacklist shm
-		&kamcmd; mod.stats kex pkg
-		&kamcmd; mod.stats all all
+		&kamctl; rpc mod.stats core all
+		&kamctl; rpc mod.stats tm shm
+		&kamctl; rpc mod.stats kex pkg
+		&kamctl; rpc mod.stats all all
 		</programlisting>
 		<para>
 		Output:
@@ -946,4 +1109,3 @@ Module: kex
 
     </section>
 </chapter>
-

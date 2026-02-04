@@ -18,7 +18,7 @@
 	<title>Introduction</title>
 
 	<para>Dynamic Routing is a module for selecting (based on multiple
-	criteria) the the best gateway/destination to be used for delivering a
+	criteria) the best gateway/destination to be used for delivering a
 	certain call. Least Cost Routing (LCR) is a special case of dynamic
 	routing - when the rules are ordered based on costs. Dynamic Routing
 	comes with many features regarding routing rule selection:
@@ -783,7 +783,7 @@
 	</itemizedlist>
 	</para>
 	<para>
-	If no rule is found to match the selection criteria an default action must
+	If no rule is found to match the selection criteria a default action must
 	be taken (e.g., error response sent back). If the gateway in the chain has
 	no prefix the request is forwarded without adding any prefix to the request
 	URI.
@@ -831,7 +831,7 @@
 		The database url.
 		</para>
 		<para>
-		<emphasis>	Default value is <quote>NULL</quote>.
+		<emphasis>Default value is <quote>&defaultrodb;</quote>.
 		</emphasis>
 		</para>
 		<example>
@@ -905,8 +905,8 @@ modparam("drouting", "drg_table", "groups")
 		<para>
 		The name of the db table storing definitions of destination lists (to
 		be used directly by the routing rules).
-		You will have a identifier to a group of gateways instead of having all the
-		members of the group as a individual elements.
+		You will have an identifier to a group of gateways instead of having all the
+		members of the group as individual elements.
 		Very useful to reuse a list of gateways in different places.
 		</para>
 		<para>
@@ -1332,7 +1332,7 @@ if (is_from_gw("3","1") {
 		<para>It takes no parameter.</para>
 		<para>RPC Command Format:</para>
 		<programlisting  format="linespecific">
-	kamcmd drouting.reload
+	kamctl rpc drouting.reload
 		</programlisting>
 	</section>
 </section>
@@ -1349,4 +1349,3 @@ if (is_from_gw("3","1") {
 </section>
 
 </chapter>
-

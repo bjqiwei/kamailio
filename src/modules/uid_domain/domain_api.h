@@ -20,32 +20,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _DOMAIN_API_H
-#define _DOMAIN_API_H
+#ifndef _UID_DOMAIN_API_H_
+#define _UID_DOMAIN_API_H_
 
 #include "../../core/sr_module.h"
 #include "../../core/dprint.h"
 #include "domain.h"
 
-typedef struct domain_api {
+typedef struct domain_api
+{
 	is_domain_local_f is_domain_local;
 } domain_api_t;
 
-typedef int (*bind_domain_f)(domain_api_t* api);
-int bind_domain(domain_api_t* api);
+typedef int (*bind_domain_f)(domain_api_t *api);
+int bind_domain(domain_api_t *api);
 
-static inline int load_domain_api(domain_api_t* api)
+static inline int load_domain_api(domain_api_t *api)
 {
 	bind_domain_f bind_domain;
 
 	bind_domain = (bind_domain_f)find_export("bind_domain", 0, 0);
 
-	if (bind_domain == NULL) {
+	if(bind_domain == NULL) {
 		ERR("Cannot import bind_domain function from domain module\n");
 		return -1;
 	}
 
-	if (bind_domain(api) == -1) {
+	if(bind_domain(api) == -1) {
 		return -1;
 	}
 	return 0;

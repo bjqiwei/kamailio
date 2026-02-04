@@ -19,9 +19,15 @@
 		The module implements text based operations over the SIP message
 		processed by &kamailio;. SIP is a text based protocol and the module
 		provides a large set of very useful functions to manipulate the
-		message at text level, e.g., regular expression search and replace,
-		Perl-like substitutions, checks for method type, header presence,
-		insert of new header and date, etc.
+		message at text level, e.g., regular expression search, replace
+		or substitutions, checks for method type, header presence,
+		insert of new header and date, string comparisons, multi-part body
+		operations, etc.
+	</para>
+	<para>
+		If not stated otherwise, the regular expressions parameters for search,
+		replace or substitute have to be in POSIX format. For PCRE regular
+		expression matching, see the pcre or dialplan modules.
 	</para>
 	</section>
 	<section>
@@ -91,6 +97,10 @@ From: medabeda
 		</listitem>
 		</itemizedlist>
 		<para>
+			Note: it performs Posix regex matching and the 're' parameter
+			is compiled with the flags REG_EXTENDED|REG_ICASE|REG_NEWLINE.
+		</para>
+		<para>
 		This function can be used from REQUEST_ROUTE, ONREPLY_ROUTE,
 		FAILURE_ROUTE, BRANCH_ROUTE.
 		</para>
@@ -127,6 +137,42 @@ if ( search("[Ss][Ii][Pp]") ) { /*....*/ };
 		<programlisting format="linespecific">
 ...
 if ( search_body("[Ss][Ii][Pp]") ) { /*....*/ };
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.search_str">
+		<title>
+		<function moreinfo="none">search_str(text, re)</function>
+		</title>
+		<para>
+		Searches for the re in the body of the message.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+		<listitem>
+			<para><emphasis>text</emphasis> - text to perform regex searching
+			over it.
+			</para>
+		</listitem>
+		<listitem>
+			<para><emphasis>re</emphasis> - regular expression to match over
+			the 'text' parameter.
+			</para>
+		</listitem>
+		</itemizedlist>
+		<para>
+			Both parameters can contain variables.
+		</para>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>search_str</function> usage</title>
+		<programlisting format="linespecific">
+...
+if ( search_str("$ru", ";transport=tcp") ) { /*....*/ };
 ...
 </programlisting>
 		</example>
@@ -262,7 +308,7 @@ search_append_body("[Oo]pen[Ss]er", " SIP Proxy");
 		<title><function>replace</function> usage</title>
 		<programlisting format="linespecific">
 ...
-replace("openser", "&kamailio; SIP Proxy");
+replace("server", "&kamailio; SIP Proxy");
 ...
 </programlisting>
 		</example>
@@ -295,7 +341,7 @@ replace("openser", "&kamailio; SIP Proxy");
 		<title><function>replace_body</function> usage</title>
 		<programlisting format="linespecific">
 ...
-replace_body("openser", "&kamailio; SIP Proxy");
+replace_body("server", "&kamailio; SIP Proxy");
 ...
 </programlisting>
 		</example>
@@ -359,7 +405,7 @@ replace_hdrs("&kamailio;", "&kamailio; SIP Proxy");
 		<title><function>replace_all</function> usage</title>
 		<programlisting format="linespecific">
 ...
-replace_all("openser", "&kamailio; SIP Proxy");
+replace_all("server", "&kamailio; SIP Proxy");
 ...
 </programlisting>
 		</example>
@@ -392,7 +438,7 @@ replace_all("openser", "&kamailio; SIP Proxy");
 		<title><function>replace_body_all</function> usage</title>
 		<programlisting format="linespecific">
 ...
-replace_body_all("openser", "&kamailio; SIP Proxy");
+replace_body_all("server", "&kamailio; SIP Proxy");
 ...
 </programlisting>
 		</example>
@@ -551,7 +597,7 @@ replace_hdrs_str("&kamailio;", "&kamailio; SIP Proxy", "a");
 		<function moreinfo="none">subst('/re/repl/flags')</function>
 		</title>
 		<para>
-		Replaces re with repl (sed or perl like).
+		Replaces re with repl.
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
@@ -688,7 +734,7 @@ if (subst_user('/(.*)3642$/$avp(user_prefix)\13642/')){$
 		<function moreinfo="none">subst_body('/re/repl/flags')</function>
 		</title>
 		<para>
-		Replaces re with repl (sed or perl like) in the body of the message.
+		Replaces re with repl in the body of the message.
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
@@ -728,7 +774,7 @@ if ( subst_body('/^o=(.*) /o=$fU /') ) {};
 		<function moreinfo="none">subst_hf(hf, subexp, flags)</function>
 		</title>
 		<para>
-		Perl-like substitutions in the body of a header field.
+		Substitutions in the body of a header field.
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
@@ -763,9 +809,47 @@ if ( subst_hf("From", "/:test@/:best@/", "a") ) { /*....*/ };
 		</example>
 	</section>
 
+	<section id="textops.f.subst_v">
+		<title>
+		<function moreinfo="none">subst_v(itext, subexp, ovp)</function>
+		</title>
+		<para>
+		Sed-like substitution subexp applied to itext, with result stored in opv.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+		<listitem>
+			<para><emphasis>itext</emphasis> - input text, it can contain variables.
+			</para>
+		</listitem>
+		<listitem>
+			<para><emphasis>subexp</emphasis> - substitution expression
+			in the same format as of the 'subst' function parameter, it can
+			contain variables.
+			</para>
+		</listitem>
+		<listitem>
+			<para><emphasis>opv</emphasis> - variable name where to store the
+			result.
+			</para>
+		</listitem>
+		</itemizedlist>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>subst_v</function> usage</title>
+		<programlisting format="linespecific">
+...
+subst_v("$var(x)", "/:test@/:best@/", "$var(r)");
+...
+</programlisting>
+		</example>
+	</section>
+
 	<section id="textops.f.set_body">
 		<title>
-		<function moreinfo="none">set_body(txt,content_type)</function>
+		<function moreinfo="none">set_body(txt, content_type)</function>
 		</title>
 		<para>
 		Set body to a SIP message.
@@ -797,9 +881,42 @@ set_body("test", "text/plain");
 		</example>
 	</section>
 
+	<section id="textops.f.set_body_hex">
+		<title>
+		<function moreinfo="none">set_body_hex(htxt, content_type)</function>
+		</title>
+		<para>
+		Set body to a SIP message with the hexa-decoded value of htxt.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+		<listitem>
+			<para><emphasis>htxt</emphasis> - hexa-encoded value for the body,
+			can include pseudo-variables. White spaces and tabs are ignored.
+			</para>
+		</listitem>
+		<listitem>
+			<para><emphasis>content_type</emphasis> - value of Content-Type header,
+				can include pseudo-variables.
+			</para>
+		</listitem>
+		</itemizedlist>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>set_body_hex</function> usage</title>
+		<programlisting format="linespecific">
+...
+set_body_hex("b0 8e 4a f2", "binary/data");
+...
+</programlisting>
+		</example>
+	</section>
+
 	<section id="textops.f.set_reply_body">
 		<title>
-		<function moreinfo="none">set_reply_body(txt,content_type)</function>
+		<function moreinfo="none">set_reply_body(txt, content_type)</function>
 		</title>
 		<para>
 		Set body to a SIP reply to be generated by &kamailio;.
@@ -830,6 +947,24 @@ set_reply_body("test", "text/plain");
 		</example>
 	</section>
 
+	<section id="textops.f.set_reply_body_hex">
+		<title>
+		<function moreinfo="none">set_reply_body_hex(txt, content_type)</function>
+		</title>
+		<para>
+		Same as set_reply_body(), but with the body provided as hexa-encoded
+		value. The whitespaces are ignored when decoding the body parameter.
+		</para>
+		<example>
+		<title><function>set_reply_body_hex</function> usage</title>
+		<programlisting format="linespecific">
+...
+set_reply_body_hex("4b 82 00 a2", "binary/data");
+...
+</programlisting>
+		</example>
+	</section>
+
 	<section id="textops.f.filter_body">
 		<title>
 		<function moreinfo="none">filter_body(content_type)</function>
@@ -855,7 +990,7 @@ set_reply_body("test", "text/plain");
 		<programlisting format="linespecific">
 ...
 if (has_body("multipart/mixed")) {
-    if (filter_body("application/sdp") {
+    if (filter_body("application/sdp")) {
         remove_hf("Content-Type");
         append_hf("Content-Type: application/sdp\r\n");
     } else {
@@ -872,13 +1007,15 @@ if (has_body("multipart/mixed")) {
 		<function moreinfo="none">append_to_reply(txt)</function>
 		</title>
 		<para>
-		Append txt as header to the reply.
+		Append txt as header to the reply that is going to be generated by
+		&kamailio; (e.g., via sl_send_reply(...)).
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
 		<listitem>
 			<para><emphasis>txt</emphasis> - String which may contains
-			pseudo-variables.
+			pseudo-variables. Note that the value has to be ended with "\r\n"
+			(end of header characters sequence).
 			</para>
 		</listitem>
 		</itemizedlist>
@@ -902,15 +1039,16 @@ append_to_reply("Foo: $rm at $Ts\r\n");
 		<function moreinfo="none">append_hf(txt[, hdr])</function>
 		</title>
 		<para>
-		Appends 'txt' as header after first header field or after
-		last 'hdr' header field.
+		Appends 'txt' as header at the end of all the headers, or after
+		last header named 'hdr' if the second parameter is provided.
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
 		<listitem>
 			<para><emphasis>txt</emphasis> - Header field to be appended. The
 			value can contain pseudo-variables which will be replaced at run
-			time.
+			time. Note that the value has to be ended with "\r\n" (end of header
+			characters sequence).
 			</para>
 		</listitem>
 		<listitem>
@@ -939,15 +1077,16 @@ append_hf("From-username: $fU\r\n", "Call-ID");
 		<function moreinfo="none">insert_hf(txt[, hdr])</function>
 		</title>
 		<para>
-		Inserts 'txt' as header before the first header field or before
-		first 'hdr' header field if 'hdr' is given.
+		Inserts 'txt' as header before the first header field, or before
+		first header named 'hdr' if the second parameter is provided.
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
 		<listitem>
 			<para><emphasis>txt</emphasis> - Header field to be inserted. The
 			value can contain pseudo-variables which will be replaced at run
-			time.
+			time. Note that the value has to be ended with "\r\n" (end of header
+			characters sequence).
 			</para>
 		</listitem>
 		<listitem>
@@ -1018,14 +1157,14 @@ append_urihf("CC-Diversion: ", "\r\n");
 		<note>
 		<para>
 			The function is also able to distinguish the compact names. For
-			exmaple <quote>From</quote> will match with <quote>f</quote>
+			example <quote>From</quote> will match with <quote>f</quote>.
 		</para>
 		</note>
 		<para>Meaning of the parameters is as follows:</para>
 		<itemizedlist>
 		<listitem>
-			<para><emphasis>hf_name</emphasis> - Header field name.(long or
-			compact form)
+			<para><emphasis>hf_name</emphasis> - Header field name (long or
+			compact form). It can be only a static string value.
 			</para>
 		</listitem>
 		</itemizedlist>
@@ -1037,7 +1176,25 @@ append_urihf("CC-Diversion: ", "\r\n");
 		<title><function>is_present_hf</function> usage</title>
 		<programlisting format="linespecific">
 ...
-if (is_present_hf("From")) log(1, "From HF Present");
+if (is_present_hf("From")) xlog("From HF Present");
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.is_present_hf_pv">
+		<title>
+		<function moreinfo="none">is_present_hf_pv(hf_name)</function>
+		</title>
+		<para>
+		Same as is_present_hf() function, but the parameter can contain
+		variables.
+		</para>
+		<example>
+		<title><function>is_present_hf_pv</function> usage</title>
+		<programlisting format="linespecific">
+...
+if (is_present_hf_pv("$var(hname)")) xinfo("Header $var(hname) is present\n");
 ...
 </programlisting>
 		</example>
@@ -1055,7 +1212,7 @@ if (is_present_hf("From")) log(1, "From HF Present");
 		<itemizedlist>
 		<listitem>
 			<para><emphasis>hf_name_re</emphasis> - Regular expression to
-				match header field name.
+				match header field name. It can be only a static string value.
 			</para>
 		</listitem>
 		</itemizedlist>
@@ -1067,7 +1224,27 @@ if (is_present_hf("From")) log(1, "From HF Present");
 		<title><function>is_present_hf_re</function> usage</title>
 		<programlisting format="linespecific">
 ...
-if (is_present_hf_re("^P-")) log(1, "There are headers starting with P-\n");
+if (is_present_hf_re("^P-"))
+    xlog("There are headers starting with P-\n");
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.is_present_hf_re_pv">
+		<title>
+		<function moreinfo="none">is_present_hf_re_pv(hf_name_re)</function>
+		</title>
+		<para>
+		Same as is_present_hf_re() function, but the parameter can contain
+		variables.
+		</para>
+		<example>
+		<title><function>is_present_hf_re_pv</function> usage</title>
+		<programlisting format="linespecific">
+...
+if (is_present_hf_re_pv_("^$var(prefix)"))
+    xlog("There are headers starting with $var(prefix)\n");
 ...
 </programlisting>
 		</example>
@@ -1255,7 +1432,8 @@ if(is_method("OPTION|UPDATE"))
 		<itemizedlist>
 		<listitem>
 			<para><emphasis>hname</emphasis> - header name to be removed.
-			</para>
+			It can be only a static string (because of the optimizations
+			done at startup to speed up execution at runtime).</para>
 		</listitem>
 		</itemizedlist>
 		<para>
@@ -1271,9 +1449,26 @@ if(remove_hf("User-Agent"))
     # User Agent header removed
 }
 # compact form: remove "Contact" or "m" header
-remove_hf("Contact")
+remove_hf("Contact");
 # compact form: remove "Contact" or "m" header
-remove_hf("m")
+remove_hf("m");
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.remove_hf_pv">
+		<title>
+		<function moreinfo="none">remove_hf_pv(hname)</function>
+		</title>
+		<para>
+		Same as remove_hf() function, but the parameter can contain variables.
+		</para>
+		<example>
+		<title><function>remove_hf_pv</function> usage</title>
+		<programlisting format="linespecific">
+...
+remove_hf_pv("$var(hname)");
 ...
 </programlisting>
 		</example>
@@ -1308,6 +1503,26 @@ remove_hf("m")
 if(remove_hf_re("^P-"))
 {
     # All headers starting with "P-" removed
+}
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.remove_hf_re_pv">
+		<title>
+		<function moreinfo="none">remove_hf_re_pv(re)</function>
+		</title>
+		<para>
+		Same as remove_hf_re() function, but the parameter can contain variables.
+		</para>
+		<example>
+		<title><function>remove_hf_re_pv</function> usage</title>
+		<programlisting format="linespecific">
+...
+if(remove_hf_re_pv("^$var(prefix)"))
+{
+    # All headers starting with $var(prefix) value removed
 }
 ...
 </programlisting>
@@ -1356,6 +1571,109 @@ if(remove_hf_exp("^P-", "^P-Keep-"))
 		</example>
 	</section>
 
+	<section id="textops.f.remove_hf_exp_pv">
+		<title>
+		<function moreinfo="none">remove_hf_exp_pv(expmatch, expskip)</function>
+		</title>
+		<para>
+		Same as remove_hf_exp() function, but the parameters can contain variables.
+		</para>
+		<example>
+		<title><function>remove_hf_exp_pv</function> usage</title>
+		<programlisting format="linespecific">
+...
+if(remove_hf_exp_pv("^$var(match)", "^$var(keep)"))
+{
+    # All headers starting with $var(match) value removed,
+    # except the ones starting with $var(keep) value
+}
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.remove_hf_idx">
+		<title>
+		<function moreinfo="none">remove_hf_idx(hname, idx)</function>
+		</title>
+		<para>
+			Remove from message the headers matching by name 'hname' with
+			the index 'idx'.
+		</para>
+		<para>
+		Returns true if the header is removed.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+		<listitem>
+			<para><emphasis>hname</emphasis> - header name.</para>
+		</listitem>
+		<listitem>
+			<para><emphasis>idx</emphasis> - index of the header, starting
+			from 0 with first header; negative values count from the end of
+			the headers, -1 being the last header matching the name.</para>
+		</listitem>
+		</itemizedlist>
+		<para>
+			The parameters can be config variables.
+		</para>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>remove_hf_idx</function> usage</title>
+		<programlisting format="linespecific">
+...
+remove_hf_idx("X-My-Header", "-1");
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.remove_hf_match">
+		<title>
+		<function moreinfo="none">remove_hf_match(hname, op, expr)</function>
+		</title>
+		<para>
+			Remove from message all headers with name 'hname' matching the body
+			with expression <quote>expr</quote>, based on operator
+			<quote>op</quote>.
+		</para>
+		<para>
+		Returns true if at least one header is found and removed.
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+		<listitem>
+			<para><emphasis>hanem</emphasis> - name of the header.
+			</para>
+		</listitem>
+		<listitem>
+			<para><emphasis>op</emphasis> - operator - it can be: 'eq' - equal;
+			'ne' - not equal; 'in' - include; 're' - regular expression match.
+			</para>
+		</listitem>
+		<listitem>
+			<para><emphasis>expr</emphasis> - expression to match.
+			</para>
+		</listitem>
+		</itemizedlist>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>remove_hf_match</function> usage</title>
+		<programlisting format="linespecific">
+...
+if(remove_hf_match("X-Info", "in", "^data")) {
+    # all headers with name "X-Info" that have the body matching regular
+    # expression "^data" are removed
+}
+...
+</programlisting>
+		</example>
+	</section>
+
 	<section id="textops.f.has_body">
 		<title>
 		<function moreinfo="none">has_body()</function>,
@@ -1363,7 +1681,7 @@ if(remove_hf_exp("^P-", "^P-Keep-"))
 		</title>
 		<para>
 		The function returns <emphasis>true</emphasis> if the SIP message
-		has a body attached. The checked includes also the
+		has a body attached. The check includes also the
 		<quote>Content-Length</quote> header presence and value.
 		</para>
 		<para>
@@ -1482,7 +1800,7 @@ if(is_privacy("id"))
 		Function can be used from all kinds of routes.
 		</para>
 		<example>
-			<title><function>in_list()</function> usage</title>
+			<title><function>in_list</function> usage</title>
 			<programlisting format="linespecific">
 ...
 $var(subject) = "fi";
@@ -1506,7 +1824,7 @@ if (in_list("$var(subject)", "$var(list)", ",")) {
 		Function can be used from all kinds of routes.
 		</para>
 		<example>
-			<title><function>in_list()</function> usage</title>
+			<title><function>in_list_prefix</function> usage</title>
 			<programlisting format="linespecific">
 ...
 $var(subject) = "final";
@@ -1594,9 +1912,126 @@ if (starts_with("$rU", "+358"))
 		</example>
 	</section>
 
+	<section id="textops.f.ends_with">
+		<title>
+		<function moreinfo="none">ends_with(str1, str2)</function>
+		</title>
+		<para>
+		The function returns <emphasis>true</emphasis> if the first string ends
+		with the second string. The parameters can contain variables.
+		</para>
+		<para>
+		This function can be used from REQUEST_ROUTE, ONREPLY_ROUTE,
+		FAILURE_ROUTE and BRANCH_ROUTE.
+		</para>
+		<example>
+		<title><function>ends_with</function> usage</title>
+		<programlisting format="linespecific">
+...
+if (ends_with("$rU", "8800"))
+{
+    # do interesting stuff here
+}
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.str_find">
+		<title>
+		<function moreinfo="none">str_find(str1, str2)</function>
+		</title>
+		<para>
+			The function returns <emphasis>true</emphasis> (greater than 0) if
+			the str2 string is found in str1, case sensitive comparison.
+		</para>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>str_find</function> usage</title>
+		<programlisting format="linespecific">
+...
+if (str_find("$rU", "8800")) {
+    # do interesting stuff here
+}
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.str_ifind">
+		<title>
+		<function moreinfo="none">str_ifind(str1, str2)</function>
+		</title>
+		<para>
+			The function returns <emphasis>true</emphasis> (greater than 0) if
+			the str2 string is found in str1, case insensitive comparison.
+		</para>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>str_ifind</function> usage</title>
+		<programlisting format="linespecific">
+...
+if (str_ifind("$rU", "Alice")) {
+    # do interesting stuff here
+}
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.str_any_in">
+		<title>
+		<function moreinfo="none">str_any_in(txt, clist)</function>
+		</title>
+		<para>
+			Return 1 (true) if any character in "clist" is found inside "txt".
+			Both parameters can contain variables.
+		</para>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>str_any_in</function> usage</title>
+		<programlisting format="linespecific">
+...
+if (str_any_in("$hdr(X-Hdr)", ";',:")) {
+    # do interesting stuff here
+}
+...
+</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.str_all_in">
+		<title>
+		<function moreinfo="none">str_all_in(txt, clist)</function>
+		</title>
+		<para>
+			Return 1 (true) if all character in "clist" are found inside "txt".
+			Both paramters can contain variables.
+		</para>
+		<para>
+		This function can be used from ANY_ROUTE.
+		</para>
+		<example>
+		<title><function>str_all_in</function> usage</title>
+		<programlisting format="linespecific">
+...
+if (str_all_in("$hdr(X-Hdr)", ".;-")) {
+    # do interesting stuff here
+}
+...
+</programlisting>
+		</example>
+	</section>
+
 	<section id="textops.f.set_body_multipart">
 		<title>
-		<function moreinfo="none">set_body_multipart([txt,content_type][,boundary])</function>
+		<function moreinfo="none">set_body_multipart([txt, content_type][, boundary])</function>
 		</title>
 		<para>
 		Set multipart body to a SIP message. If called with no parameters, will convert
@@ -1624,7 +2059,7 @@ if (starts_with("$rU", "+358"))
 		This function can be used from REQUEST_ROUTE, FAILURE_ROUTE, BRANCH_ROUTE.
 		</para>
 		<para>
-		The core will take care of the last boundary ending "--". Detecting which one is
+		The core will take care of the last boundary ending with "--", detecting which one is
 		the last and fixing the others if needed.
 		</para>
 		<para>
@@ -1661,7 +2096,7 @@ text
 
 	<section id="textops.f.append_body_part">
 		<title>
-		<function moreinfo="none">append_body_part(txt,content_type[, content_disposition])</function>
+		<function moreinfo="none">append_body_part(txt, content_type[, content_disposition])</function>
 		</title>
 		<para>
 		Append a part on multipart body SIP message. Will use "unique-boundary-1" as boundary.
@@ -1688,7 +2123,7 @@ text
 		This function can be used from REQUEST_ROUTE, FAILURE_ROUTE, BRANCH_ROUTE.
 		</para>
 		<para>
-		The core will take care of the last boundary ending "--". Detecting wich one is
+		The core will take care of the last boundary ending with "--", detecting which one is
 		the last and fixing the others if needed.
 		</para>
 		<para>
@@ -1717,7 +2152,7 @@ Content-Disposition: signal;handling=required
 </programlisting>
 		</example>
 		<para>
-		If other headers are wanted to be added for a body part, they can be
+		If other headers should be added to a MIME body part, they can be
 		appended after the value of the content-type parameter, separated by
 		`\r\n` (at the very end do not add the '\r\n').
 		</para>
@@ -1725,8 +2160,8 @@ Content-Disposition: signal;handling=required
 		<title><function>append_body_part</function> with headers</title>
 		<programlisting format="linespecific">
 ...
-$var(b) = "<info>active</info>";
-append_body_part("$var(b)", "application/xml\r\nX-Header: xyz");
+$var(b) = "7e Od 04 55 75 69 20 4d 61 6b 65 43 61 6c 6c";
+append_body_part("$var(b)", "application/vnd.cirpack.isdn-ext\r\nX-Header: xyz", "signal;handling=required");
 msg_apply_changes();
 ...
 
@@ -1734,6 +2169,7 @@ msg_apply_changes();
 
 ...
 Content-Type: application/vnd.cirpack.isdn-ext
+X-Header: xyz
 Content-Disposition: signal;handling=required
 
 7e Od 04 55 75 69 20 4d 61 6b 65 43 61 6c 6c
@@ -1746,7 +2182,7 @@ Content-Disposition: signal;handling=required
 
 		<section id="textops.f.append_body_part_hex">
 		<title>
-		<function moreinfo="none">append_body_part_hex(txt,content_type[, content_disposition])</function>
+		<function moreinfo="none">append_body_part_hex(txt, content_type[, content_disposition])</function>
 		</title>
 		<para>
 		Append a part on multipart body SIP message, with the content provided
@@ -1777,7 +2213,7 @@ Content-Disposition: signal;handling=required
 		This function can be used from REQUEST_ROUTE, FAILURE_ROUTE, BRANCH_ROUTE.
 		</para>
 		<para>
-		The core will take care of the last boundary ending "--". Detecting wich one is
+		The core will take care of the last boundary ending with "--", detecting which one is
 		the last and fixing the others if needed.
 		</para>
 		<para>
@@ -1805,7 +2241,7 @@ kamailio
 </programlisting>
 		</example>
 		<para>
-		If other headers are wanted to be added for a body part, see the docs
+		If other headers should be added to a MIME body part, see the docs
 		for append_body_part(...) function.
 		</para>
 	</section>
@@ -1903,7 +2339,7 @@ get_body_part("application/vnd.cirpack.isdn-ext", "$var(hbody)");
 		This function can be used from REQUEST_ROUTE, FAILURE_ROUTE, BRANCH_ROUTE.
 		</para>
 		<para>
-		The core will take care of the last boundary ending "--". Detecting wich one is
+		The core will take care of the last boundary ending with "--", detecting which one is
 		the last and fixing the others if needed.
 		</para>
 		<para>
@@ -1926,7 +2362,7 @@ msg_apply_changes();
 		<function moreinfo="none">regex_substring(itext, regexp, mindex, mcount, dpv)</function>
 		</title>
 		<para>
-		Search in text with given regular expression then sets dpv pseudo-variable
+		Search in text with given regular expression then set dpv pseudo-variable
 		with the matched token at provided index.
 		</para>
 		<para>Meaning of the parameters is as follows:</para>
@@ -1976,6 +2412,41 @@ msg_apply_changes();
 	----
 	...
 	</programlisting>
+		</example>
+	</section>
+
+	<section id="textops.f.via_param_rm">
+		<title>
+		<function moreinfo="none">via_param_rm(name, idx)</function>
+		</title>
+		<para>
+		Remove parameter matching by name from Via body at the specified index.
+		The index starts from 0 (first Via body). Negative index counts from the
+		end of the list for Via header bodies (-1 is the last Via body).
+		</para>
+		<para>Meaning of the parameters is as follows:</para>
+		<itemizedlist>
+		<listitem>
+			<para><emphasis>name</emphasis> - name of the parameter
+			</para>
+		</listitem>
+		<listitem>
+			<para><emphasis>idx</emphasis> - index of the Via body.
+			</para>
+		</listitem>
+		</itemizedlist>
+		<para>The parameters can also be variables.</para>
+		<para>
+			This function can be used from ANY_ROUTE.
+		</para>
+
+		<example>
+		<title><function>via_param_rm</function> usage</title>
+		<programlisting format="linespecific">
+...
+via_param_rm("p1", "0");
+...
+</programlisting>
 		</example>
 	</section>
 

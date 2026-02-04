@@ -65,8 +65,8 @@ Andrei Pelinescu-Onciul
    1.17. Set sctp_sack_delay parameter
    1.18. Set sctp_sack_freq parameter
    1.19. Set sctp_max_burst parameter
-   1.20. Use sctp.info with kamcmd
-   1.21. Use sctp.options with kamcmd
+   1.20. Use sctp.info with kamctl
+   1.21. Use sctp.options with kamctl
 
 Chapter 1. Admin Guide
 
@@ -193,7 +193,7 @@ modparam("sctp", "sctp_socket_sndbuf", 14096)
 
    Example 1.3. Set sctp_autoclose parameter
 ...
-# kamcmd cfg.set_now_int sctp autoclose 120
+# kamctl rpc cfg.set_now_int sctp autoclose 120
 ...
 modparam("sctp", "sctp_autoclose", 300)
 ...
@@ -203,11 +203,11 @@ modparam("sctp", "sctp_autoclose", 300)
    Number of milliseconds before an unsent message/chunk is dropped. Can
    be changed at runtime.
 
-   Default value is 32000 (miliseconds - 32 seconds).
+   Default value is 32000 (milliseconds - 32 seconds).
 
    Example 1.4. Set sctp_send_ttl parameter
 ...
-# kamcmd cfg.set_now_int sctp send_ttl 180000
+# kamctl rpc cfg.set_now_int sctp send_ttl 180000
 ...
 modparam("sctp", "sctp_send_ttl", 10000)
 ...
@@ -281,8 +281,8 @@ modparam("sctp", "sctp_assoc_reuse", 0)
 3.8. sctp_max_assocs (int)
 
    Maximum number of allowed open sctp associations. -1 means maximum
-   allowed by the OS. Default: -1. Can be changed at runtime (e.g.: kamcmd
-   cfg.set_now_int sctp max_assocs 10 ). When the maximum associations
+   allowed by the OS. Default: -1. Can be changed at runtime (e.g.: kamctl
+   rpc cfg.set_now_int sctp max_assocs 10). When the maximum associations
    number is exceeded and a new associations is opened by a remote host,
    the association will be immediately closed. However it is possible that
    some sip packets get through (especially if they are sent early, as
@@ -306,7 +306,7 @@ modparam("sctp", "sctp_max_assocs", 10)
 
 3.9. sctp_srto_initial (int)
 
-   Initial value of the retransmission timeout (in miliseconds), used in
+   Initial value of the retransmission timeout (in milliseconds), used in
    RTO calculations.
 
    Can be changed at runtime (sctp srto_initial) but it will affect only
@@ -323,7 +323,7 @@ modparam("sctp", "sctp_srto_initial", 1000)
 
    Maximum value of the retransmission timeout (RTO) in milliseconds.
 
-   WARNING: values lower then the sctp sack_delay will cause lots of
+   WARNING: values lower than the sctp sack_delay will cause lots of
    retransmissions and connection instability (see sctp_srto_min for more
    details).
 
@@ -341,10 +341,10 @@ modparam("sctp", "sctp_srto_max", 2000)
 
    Minimum value of the retransmission timeout (RTO) in milliseconds.
 
-   WARNING: values lower then the sctp sack_delay of any peer might cause
+   WARNING: values lower than the sctp sack_delay of any peer might cause
    retransmissions and possible interoperability problems. According to
    the standard the sack_delay should be between 200 and 500 ms, so avoid
-   trying values lower then 500 ms unless you control all the possible
+   trying values lower than 500 ms unless you control all the possible
    sctp peers and you do make sure their sack_delay is higher or their
    sack_freq is 1.
 
@@ -388,7 +388,7 @@ modparam("sctp", "sctp_init_max_attempts", 3)
 
 3.14. sctp_init_max_timeo (int)
 
-   Maximum INIT retransmission timeout (RTO max for INIT) in miliseconds.
+   Maximum INIT retransmission timeout (RTO max for INIT) in milliseconds.
 
    Can be changed at runtime (sctp init_max_timeo).
 
@@ -430,10 +430,10 @@ modparam("sctp", "sctp_pathmaxrxt", 2)
 3.17. sctp_sack_delay (int)
 
    Delay until an ACK is generated after receiving a packet (in
-   miliseconds).
+   milliseconds).
 
-   WARNING: a value higher then srto_min can cause a lot of
-   retransmissions (and strange problems). A value higher then srto_max
+   WARNING: a value higher than srto_min can cause a lot of
+   retransmissions (and strange problems). A value higher than srto_max
    will result in very high connections instability. According to the
    standard the sack_delay value should be between 200 and 500 ms.
 
@@ -489,9 +489,9 @@ modparam("sctp", "sctp_max_burst", 3)
 
    Print information about SCTP transport.
 
-   Example 1.20. Use sctp.info with kamcmd
+   Example 1.20. Use sctp.info with kamctl
 ...
-kamcmd sctp.info
+kamctl rpc sctp.info
 ...
 
 4.2. sctp.options
@@ -499,7 +499,7 @@ kamcmd sctp.info
    Print the options of SCTP sockets. It can take an optional parameter
    that specifies the listen address of SCTP socket.
 
-   Example 1.21. Use sctp.options with kamcmd
+   Example 1.21. Use sctp.options with kamctl
 ...
-kamcmd sctp.options
+kamctl rpc sctp.options
 ...

@@ -32,19 +32,17 @@
 #include "../../core/tcp_options.h"
 #include "../../core/msg_translator.h"
 
-int nio_route_no;
-int nio_min_msg_len;
-int nio_is_incoming;
+extern int nio_route_no;
+extern int nio_min_msg_len;
+extern int nio_is_incoming;
 
-str nio_msg_avp_param;
-int_str nio_msg_avp_name;
-unsigned short nio_msg_avp_type;
+extern str nio_msg_avp_param;
 
 int nio_msg_received(sr_event_param_t *evp);
 int nio_msg_sent(sr_event_param_t *evp);
 
 int nio_check_incoming(void);
-char* nio_msg_update(sip_msg_t *msg, unsigned int *olen);
+char *nio_msg_update(sip_msg_t *msg, unsigned int *olen);
 
 int nio_intercept_init(void);
 

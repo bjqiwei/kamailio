@@ -2,12 +2,10 @@ include ../../Makefile.defs
 auto_gen=
 NAME=rtp_media_server.so
 
-DEFS+=-I$(LOCALBASE)/lib
+DEFS+=-I$(LOCALBASE)/include
 
 ORTPLIBS=-lortp
-BCUNITLIBS=-lbcunit
-MS2LIBS=-lmediastreamer_voip -lmediastreamer_base
+MS2LIBS=-lmediastreamer
 
-LIBS=$(ORTPLIBS) $(BCUNITLIBS) $(MS2LIBS)
-DEFS+=-DKAMAILIO_MOD_INTERFACE
+LIBS+=-L$(LOCALBASE)/lib $(ORTPLIBS) $(MS2LIBS)
 include ../../Makefile.modules

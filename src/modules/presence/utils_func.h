@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -24,7 +26,7 @@
 /*! \file
  * \brief Kamailio presence module :: Utility functions
  * \ref utils_func.c
- * \ingroup presence 
+ * \ingroup presence
  */
 
 
@@ -47,7 +49,7 @@
 #define EVENT_DIALOG_SLA(ev)                        \
 	((ev)->type == EVENT_DIALOG                     \
 			&& ((ev)->params.hooks.event_dialog.sla \
-					   || (ev)->params.hooks.event_dialog.ma))
+					|| (ev)->params.hooks.event_dialog.ma))
 
 
 static inline int uandd_to_uri(str user, str domain, str *out)
@@ -137,7 +139,7 @@ static inline int ps_fill_local_contact(struct sip_msg *msg, str *contact)
 		contact->len += 1;
 		p += 1;
 	}
-	strncpy(p, ip.s, ip.len);
+	memcpy(p, ip.s, ip.len);
 	contact->len += ip.len;
 	p += ip.len;
 	if(msg->rcv.bind_address->address.af == AF_INET6) {
@@ -145,7 +147,7 @@ static inline int ps_fill_local_contact(struct sip_msg *msg, str *contact)
 		contact->len += 1;
 		p += 1;
 	}
-	if(contact->len > LCONTACT_BUF_SIZE - 21) {
+	if(contact->len > LCONTACT_BUF_SIZE - 22) {
 		LM_ERR("buffer overflow\n");
 		goto error;
 	}
@@ -156,8 +158,9 @@ static inline int ps_fill_local_contact(struct sip_msg *msg, str *contact)
 	}
 	contact->len += len;
 	p += len;
-	strncpy(p, proto, plen);
+	memcpy(p, proto, plen);
 	contact->len += plen;
+	contact->s[contact->len] = '\0';
 
 	return 0;
 error:

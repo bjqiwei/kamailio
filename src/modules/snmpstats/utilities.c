@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -49,7 +51,7 @@
 static cfg_ctx_t *ctx = NULL;
 
 /*!
- * This function copies an Kamailio "str" datatype into a '\\0' terminated char*
+ * This function copies a Kamailio "str" datatype into a '\\0' terminated char*
  * string.
  *
  * \note Make sure to free the memory allocated to *copiedString, when you no

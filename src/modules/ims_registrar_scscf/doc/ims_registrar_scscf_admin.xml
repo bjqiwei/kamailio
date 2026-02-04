@@ -230,6 +230,25 @@
     </section>
 
     <section>
+      <title>ue_unsubscribe_on_dereg (int)</title>
+
+      <para>Many UEs do not unsubscribe on de-register, therefor if the
+      parameter is set to 0, the default, any subscription of that subscriber
+      will be removed and NOTIFY will be not sent. To disable this behaviour set this
+      parameter to 1.</para>
+
+      <para><emphasis> Default value is 0 (disabled)</emphasis></para>
+
+      <example>
+        <title>Set <varname>user_data_dtd</varname>parameter</title>
+
+        <programlisting format="linespecific">...
+        modparam("ims_registrar_scscf", "ue_unsubscribe_on_dereg", 1)
+...</programlisting>
+      </example>
+    </section>
+
+    <section>
       <title>user_data_dtd (string)</title>
 
       <para>DTD to check the user data received in SAA (Server Assignment
@@ -431,6 +450,26 @@
       </example>
     </section>
 
+    <section>
+      <title>skip_multiple_bindings_on_reg_resp (int)</title>
+
+      <para>If set to 1 - on Re-Registration registrar sends in 200 OK reply only
+      current contact in case of multiple bindings.
+      If set to 0 - on Re-Registration registrar sends in 200 OK reply all
+      contacts in case of multiple bindings according to RFC3261.
+      </para>
+
+      <para><emphasis> Default value is 0. </emphasis></para>
+
+      <example>
+        <title>Set <varname>skip_multiple_bindings_on_reg_resp</varname> parameter</title>
+
+        <programlisting format="linespecific">...
+        modparam("ims_registrar_scscf", "skip_multiple_bindings_on_reg_resp", 1)
+...</programlisting>
+      </example>
+    </section>
+
   </section>
 
   <section>
@@ -438,7 +477,7 @@
 
     <section>
       <title><function moreinfo="none">save(async_reply_route,
-      domain)</function></title>
+      domain, mode, flags)</function></title>
 
       <para>The function processes a REGISTER message. It can add, remove or
       modify usrloc records depending on Contact and Expires HFs in the
@@ -461,6 +500,16 @@
         <listitem>
           <para><emphasis>domain</emphasis>- Logical domain within
           registrar.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis>mode</emphasis>- Optional and unused legacy parameter.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis>flags</emphasis>- Optional parameter. Valid values:
+          0x01 - Realm is not used when extracting Private Identity from the
+          Authorization header.</para>
         </listitem>
       </itemizedlist>
 
@@ -714,7 +763,7 @@ switch ($retcode) {
       profile)</function></title>
 
       <para>The function fetches the contacts for 'uri' from table 'domain' to
-      pseudo-variable $imssulc(profile) [imssulc = ims scscf ulc].</para>
+      pseudo-variable $ulc(profile) [ulc = ims scscf ulc].</para>
 
       <para>Meaning of the parameters is as follows:</para>
 
@@ -731,7 +780,7 @@ switch ($retcode) {
         </listitem>
 
         <listitem>
-          <para><emphasis>profile</emphasis> - Name of $imssulc
+          <para><emphasis>profile</emphasis> - Name of $ulc
           pseudo-variable profile that will store the fetched contacts. It is
           a static string.</para>
         </listitem>
@@ -763,7 +812,7 @@ reg_fetch_contacts("location", "sip:user@kamailio.org", "caller");
 
       <itemizedlist>
         <listitem>
-          <para><emphasis>profile</emphasis> - Name of $imssulc
+          <para><emphasis>profile</emphasis> - Name of $ulc
           pseudo-variable profile that stores the contacts. It is a static
           string.</para>
         </listitem>
@@ -791,7 +840,7 @@ reg_free_contacts("callee");
 
       <itemizedlist>
         <listitem>
-          <para><emphasis>The user agent to it's own state</emphasis></para>
+          <para><emphasis>The user agent to its own state</emphasis></para>
         </listitem>
 
         <listitem>
@@ -866,7 +915,7 @@ if (can_subscribe_to_reg("location")){
 
       <itemizedlist>
         <listitem>
-          <para><emphasis>The user agent to it's own state</emphasis></para>
+          <para><emphasis>The user agent to its own state</emphasis></para>
         </listitem>
 
         <listitem>
@@ -894,7 +943,7 @@ if (can_subscribe_to_reg("location")){
 
         <programlisting format="linespecific">...
 if (can_publish_reg("location")){
-    $var(ret)= publish_reg("location"); 
+    $var(ret)= publish_reg("location");
 }
 ...
 </programlisting>
@@ -923,7 +972,7 @@ if (can_publish_reg("location")){
 
         <programlisting format="linespecific">...
 if (can_publish_reg("location")){
-    $var(ret)= publish_reg("location"); 
+    $var(ret)= publish_reg("location");
 }
 ...
 </programlisting>

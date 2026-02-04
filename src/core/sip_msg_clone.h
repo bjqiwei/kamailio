@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009 iptelorg GmbH
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -19,15 +19,15 @@
 
 #include "parser/msg_parser.h"
 
-struct sip_msg*  sip_msg_shm_clone(	struct sip_msg *org_msg,
-									int *sip_msg_len,
-									int clone_lumps);
+unsigned int sip_msg_clone_len(sip_msg_t *org_msg, int clone_lumps);
 
-int msg_lump_cloner(struct sip_msg *pkg_msg,
-					struct lump** add_rm,
-					struct lump** body_lumps,
-					struct lump_rpl** reply_lump);
+struct sip_msg *sip_msg_shm_clone(
+		struct sip_msg *org_msg, int *sip_msg_len, int clone_lumps);
 
+int msg_lump_cloner(struct sip_msg *pkg_msg, struct lump **add_rm,
+		struct lump **body_lumps, struct lump_rpl **reply_lump);
+
+int sip_msg_copy(sip_msg_t *imsg, sip_msg_t *omsg, unsigned int flags);
 
 #endif /*__sip_msg_clone_h*/
 

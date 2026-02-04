@@ -1,9 +1,11 @@
 /*
- * presence_xml module - 
+ * presence_xml module
  *
  * Copyright (C) 2007 Voice Sistem S.R.L.
  *
  * This file is part of Kamailio, a free SIP server.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +17,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
- * along with this program; if not, write to the Free Software 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
@@ -54,8 +56,8 @@ int pres_watcher_allowed(subs_t *subs)
 	char *sub_handling = NULL;
 	int ret = 0;
 
-	/* if force_active set status to active*/
-	if(force_active) {
+	/* if pxml_force_active set status to active*/
+	if(pxml_force_active) {
 		subs->status = ACTIVE_STATUS;
 		subs->reason.s = NULL;
 		subs->reason.len = 0;
@@ -115,7 +117,6 @@ int pres_watcher_allowed(subs_t *subs)
 	}
 	if(strncmp((char *)sub_handling, "block", 5) == 0) {
 		subs->status = TERMINATED_STATUS;
-		;
 		subs->reason.s = "rejected";
 		subs->reason.len = 8;
 	} else if(strncmp((char *)sub_handling, "confirm", 7) == 0) {
@@ -241,7 +242,7 @@ xmlNodePtr get_rule_node(subs_t *subs, xmlDocPtr xcap_tree)
 			/* check to see if matches presentity current sphere */
 			/* ask presence for sphere information */
 
-			char *sphere = pres_get_sphere(&subs->pres_uri);
+			char *sphere = psapi.get_sphere(&subs->pres_uri);
 			if(sphere) {
 				char *attr = (char *)xmlNodeGetContent(sphere_node);
 				if(xmlStrcasecmp((unsigned char *)attr, (unsigned char *)sphere)
@@ -255,7 +256,7 @@ xmlNodePtr get_rule_node(subs_t *subs, xmlDocPtr xcap_tree)
 				xmlFree(attr);
 			}
 
-			/* if the user has not define a sphere -> 
+			/* if the user has not define a sphere ->
 			 *						consider the condition true*/
 		}
 
@@ -301,7 +302,7 @@ xmlNodePtr get_rule_node(subs_t *subs, xmlDocPtr xcap_tree)
 					LM_DBG("<many domain= %s>\n", domain);
 					if((strlen(domain) != subs->from_domain.len
 							   && strncmp(domain, subs->from_domain.s,
-										  subs->from_domain.len))) {
+									   subs->from_domain.len))) {
 						xmlFree(domain);
 						continue;
 					}
@@ -337,7 +338,7 @@ xmlNodePtr get_rule_node(subs_t *subs, xmlDocPtr xcap_tree)
 							if(strlen(domain) == subs->from_domain.len
 									&& (strncmp(domain, subs->from_domain.s,
 												subs->from_domain.len)
-											   == 0)) {
+											== 0)) {
 								LM_DBG("except domain match\n");
 								xmlFree(domain);
 								apply_rule = 0;
@@ -401,7 +402,7 @@ int get_rules_doc(
 	static str tmp4 = str_init("domain");
 	static str tmp5 = str_init("doc");
 
-	if(force_active) {
+	if(pxml_force_active) {
 		*rules_doc = NULL;
 		return 0;
 	}
@@ -440,8 +441,9 @@ int get_rules_doc(
 
 	result_cols[xcap_doc_col = n_result_cols++] = &tmp5;
 
-	if(pxml_dbf.use_table(pxml_db, &xcap_table) < 0) {
-		LM_ERR("in use_table-[table]= %.*s\n", xcap_table.len, xcap_table.s);
+	if(pxml_dbf.use_table(pxml_db, &pxml_xcap_table) < 0) {
+		LM_ERR("in use_table-[table]= %.*s\n", pxml_xcap_table.len,
+				pxml_xcap_table.s);
 		return -1;
 	}
 
@@ -462,10 +464,10 @@ int get_rules_doc(
 			   "\t[domain]= %.*s\t[doc_type]= %d\n",
 				user->len, user->s, domain->len, domain->s, type);
 
-		if(!integrated_xcap_server && type != PRES_RULES) {
+		if(!pxml_integrated_xcap_server && type != PRES_RULES) {
 			LM_WARN("Cannot retrieve non pres-rules documents from"
 					"external XCAP server\n");
-		} else if(!integrated_xcap_server) {
+		} else if(!pxml_integrated_xcap_server) {
 			if(http_get_rules_doc(*user, *domain, &body) < 0) {
 				LM_ERR("sending http GET request to xcap server\n");
 				goto error;
@@ -521,7 +523,7 @@ error:
 
 int http_get_rules_doc(str user, str domain, str *rules_doc)
 {
-	str uri;
+	str uri = STR_NULL;
 	xcap_doc_sel_t doc_sel;
 	char *doc = NULL;
 	xcap_serv_t *xs;
@@ -558,6 +560,8 @@ int http_get_rules_doc(str user, str domain, str *rules_doc)
 
 	rules_doc->s = doc;
 	rules_doc->len = doc ? strlen(doc) : 0;
+
+	pkg_free(uri.s);
 
 	return 0;
 

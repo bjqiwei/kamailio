@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -88,9 +90,6 @@
  */
 
 
-#include "defs.h"
-
-
 #include "config.h"
 #include "h_table.h"
 #include "timer.h"
@@ -99,7 +98,6 @@
 #include "t_stats.h"
 
 #include "../../core/hash_func.h"
-#include "../../core/dprint.h"
 #include "../../core/config.h"
 #include "../../core/parser/parser_f.h"
 #include "../../core/ut.h"
@@ -114,17 +112,15 @@
 #include "t_fwd.h"				 /* t_send_branch */
 #include "../../core/cfg_core.h" /* cfg_get(core, core_cfg, use_dns_failover) */
 #endif
-#ifdef USE_DST_BLACKLIST
-#include "../../core/dst_blacklist.h"
+#ifdef USE_DST_BLOCKLIST
+#include "../../core/dst_blocklist.h"
 #endif
 
 
 struct msgid_var user_fr_timeout;
 struct msgid_var user_fr_inv_timeout;
-#ifdef TM_DIFF_RT_TIMEOUT
 struct msgid_var user_rt_t1_timeout_ms;
 struct msgid_var user_rt_t2_timeout_ms;
-#endif
 struct msgid_var user_inv_max_lifetime;
 struct msgid_var user_noninv_max_lifetime;
 
@@ -156,7 +152,6 @@ int tm_init_timers(void)
 	default_tm_cfg.fr_timeout = MS_TO_TICKS(default_tm_cfg.fr_timeout);
 	default_tm_cfg.fr_inv_timeout = MS_TO_TICKS(default_tm_cfg.fr_inv_timeout);
 	default_tm_cfg.wait_timeout = MS_TO_TICKS(default_tm_cfg.wait_timeout);
-	default_tm_cfg.delete_timeout = MS_TO_TICKS(default_tm_cfg.delete_timeout);
 	default_tm_cfg.tm_max_inv_lifetime =
 			MS_TO_TICKS(default_tm_cfg.tm_max_inv_lifetime);
 	default_tm_cfg.tm_max_noninv_lifetime =
@@ -168,8 +163,6 @@ int tm_init_timers(void)
 		default_tm_cfg.fr_inv_timeout = 1;
 	if(default_tm_cfg.wait_timeout == 0)
 		default_tm_cfg.wait_timeout = 1;
-	if(default_tm_cfg.delete_timeout == 0)
-		default_tm_cfg.delete_timeout = 1;
 	if(default_tm_cfg.rt_t2_timeout_ms == 0)
 		default_tm_cfg.rt_t2_timeout_ms = 1;
 	if(default_tm_cfg.rt_t1_timeout_ms == 0)
@@ -183,12 +176,10 @@ int tm_init_timers(void)
 	SIZE_FIT_CHECK(fr_timeout, default_tm_cfg.fr_timeout, "fr_timer");
 	SIZE_FIT_CHECK(
 			fr_inv_timeout, default_tm_cfg.fr_inv_timeout, "fr_inv_timer");
-#ifdef TM_DIFF_RT_TIMEOUT
 	SIZE_FIT_CHECK(
 			rt_t1_timeout_ms, default_tm_cfg.rt_t1_timeout_ms, "retr_timer1");
 	SIZE_FIT_CHECK(
 			rt_t2_timeout_ms, default_tm_cfg.rt_t2_timeout_ms, "retr_timer2");
-#endif
 	SIZE_FIT_CHECK(end_of_life, default_tm_cfg.tm_max_inv_lifetime,
 			"max_inv_lifetime");
 	SIZE_FIT_CHECK(end_of_life, default_tm_cfg.tm_max_noninv_lifetime,
@@ -196,19 +187,16 @@ int tm_init_timers(void)
 
 	memset(&user_fr_timeout, 0, sizeof(user_fr_timeout));
 	memset(&user_fr_inv_timeout, 0, sizeof(user_fr_inv_timeout));
-#ifdef TM_DIFF_RT_TIMEOUT
 	memset(&user_rt_t1_timeout_ms, 0, sizeof(user_rt_t1_timeout_ms));
 	memset(&user_rt_t2_timeout_ms, 0, sizeof(user_rt_t2_timeout_ms));
-#endif
 	memset(&user_inv_max_lifetime, 0, sizeof(user_inv_max_lifetime));
 	memset(&user_noninv_max_lifetime, 0, sizeof(user_noninv_max_lifetime));
 
-	LM_DBG("tm init timers - fr=%d fr_inv=%d wait=%d delete=%d t1=%d t2=%d"
+	LM_DBG("tm init timers - fr=%d fr_inv=%d wait=%d t1=%d t2=%d"
 		   " max_inv_lifetime=%d max_noninv_lifetime=%d\n",
 			default_tm_cfg.fr_timeout, default_tm_cfg.fr_inv_timeout,
-			default_tm_cfg.wait_timeout, default_tm_cfg.delete_timeout,
-			default_tm_cfg.rt_t1_timeout_ms, default_tm_cfg.rt_t2_timeout_ms,
-			default_tm_cfg.tm_max_inv_lifetime,
+			default_tm_cfg.wait_timeout, default_tm_cfg.rt_t1_timeout_ms,
+			default_tm_cfg.rt_t2_timeout_ms, default_tm_cfg.tm_max_inv_lifetime,
 			default_tm_cfg.tm_max_noninv_lifetime);
 	return 0;
 error:
@@ -271,11 +259,9 @@ int timer_fixup_ms(void *handle, str *gname, str *name, void **val)
 
 	t = (long)(*val);
 
-/* size fix checks */
-#ifdef TM_DIFF_RT_TIMEOUT
+	/* size fix checks */
 	IF_IS_TIMER_NAME(rt_t1_timeout_ms, "retr_timer1")
 	else IF_IS_TIMER_NAME(rt_t2_timeout_ms, "retr_timer2")
-#endif
 
 			return 0;
 
@@ -284,39 +270,6 @@ error:
 }
 
 /******************** handlers ***************************/
-
-
-#ifndef TM_DEL_UNREF
-/* returns number of ticks before retrying the del, or 0 if the del.
- * was succesfull */
-inline static ticks_t delete_cell(struct cell *p_cell, int unlock)
-{
-	/* there may still be FR/RETR timers, which have been reset
-	   (i.e., time_out==TIMER_DELETED) but are stilled linked to
-	   timer lists and must be removed from there before the
-	   structures are released
-	*/
-	unlink_timers(p_cell);
-	/* still in use ... don't delete */
-	if(IS_REFFED_UNSAFE(p_cell)) {
-		if(unlock)
-			UNLOCK_HASH(p_cell->hash_index);
-		LM_DBG("%p: can't delete -- still reffed (%d)\n", p_cell,
-				p_cell->ref_count);
-		/* delay the delete */
-		/* TODO: change refcnts and delete on refcnt==0 */
-		return cfg_get(tm, tm_cfg, delete_timeout);
-	} else {
-		if(unlock)
-			UNLOCK_HASH(p_cell->hash_index);
-#ifdef EXTRA_DEBUG
-		LM_DBG("delete transaction %p\n", p_cell);
-#endif
-		free_cell(p_cell);
-		return 0;
-	}
-}
-#endif /* TM_DEL_UNREF */
 
 
 /* generate a fake reply
@@ -340,19 +293,21 @@ static void fake_reply(struct cell *t, int branch, int code)
 		reply_status =
 				relay_reply(t, FAKED_REPLY, branch, code, &cancel_data, 0);
 	}
-/* now when out-of-lock do the cancel I/O */
-#ifdef CANCEL_REASON_SUPPORT
-	if(do_cancel_branch)
-		cancel_branch(t, branch, &cancel_data.reason, 0);
-#else /* CANCEL_REASON_SUPPORT */
-	if(do_cancel_branch)
-		cancel_branch(t, branch, 0);
-#endif /* CANCEL_REASON_SUPPORT */
+	if(reply_status == RPS_TGONE) {
+		return;
+	}
+
+	/* now when out-of-lock do the cancel I/O */
+	if(do_cancel_branch) {
+		cancel_branch(t, branch, NULL, &cancel_data.reason, 0);
+	}
+
 	/* it's cleaned up on error; if no error occurred and transaction
-	   completed regularly, I have to clean-up myself
-	*/
-	if(reply_status == RPS_COMPLETED)
+	 * completed regularly, I have to clean-up myself
+	 */
+	if(reply_status == RPS_COMPLETED) {
 		put_on_wait(t);
+	}
 }
 
 
@@ -367,8 +322,7 @@ inline static ticks_t retransmission_handler(struct retr_buf *r_buf)
 		abort();
 	}
 #endif
-	if(r_buf->rbtype == TYPE_LOCAL_CANCEL
-			|| r_buf->rbtype == TYPE_REQUEST) {
+	if(r_buf->rbtype == TYPE_LOCAL_CANCEL || r_buf->rbtype == TYPE_REQUEST) {
 #ifdef EXTRA_DEBUG
 		LM_DBG("request resending (t=%p, %.9s ... )\n", r_buf->my_T,
 				r_buf->buffer);
@@ -398,12 +352,10 @@ inline static void final_response_handler(
 {
 	int silent;
 #ifdef USE_DNS_FAILOVER
-	/*int i;
-	int added_branches;
-	*/
 	int branch_ret;
 	int prev_branch;
 	ticks_t now;
+	tm_xlinks_t backup_xd;
 #endif
 
 #ifdef EXTRA_DEBUG
@@ -433,6 +385,12 @@ inline static void final_response_handler(
 		return;
 	};
 
+	/* FR if no transaction.... */
+	if(t->uac == NULL) {
+		LM_WARN("transaction %p no uac (flags %x)\n", t, t->flags);
+		return;
+	}
+
 	/* lock reply processing to determine how to proceed reliably */
 	LOCK_REPLIES(t);
 	/* now it can be only a request retransmission buffer;
@@ -450,7 +408,7 @@ inline static void final_response_handler(
 			&& is_invite(t)
 			/* parallel forking does not allow silent state discarding */
 			&& t->nr_of_outgoings == 1
-			/* on_negativ reply handler not installed -- serial forking
+			/* on_negative reply handler not installed -- serial forking
 		 * could occur otherwise */
 			&& t->on_failure == 0
 			/* the same for FAILURE callbacks */
@@ -461,7 +419,8 @@ inline static void final_response_handler(
 	if(silent) {
 		UNLOCK_REPLIES(t);
 #ifdef EXTRA_DEBUG
-		LM_DBG("transaction silently dropped (%p), branch %d, last_received %d\n",
+		LM_DBG("transaction silently dropped (%p), branch %d, last_received "
+			   "%d\n",
 				t, r_buf->branch, t->uac[r_buf->branch].last_received);
 #endif
 		put_on_wait(t);
@@ -474,36 +433,42 @@ inline static void final_response_handler(
 			&& /* r_buf->branch is always >=0 */
 			(t->uac[r_buf->branch].last_received == 0)
 			&& (t->uac[r_buf->branch].request.buffer
-					   != NULL) /* not a blind UAC */
-			) {
+					!= NULL) /* not a blind UAC */
+	) {
 /* no reply received */
-#ifdef USE_DST_BLACKLIST
+#ifdef USE_DST_BLOCKLIST
 		if(r_buf->my_T && r_buf->my_T->uas.request
 				&& (r_buf->my_T->uas.request->REQ_METHOD
-						   & cfg_get(tm, tm_cfg, tm_blst_methods_add)))
-			dst_blacklist_add(
+						& cfg_get(tm, tm_cfg, tm_blst_methods_add)))
+			dst_blocklist_add(
 					BLST_ERR_TIMEOUT, &r_buf->dst, r_buf->my_T->uas.request);
 #endif
 #ifdef USE_DNS_FAILOVER
-		/* if this is an invite, the destination resolves to more ips, and
-		 *  it still hasn't passed more than fr_inv_timeout since we
-		 *  started, add another branch/uac */
+		/* if this is an request, the destination resolves to more IPs, and
+		 * it still hasn't passed more than max_inv_lifetime or
+		 * max_noninv_lifetimesince we started, add another branch/uac */
 		if(cfg_get(core, core_cfg, use_dns_failover)) {
 			now = get_ticks_raw();
 			if((s_ticks_t)(t->end_of_life - now) > 0) {
+				LM_DBG("send on branch %d failed, adding another branch\n",
+						r_buf->branch);
 				branch_ret = add_uac_dns_fallback(
 						t, t->uas.request, &t->uac[r_buf->branch], 0);
 				prev_branch = -1;
+				/* restore X/AVP values from initial transaction */
+				tm_xdata_swap(t, &backup_xd, 0);
 				while((branch_ret >= 0) && (branch_ret != prev_branch)) {
 					prev_branch = branch_ret;
 					branch_ret =
 							t_send_branch(t, branch_ret, t->uas.request, 0, 0);
 				}
+				/* restore X/AVP values from backup data */
+				tm_xdata_swap(t, &backup_xd, 1);
 			}
 		}
 #endif
 	}
-	fake_reply(t, r_buf->branch, 408);
+	fake_reply(t, r_buf->branch, _tm_reply_408_code);
 }
 
 
@@ -529,8 +494,8 @@ ticks_t retr_buf_handler(ticks_t ticks, struct timer_ln *tl, void *p)
 	unsigned long crt_retr_interval_ms;
 	struct cell *t;
 
-	rbuf = (struct retr_buf *)((void *)tl
-							   - (void *)(&((struct retr_buf *)0)->timer));
+	rbuf = ksr_container_of(tl, struct retr_buf, timer);
+
 	membar_depends(); /* to be on the safe side */
 	t = rbuf->my_T;
 
@@ -554,6 +519,13 @@ ticks_t retr_buf_handler(ticks_t ticks, struct timer_ln *tl, void *p)
 							  a little race risk, but
 							  nothing bad would happen */
 		rbuf->flags |= F_RB_TIMEOUT;
+#ifdef TIMER_DEBUG
+		if(rbuf->flags & F_RB_FR_INV) {
+			LM_DBG("reached the \"fr_inv_timeout\"\n");
+		} else {
+			LM_DBG("reached the \"fr_timeout\"\n");
+		}
+#endif
 		/* WARNING:  the next line depends on taking care not to start the
 		 *           wait timer before finishing with t (if this is not
 		 *           guaranteed then comment the timer_allow_del() line) */
@@ -636,12 +608,10 @@ ticks_t wait_handler(ticks_t ti, struct timer_ln *wait_tl, void *data)
 	int unlinked = 0;
 	int rcount = 0;
 
-	p_cell = (tm_cell_t*)data;
+	p_cell = (tm_cell_t *)data;
 #ifdef TIMER_DEBUG
 	LM_DBG("WAIT timer hit @%d for %p (timer_lm %p)\n", ti, p_cell, wait_tl);
 #endif
-
-#ifdef TM_DEL_UNREF
 	/* stop cancel timers if any running */
 	if(is_invite(p_cell)) {
 		cleanup_localcancel_timers(p_cell);
@@ -653,7 +623,7 @@ ticks_t wait_handler(ticks_t ti, struct timer_ln *wait_tl, void *data)
 	if(rcount > 1) {
 		/* t still referenced */
 		LM_DBG("transaction: %p referenced with: %d\n", p_cell, rcount);
-		if(p_cell->wait_start==0) {
+		if(p_cell->wait_start == 0) {
 			p_cell->wait_start = ti;
 		}
 		if(p_cell->wait_start + S_TO_TICKS(TM_LIFETIME_LIMIT) < ti) {
@@ -688,30 +658,5 @@ ticks_t wait_handler(ticks_t ti, struct timer_ln *wait_tl, void *data)
 	p_cell->flags |= T_IN_AGONY;
 	UNREF_FREE(p_cell, unlinked);
 	ret = 0;
-#else  /* TM_DEL_UNREF */
-	if(p_cell->flags & T_IN_AGONY) {
-		/* delayed delete */
-		/* we call delete now without any locking on hash/ref_count;
-		   we can do that because delete_handler is only entered after
-		   the delete timer was installed from wait_handler, which
-		   removed transaction from hash table and did not destroy it
-		   because some processes were using it; that means that the
-		   processes currently using the transaction can unref and no
-		   new processes can ref -- we can wait until ref_count is
-		   zero safely without locking
-		*/
-		ret = delete_cell(p_cell, 0 /* don't unlock on return */);
-	} else {
-		/* stop cancel timers if any running */
-		if(is_invite(p_cell))
-			cleanup_localcancel_timers(p_cell);
-		/* remove the cell from the hash table */
-		LOCK_HASH(p_cell->hash_index);
-		remove_from_hash_table_unsafe(p_cell);
-		p_cell->flags |= T_IN_AGONY;
-		/* delete (returns with UNLOCK-ed_HASH) */
-		ret = delete_cell(p_cell, 1 /* unlock on return */);
-	}
-#endif /* TM_DEL_UNREF */
 	return ret;
 }

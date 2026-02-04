@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -44,7 +46,7 @@ int _test_insert_to_reply( struct sip_msg *msg, char *str )
     len=strlen( str );
     buf=pkg_malloc( len );
     if (!buf) {
-        LM_ERR("no mem\n");
+        PKG_MEM_ERROR;
         return 0;
     }
     memcpy( buf, str, len );

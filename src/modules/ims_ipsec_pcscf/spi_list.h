@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -33,20 +35,28 @@
 
 typedef struct _spi_node spi_node_t;
 
-struct _spi_node {
-    spi_node_t* next;
-    uint32_t id;
+struct _spi_node
+{
+	spi_node_t *next;
+	uint32_t spi_cid;
+	uint32_t spi_sid;
+	uint16_t sport;
+	uint16_t cport;
 };
 
-typedef struct _spi_list {
-    spi_node_t* head;
-    spi_node_t* tail;
+typedef struct _spi_list
+{
+	spi_node_t *head;
+	spi_node_t *tail;
 } spi_list_t;
 
 
 spi_list_t create_list();
-int spi_add(spi_list_t* list, uint32_t id);
-int spi_remove(spi_list_t* list, uint32_t id);
-int spi_in_list(spi_list_t* list, uint32_t id);
+void destroy_list(spi_list_t *lst);
+int spi_add(spi_list_t *list, uint32_t spi_cid, uint32_t spi_sid,
+		uint16_t cport, uint16_t sport);
+int spi_remove_head(spi_list_t *list);
+int spi_remove(spi_list_t *list, uint32_t spi_cid, uint32_t spi_sid);
+int spi_in_list(spi_list_t *list, uint32_t spi_cid, uint32_t spi_sid);
 
 #endif /* _SPI_LIST_H_ */

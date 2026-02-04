@@ -4,6 +4,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -23,6 +25,8 @@
 #ifndef _CNXCC_H
 #define _CNXCC_H
 
+#include <time.h>
+
 #include "../../core/str.h"
 
 #define DATETIME_SIZE sizeof("0001-01-01 00:00:00")
@@ -31,18 +35,18 @@
 
 static inline unsigned int get_current_timestamp()
 {
-	return time(NULL);
+	return (unsigned int)(unsigned long long)time(NULL);
 }
 
 static inline int timestamp2isodt(str *dest, unsigned int timestamp)
 {
 	time_t tim;
-	struct tm *tmPtr;
+	struct tm tmPtr;
 
 	tim = timestamp;
-	tmPtr = localtime(&tim);
+	localtime_r(&tim, &tmPtr);
 
-	strftime(dest->s, DATETIME_SIZE, "%Y-%m-%d %H:%M:%S", tmPtr);
+	strftime(dest->s, DATETIME_SIZE, "%Y-%m-%d %H:%M:%S", &tmPtr);
 	dest->len = DATETIME_LENGTH;
 
 	return 0;

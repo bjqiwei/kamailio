@@ -322,7 +322,7 @@ if (pcre_match_group("$ua", "$avp(i:10)")) {
 
    RPC Command Example:
 ...
-kamcmd regex.reload
+kamctl rpc regex.reload
 ...
 
 6. Installation and Running
@@ -359,7 +359,7 @@ kamcmd regex.reload
 ^PJSUA
 
 
-### Blacklisted source IP's
+### Blocklisted source IP's
 [1]
 
 ^190\.232\.250\.226$

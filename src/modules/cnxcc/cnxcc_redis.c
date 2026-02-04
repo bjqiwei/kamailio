@@ -4,6 +4,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -144,9 +146,18 @@ error:
 static struct redis *__alloc_redis(char *ip, int port, int db)
 {
 	struct redis *redis = pkg_malloc(sizeof(struct redis));
+	if(!redis) {
+		PKG_MEM_ERROR;
+		return NULL;
+	}
 	int len = strlen(ip);
 
 	redis->ip = pkg_malloc(len + 1);
+	if(!redis->ip) {
+		PKG_MEM_ERROR;
+		pkg_free(redis);
+		return NULL;
+	}
 	strcpy(redis->ip, ip);
 
 	redis->port = port;
@@ -226,8 +237,7 @@ static struct redis *__redis_connect(struct redis *redis)
 
 static int __redis_select_db(redisContext *ctxt, int db)
 {
-	redisReply *rpl;
-	rpl = redisCommand(ctxt, "SELECT %d", db);
+	redisReply *rpl = redisCommand(ctxt, "SELECT %d", db);
 
 	if(!rpl || rpl->type == REDIS_REPLY_ERROR) {
 		if(!rpl)
@@ -245,7 +255,7 @@ static int __redis_select_db(redisContext *ctxt, int db)
 static int __redis_exec(
 		credit_data_t *credit_data, const char *cmd, redisReply **rpl)
 {
-	redisReply *rpl_aux;
+	redisReply *rpl_aux = NULL;
 	char cmd_buffer[1024];
 
 	*rpl = redisCommand(_data.redis->ctxt, cmd);
@@ -300,7 +310,7 @@ int redis_incr_by_double(
 int redis_get_double(credit_data_t *credit_data, const char *instruction,
 		const char *key, double *value)
 {
-	str str_double = {0, 0};
+	str str_double = STR_NULL;
 	char buffer[128];
 
 	if(redis_get_str(credit_data, instruction, key, &str_double) < 0)
@@ -389,6 +399,11 @@ int redis_get_str(credit_data_t *credit_data, const char *instruction,
 	}
 
 	value->s = pkg_malloc(rpl->len);
+	if(!value->s) {
+		PKG_MEM_ERROR;
+		freeReplyObject(rpl);
+		return -1;
+	}
 	value->len = rpl->len;
 	memcpy(value->s, rpl->str, rpl->len);
 
@@ -516,7 +531,7 @@ int redis_insert_double_value(
 
 int redis_kill_list_member_exists(credit_data_t *credit_data)
 {
-	redisReply *rpl;
+	redisReply *rpl = NULL;
 	int exists = 0;
 	char cmd_buffer[1024];
 
@@ -552,7 +567,7 @@ static void __redis_subscribe_to_kill_list(struct redis *redis)
 
 int redis_publish_to_kill_list(credit_data_t *credit_data)
 {
-	redisReply *rpl;
+	redisReply *rpl = NULL;
 	char cmd_buffer[1024];
 	snprintf(cmd_buffer, sizeof(cmd_buffer), "PUBLISH cnxcc:kill_list %s",
 			credit_data->str_id);
@@ -578,8 +593,8 @@ static void __async_disconnect_cb(const redisAsyncContext *c, int status)
 static void __subscription_cb(redisAsyncContext *c, void *r, void *privdata)
 {
 	redisReply *reply = r;
-	str key;
-	credit_data_t *credit_data;
+	str key = STR_NULL;
+	credit_data_t *credit_data = NULL;
 
 	if(reply == NULL) {
 		LM_ERR("reply is NULL\n");

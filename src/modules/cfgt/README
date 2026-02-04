@@ -28,15 +28,25 @@ Victor Seva
               3.1. basedir (string)
               3.2. mask (int)
               3.3. callid_prefix (string)
+              3.4. skip_unknown (int)
+              3.5. route_log (int)
 
-        4. Usage
-        5. Report format
+        4. RPC Commands
+
+              4.1. cfgt.mask
+              4.2. cfgt.list
+              4.3. cfgt.clean
+
+        5. Usage
+        6. Report format
 
    List of Examples
 
    1.1. Set cfgtrace parameter
    1.2. Set mask parameter
    1.3. Set callid_prefix parameter
+   1.4. Set skip_unknown parameter
+   1.5. Set route_log parameter
 
 Chapter 1. Admin Guide
 
@@ -53,9 +63,17 @@ Chapter 1. Admin Guide
         3.1. basedir (string)
         3.2. mask (int)
         3.3. callid_prefix (string)
+        3.4. skip_unknown (int)
+        3.5. route_log (int)
 
-   4. Usage
-   5. Report format
+   4. RPC Commands
+
+        4.1. cfgt.mask
+        4.2. cfgt.list
+        4.3. cfgt.clean
+
+   5. Usage
+   6. Report format
 
 1. Overview
 
@@ -87,6 +105,8 @@ Chapter 1. Admin Guide
    3.1. basedir (string)
    3.2. mask (int)
    3.3. callid_prefix (string)
+   3.4. skip_unknown (int)
+   3.5. route_log (int)
 
 3.1. basedir (string)
 
@@ -97,7 +117,7 @@ Chapter 1. Admin Guide
 
    Example 1.1. Set cfgtrace parameter
 ...
-modparam("cfgt", "basedir", "/var/run/kamailio/cfgtest")
+modparam("cfgt", "basedir", "/run/kamailio/cfgtest")
 ...
 
 3.2. mask (int)
@@ -133,7 +153,88 @@ modparam("cfgt", "mask", 12)
 modparam("cfgt", "callid_prefix", "TEST-ID%")
 ...
 
-4. Usage
+3.4. skip_unknown (int)
+
+   If enabled, value different from 0, cfgt will not generate the report
+   of any message that doesn't match the callid_prefix.
+
+   Default value is “0”, false.
+
+   Example 1.4. Set skip_unknown parameter
+...
+modparam("cfgt", "skip_unknown", "1")
+...
+
+3.5. route_log (int)
+
+   If enabled, value different from 0, cfgt will log (WARN) the execution
+   time of routes.
+
+   Default value is “0”, false.
+
+   Example 1.5. Set route_log parameter
+...
+modparam("cfgt", "route_log", "1")
+...
+
+4. RPC Commands
+
+   4.1. cfgt.mask
+   4.2. cfgt.list
+   4.3. cfgt.clean
+
+4.1.  cfgt.mask
+
+   Sets mask module parameter.
+
+   Name: cfgt.mask
+
+   Parameters:
+     * mask : int value
+
+   Example:
+...
+kamcmd cfgt.mask 32
+...
+
+4.2.  cfgt.list
+
+   Lists reports info in memory.
+
+   Name: cfgt.list
+
+   Example:
+...
+kamcmd cfgt.list
+{
+        uuid: unknown
+        msgid: 2
+}
+{
+        uuid: whatever
+        msgid: 1
+}
+200 ok
+...
+
+4.3.  cfgt.clean
+
+   Removes reports from disk and cleans info in memory.
+
+   Name: cfgt.clean
+
+   Parameters:
+     * report : string value
+       use 'all' to clean any report
+
+   Example:
+...
+kamcmd cfgt.clean unknown
+...
+kamcmd cfgt.clean all
+...
+
+5. Usage
 
    This module is used by the debugger module, so it must be loaded first.
    To enable the generation of the reports, the debugger module must be
@@ -160,7 +261,7 @@ modparam("debugger", "cfgtest", 1)
 #!endif
 ...
 
-5. Report format
+6. Report format
 
    cfgt generates a json file per request processed. The files are created
    at <basedir>/<prefix>/<message_id>.json. The “message_id” is a sequence

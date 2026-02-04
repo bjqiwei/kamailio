@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -88,9 +90,7 @@ struct subscription
 };
 typedef struct subscription subs_t;
 
-void msg_active_watchers_clean(unsigned int ticks, void *param);
-
-void msg_watchers_clean(unsigned int ticks, void *param);
+void ps_watchers_db_timer_clean(unsigned int ticks, void *param);
 
 int handle_subscribe0(struct sip_msg *);
 int w_handle_subscribe0(struct sip_msg *, char *, char *);
@@ -125,5 +125,6 @@ typedef int (*extract_sdialog_info_t)(subs_t *subs, struct sip_msg *msg,
 void delete_subs(
 		str *pres_uri, str *ev_name, str *to_tag, str *from_tag, str *callid);
 int get_subscribers_count(struct sip_msg *msg, str pres_uri, str event);
+int replace_subscription(subs_t *subs);
 
 #endif

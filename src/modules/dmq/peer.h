@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -15,8 +17,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
- * along with this program; if not, write to the Free Software 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
@@ -61,7 +63,7 @@ typedef struct dmq_peer_list
 	int count;
 } dmq_peer_list_t;
 
-extern dmq_peer_list_t *peer_list;
+extern dmq_peer_list_t *dmq_peer_list;
 
 dmq_peer_list_t *init_peer_list();
 dmq_peer_t *search_peer_list(dmq_peer_list_t *peer_list, dmq_peer_t *peer);

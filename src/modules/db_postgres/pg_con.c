@@ -7,6 +7,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
@@ -45,6 +47,7 @@
 #include <netinet/tcp.h>
 #include <time.h>
 
+extern pg_con_param_t *pg_con_param_list;
 
 /* Override the default notice processor to output the messages
  * using SER's output subsystem.
@@ -57,7 +60,7 @@ static void notice_processor(void *arg, const char *message)
 
 /** Determine the format of timestamps used by the server.
  * A PostgresSQL server can be configured to store timestamps either as 8-byte
- * integers or floating point numbers with double precision. This functions
+ * integers or floating point numbers with double precision. This function
  * sends a simple SQL query to the server and tries to determine the format of
  * timestamps from the reply. This function is executed once after connecting
  * to a PostgreSQL server and the result of the detection is then stored in
@@ -164,7 +167,7 @@ error:
 
 
 /** Free all memory allocated for a pg_con structure.
- * This function function frees all memory that is in use by
+ * This function frees all memory that is in use by
  * a pg_con structure.
  * @param con A generic db_con connection structure.
  * @param payload PostgreSQL specific payload to be freed.
@@ -244,8 +247,8 @@ int pg_con_connect(db_con_t *con)
 	struct pg_uri *puri;
 	char *port_str;
 	int ret, i = 0;
-	const char *keywords[10], *values[10];
-	char to[16];
+	const char *keywords[32], *values[32];
+	pg_con_param_t *pg_con_param;
 
 	pcon = DB_GET_PAYLOAD(con);
 	puri = DB_GET_PAYLOAD(con->uri);
@@ -278,10 +281,13 @@ int pg_con_connect(db_con_t *con)
 	values[i++] = puri->username;
 	keywords[i] = "password";
 	values[i++] = puri->password;
-	if(pg_timeout > 0) {
-		snprintf(to, sizeof(to) - 1, "%d", pg_timeout + 3);
-		keywords[i] = "connect_timeout";
-		values[i++] = to;
+
+	/* add other connection parameters */
+	pg_con_param = pg_con_param_list;
+	while(pg_con_param) {
+		keywords[i] = pg_con_param->name;
+		values[i++] = pg_con_param->value;
+		pg_con_param = pg_con_param->next;
 	}
 
 	keywords[i] = values[i] = NULL;

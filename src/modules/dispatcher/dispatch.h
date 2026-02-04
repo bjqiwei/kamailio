@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -29,10 +31,11 @@
 #define _DISPATCH_H_
 
 #include <stdio.h>
+#include <sys/time.h>
 #include "../../core/pvar.h"
 #include "../../core/xavp.h"
 #include "../../core/parser/msg_parser.h"
-#include "../../core/rand/kam_rand.h"
+#include "../../core/utils/sruid.h"
 #include "../../modules/tm/tm_load.h"
 
 
@@ -45,7 +48,8 @@
 #define DS_DISABLED_DST		4  /*!< admin disabled destination */
 #define DS_PROBING_DST		8  /*!< checking destination */
 #define DS_NODNSARES_DST	16 /*!< no DNS A/AAAA resolve for host in uri */
-#define DS_STATES_ALL		31 /*!< all bits for the states of destination */
+#define DS_NOPING_DST		32 /*!< no ping to destination */
+#define DS_STATES_ALL		63 /*!< all bits for the states of destination */
 
 #define ds_skip_dst(flags)	((flags) & (DS_INACTIVE_DST|DS_DISABLED_DST))
 
@@ -54,9 +58,12 @@
 #define DS_PROBE_INACTIVE	2
 #define DS_PROBE_ONLYFLAGGED	3
 
-#define DS_MATCH_ALL		0
-#define DS_MATCH_NOPORT		1
-#define DS_MATCH_NOPROTO	2
+#define DS_MATCH_ALL			0
+#define DS_MATCH_NOPORT			1
+#define DS_MATCH_NOPROTO		2
+#define DS_MATCH_ACTIVE			4
+#define DS_MATCH_SOCKET			8
+#define DS_MATCH_MIXSOCKPRPORT	16
 
 #define DS_SETOP_DSTURI		0
 #define DS_SETOP_RURI		1
@@ -66,12 +73,42 @@
 #define DS_USE_NEXT			1
 
 #define DS_XAVP_DST_SKIP_ATTRS	1
+#define DS_XAVP_DST_ADD_SOCKSTR	(1<<1)
+#define DS_XAVP_DST_ADD_SOCKNAME	(1<<2)
 
 #define DS_XAVP_CTX_SKIP_CNT	1
 
 #define DS_IRMODE_NOIPADDR	1
 
+#define DS_DNS_MODE_INIT   1
+#define DS_DNS_MODE_ALWAYS (1<<1)
+#define DS_DNS_MODE_TIMER  (1<<2)
+#define DS_DNS_MODE_QSRV   (1<<3)
+
+#define DS_STATE_MODE_SET  1
+#define DS_STATE_MODE_FUNC (1<<1)
+
+#define DS_EVRTMODE_RUNTIME 0
+#define DS_EVRTMODE_OPTIONS 1
+#define DS_EVRTMODE_INIT 2
+
+#define DS_SELRES_FAILED (ds_selres_t){0}
+
 /* clang-format on */
+typedef struct ds_rctx
+{
+	int flags;
+	int code;
+	str reason;
+	str uri;
+	int setid;
+} ds_rctx_t;
+
+/** result of a hashing operation */
+typedef struct ds_selres
+{
+	unsigned int hash;
+} ds_selres_t;
 
 extern str ds_db_url;
 extern str ds_table_name;
@@ -91,9 +128,12 @@ extern int ds_xavp_ctx_mode;
 
 extern str ds_xavp_dst_addr;
 extern str ds_xavp_dst_grp;
+extern str ds_xavp_dst_dstidx;
 extern str ds_xavp_dst_dstid;
 extern str ds_xavp_dst_attrs;
 extern str ds_xavp_dst_sock;
+extern str ds_xavp_dst_socket;
+extern str ds_xavp_dst_sockname;
 
 extern str ds_xavp_ctx_cnt;
 
@@ -115,6 +155,8 @@ extern int inactive_threshold; /*!< number of successful requests,
 extern int ds_probing_mode;
 extern str ds_outbound_proxy;
 extern str ds_default_socket;
+extern str ds_default_sockname;
+extern str ds_ping_socket;
 extern struct socket_info *ds_default_sockinfo;
 
 int ds_init_data(void);
@@ -126,19 +168,25 @@ int ds_load_db(void);
 int ds_reload_db(void);
 int ds_destroy_list(void);
 int ds_select_dst_limit(sip_msg_t *msg, int set, int alg, uint32_t limit,
-		int mode);
+		int mode, ds_selres_t *sres);
+int ds_select_routes_limit(
+		sip_msg_t *msg, str *srules, str *smode, int rlimit, ds_selres_t *sres);
 int ds_select_dst(struct sip_msg *msg, int set, int alg, int mode);
 int ds_update_dst(struct sip_msg *msg, int upos, int mode);
-int ds_add_dst(int group, str *address, int flags);
+int ds_add_dst(int group, str *address, int flags, int priority, str *attrs);
 int ds_remove_dst(int group, str *address);
-int ds_update_state(sip_msg_t *msg, int group, str *address, int state);
-int ds_reinit_state(int group, str *address, int state);
+int ds_update_state(sip_msg_t *msg, int group, str *address, str *iuid,
+		int state, int mode, ds_rctx_t *rctx);
+int ds_reinit_state(int group, str *address, str *iuid, int state);
 int ds_reinit_state_all(int group, int state);
-int ds_mark_dst(struct sip_msg *msg, int mode);
+int ds_reinit_duid_state(int group, str *vduid, int state);
+int ds_mark_dst(struct sip_msg *msg, int state);
+int ds_mark_dst_mode(struct sip_msg *msg, int state, int mode);
+int ds_mark_addr(sip_msg_t *msg, int state, int group, str *uri, int mode);
 int ds_print_list(FILE *fout);
 int ds_log_sets(void);
 int ds_list_exist(int set);
-
+int ds_is_active_uri(sip_msg_t *msg, int group, str *uri);
 
 int ds_load_unset(struct sip_msg *msg);
 int ds_load_update(struct sip_msg *msg);
@@ -154,11 +202,15 @@ int ds_is_addr_from_list(sip_msg_t *_m, int group, str *uri, int mode);
  */
 void ds_check_timer(unsigned int ticks, void *param);
 
-
 /*! \brief
  * Timer for checking active calls load
  */
 void ds_ht_timer(unsigned int ticks, void *param);
+
+/*! \brief
+ * Timer for DNS query of destination addresses
+ */
+void ds_dns_timer(unsigned int ticks, void *param);
 
 /*! \brief
  * Check if the reply-code is valid:
@@ -170,18 +222,22 @@ typedef struct _ds_attrs {
 	str body;
 	str duid;
 	str socket;
+	str ping_socket;
+	str sockname;
 	int maxload;
 	int weight;
 	int rweight;
 	int congestion_control;
 	str ping_from;
+	str obproxy;
+	int rpriority;
 } ds_attrs_t;
 
 typedef struct _ds_latency_stats {
 	struct timeval start;
 	int min;
 	int max;
-	float average;  // weigthed average, estimate of the last few weeks
+	float average;  // weighted average, estimate of the last few weeks
 	float stdev;    // last standard deviation
 	float estimate; // short term estimate, EWMA exponential weighted moving average
 	double m2;      // sum of squares, used for recursive variance calculation
@@ -189,19 +245,38 @@ typedef struct _ds_latency_stats {
 	uint32_t timeout;
 } ds_latency_stats_t;
 
+void latency_stats_init(ds_latency_stats_t *latency_stats, int latency, int count);
+ds_latency_stats_t *latency_stats_find(int group, str *address);
+
+#define DS_OCDIST_SIZE 104
+typedef struct _ds_ocdata {
+	uint32_t ocrate;
+	uint32_t ocidx;
+	char ocdist[DS_OCDIST_SIZE];
+	struct timeval octime;
+	uint32_t ocseq;
+	uint32_t ocmin;
+	uint32_t ocmax;
+} ds_ocdata_t;
+
 typedef struct _ds_dest {
 	str uri;          /*!< address/uri */
+	str host;         /*!< shortcut to host part */
 	int flags;        /*!< flags */
 	int priority;     /*!< priority */
 	int dload;        /*!< load */
-	ds_attrs_t attrs; /*!< the atttributes */
+	ds_attrs_t attrs; /*!< the attributes */
 	ds_latency_stats_t latency_stats; /*!< latency statistics */
 	int irmode;       /*!< internal runtime mode (flags) */
 	struct socket_info *sock; /*!< pointer to local socket */
 	struct ip_addr ip_address; 	/*!< IP of the address */
 	unsigned short int port; 	/*!< port of the URI */
 	unsigned short int proto; 	/*!< protocol of the URI */
-	int message_count;
+	int probing_count;
+	struct timeval dnstime;
+	ds_ocdata_t ocdata;	/*!< overload control attributes */
+	char buid[SRUID_SIZE]; /*!< buffer for internal uid */
+	str suid; /*!< str shortcut for internal uid */
 	struct _ds_dest *next;
 } ds_dest_t;
 
@@ -216,12 +291,13 @@ typedef struct _ds_set {
 	unsigned int rwlist[100];
 	struct _ds_set *next[2];
 	int longer;
+	int rrserial;		/*!< round-robin or serial flag */
 	gen_lock_t lock;
 } ds_set_t;
 
 typedef struct _ds_select_state {
 	int setid;  /* dispatcher set id (group id) */
-	int alg;    /* algorithm to select destionations */
+	int alg;    /* algorithm to select destinations */
 	int umode;  /* update mode - push to: r-uri, d-uri, xavp */
 	uint32_t limit; /* limit of destination addresses to be selected */
 	int cnt;    /* output: number of xavps set with destination addresses */
@@ -245,15 +321,25 @@ struct ds_filter_dest_cb_arg {
 ds_set_t *ds_get_list(void);
 int ds_get_list_nr(void);
 
+ds_set_t *ds_list_lookup(int set);
+
 int ds_ping_active_init(void);
 int ds_ping_active_get(void);
 int ds_ping_active_set(int v);
+
+int ds_sruid_init(void);
 
 /* Create if not exist and return ds_set_t by id */
 ds_set_t *ds_avl_insert(ds_set_t **root, int id, int *setn);
 ds_set_t *ds_avl_find(ds_set_t *node, int id);
 void ds_avl_destroy(ds_set_t **node);
 
-int ds_manage_routes(sip_msg_t *msg, ds_select_state_t *rstate);
+int ds_manage_routes(
+		sip_msg_t *msg, ds_select_state_t *rstate, ds_selres_t *sres);
 
+ds_rctx_t *ds_get_rctx(void);
+unsigned int ds_get_hash(str *x, str *y);
+
+int ds_oc_set_attrs(
+		sip_msg_t *msg, int setid, str *uri, int irval, int itval, int isval);
 #endif

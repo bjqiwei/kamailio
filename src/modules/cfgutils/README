@@ -65,9 +65,9 @@ Daniel-Constantin Mierla
               4.12. set_gflag(flag)
               4.13. reset_gflag(flag)
               4.14. is_gflag(flag)
-              4.15. lock(key)
-              4.16. trylock(key)
-              4.17. unlock(key)
+              4.15. lock(key [, key2])
+              4.16. trylock(key [, key2])
+              4.17. unlock(key [, key2])
               4.18. check_route_exists(route)
               4.19. route_if_exists(route)
               4.20. core_hash(string1, string2, size)
@@ -154,9 +154,9 @@ Chapter 1. Admin Guide
         4.12. set_gflag(flag)
         4.13. reset_gflag(flag)
         4.14. is_gflag(flag)
-        4.15. lock(key)
-        4.16. trylock(key)
-        4.17. unlock(key)
+        4.15. lock(key [, key2])
+        4.16. trylock(key [, key2])
+        4.17. unlock(key [, key2])
         4.18. check_route_exists(route)
         4.19. route_if_exists(route)
         4.20. core_hash(string1, string2, size)
@@ -199,7 +199,7 @@ Chapter 1. Admin Guide
    “set_prob”, “reset_prob” and “get_prob”.
 
    This module can be used for simple load-shedding, e.g. reply 5% of the
-   Invites with a 503 error and a adequate random Retry-After value.
+   Invites with a 503 error and an adequate random Retry-After value.
 
    The module provides as well functions to delay the execution of the
    server. The functions “sleep” and “usleep” could be used to let the
@@ -230,8 +230,8 @@ Chapter 1. Admin Guide
 
 2. Dependencies
 
-   The module depends on the following modules (in the other words the
-   listed modules must be loaded before this module):
+   The module depends on the following modules (in other words the listed
+   modules must be loaded before this module):
      * none
 
 3. Parameters
@@ -304,9 +304,9 @@ modparam("cfgutils", "lock_set_size", 4)
    4.12. set_gflag(flag)
    4.13. reset_gflag(flag)
    4.14. is_gflag(flag)
-   4.15. lock(key)
-   4.16. trylock(key)
-   4.17. unlock(key)
+   4.15. lock(key [, key2])
+   4.16. trylock(key [, key2])
+   4.17. unlock(key [, key2])
    4.18. check_route_exists(route)
    4.19. route_if_exists(route)
    4.20. core_hash(string1, string2, size)
@@ -506,15 +506,17 @@ if(is_gflag("4"))
 };
 ...
 
-4.15. lock(key)
+4.15. lock(key [, key2])
 
    Lock the key. Can be used to synchronize operations in config file, a
-   hash id is computed over the key and appropriate lock is set in the
+   hash id is computed over the keys and appropriate lock is set in the
    lock array controlled by parameter "lock_set_size". Do not use lock()
    after another lock() unless you are sure the keys hit different array
    entries.
 
    “key” can be static string or string with PVs.
+
+   “key2” is optional and can be static string or string with PVs.
 
    This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
    ONREPLY_ROUTE, BRANCH_ROUTE and LOCAL_ROUTE.
@@ -524,12 +526,14 @@ if(is_gflag("4"))
 lock("$rU");
 ...
 
-4.16. trylock(key)
+4.16. trylock(key [, key2])
 
    Try to lock the key. If the lock can not be obtained (possibly already
    locked), the function returns an error and script execution continues.
 
    “key” can be static string or string with PVs.
+
+   “key2” is optional and can be static string or string with PVs.
 
    This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
    ONREPLY_ROUTE, BRANCH_ROUTE and LOCAL_ROUTE.
@@ -542,11 +546,13 @@ if (trylock("$rU")) {
 }
 ...
 
-4.17. unlock(key)
+4.17. unlock(key [, key2])
 
    Unlock the key.
 
    “key” can be static string or string with PVs.
+
+   “key2” is optional and can be static string or string with PVs.
 
    This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
    ONREPLY_ROUTE, BRANCH_ROUTE and LOCAL_ROUTE.
@@ -645,7 +651,7 @@ core_hash("$ci", "", 4);
 
    Example 1.25. cfgutils.rand_set_prob usage
 ...
-$ kamcmd cfgutils.rand_set_prob 10
+$ kamctl rpc cfgutils.rand_set_prob 10
 ...
 
 5.2. cfgutils.rand_reset_prob
@@ -656,7 +662,7 @@ $ kamcmd cfgutils.rand_set_prob 10
 
    Example 1.26.  cfgutils.rand_reset_prob usage
 ...
-$ kamcmd cfgutils.rand_reset_prob
+$ kamctl rpc cfgutils.rand_reset_prob
 ...
 
 5.3. cfgutils.rand_get_prob
@@ -667,7 +673,7 @@ $ kamcmd cfgutils.rand_reset_prob
 
    Example 1.27. cfgutils.rand_get_prob usage
 ...
-$ kamcmd cfgutils.rand_get_prob
+$ kamctl rpc cfgutils.rand_get_prob
 ...
 
 5.4. cfgutils.check_config_hash
@@ -680,7 +686,7 @@ $ kamcmd cfgutils.rand_get_prob
 
    Example 1.28. cfgutils.check_config_hash usage
 ...
-$ kamcmd cfgutils.check_config_hash
+$ kamctl rpc cfgutils.check_config_hash
 ...
 
 5.5. cfgutils.get_config_hash
@@ -692,7 +698,7 @@ $ kamcmd cfgutils.check_config_hash
 
    Example 1.29. cfgutils.get_config_hash usage
 ...
-$ kamcmd cfgutils.get_config_hash
+$ kamctl rpc cfgutils.get_config_hash
 ...
 
 5.6. cfgutils.set_gflag
@@ -704,7 +710,7 @@ $ kamcmd cfgutils.get_config_hash
 
    Example 1.30. cfgutils.set_gflag usage
 ...
-$ kamcmd cfgutils.set_gflag 1
+$ kamctl rpc cfgutils.set_gflag 1
 ...
 
 5.7. cfgutils.reset_gflag
@@ -716,12 +722,12 @@ $ kamcmd cfgutils.set_gflag 1
 
    Example 1.31.  cfgutils.reset_gflag usage
 ...
-$ kamcmd cfgutils.reset_gflag 1
+$ kamctl rpc cfgutils.reset_gflag 1
 ...
 
 5.8. cfgutils.is_gflag
 
-   Returns true if the all the flags from the bitmask are set.
+   Returns true if all the flags from the bitmask are set.
 
    The parameter value must be a bitmask in decimal or hexadecimal format.
    The bitmask has a 32 bit size.
@@ -731,8 +737,8 @@ $ kamcmd cfgutils.reset_gflag 1
 
    Example 1.32. cfgutils.is_gflag usage
 ...
-$ kamcmd cfgutils.set_gflag 1024
-$ kamcmd cfgutils.is_gflag 1024
+$ kamctl rpc cfgutils.set_gflag 1024
+$ kamctl rpc cfgutils.is_gflag 1024
 TRUE
 ...
 
@@ -743,7 +749,7 @@ TRUE
 
    Example 1.33.  cfgutils.get_gflags usage
 ...
-$ kamcmd cfgutils.get_gflags
+$ kamctl rpc cfgutils.get_gflags
 ...
 
 6. Exported pseudo-variables
@@ -757,11 +763,11 @@ $ kamcmd cfgutils.get_gflags
    Example 1.34. RANDOM pseudo-variable usage
 ...
 if (rand_event()) {
-  $avp(i:10) = ($RANDOM / 16777216); # 2^24
-  if ($avp(i:10) < 10) {
-     $avp(i:10) = 10;
+  $var(value) = ($RANDOM / 16777216); # 2^24
+  if ($var(value) < 10) {
+     $var(value) = 10;
   }
-  append_to_reply("Retry-After: $avp(i:10)\n");
+  append_to_reply("Retry-After: $var(value)\n");
   sl_send_reply("503", "Try later");
   exit;
 };

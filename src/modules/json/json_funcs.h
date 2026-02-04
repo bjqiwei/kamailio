@@ -29,12 +29,12 @@
 
 enum _json_get_field_type
 {
-        JSON_FIELD_DEFAULT = 0,
-        JSON_FIELD_STRING
+	JSON_FIELD_DEFAULT = 0,
+	JSON_FIELD_STRING
 };
 
-int json_get_field(struct sip_msg* msg, char* json, char* field, char* dst);
-int json_get_string(struct sip_msg* msg, char* json, char* field, char* dst);
+int json_get_field(struct sip_msg *msg, char *json, char *field, char *dst);
+int json_get_string(struct sip_msg *msg, char *json, char *field, char *dst);
 
 #define json_extract_field(json_name, field)                            \
 	do {                                                                \
@@ -55,11 +55,12 @@ extern char tr_json_escape_char;
 extern str json_event_key;
 extern str json_event_sub_key;
 
-int tr_json_get_field(struct sip_msg *msg, char *json, char *field, char *dst);
-int tr_json_get_keys(struct sip_msg *msg, char *json, char *field, char *dst);
+int tr_json_get_field(
+		struct sip_msg *msg, char *json, char *field, char sep, char *dst);
+int tr_json_get_keys(
+		struct sip_msg *msg, char *json, char *field, char sep, char *dst);
 
 struct json_object *json_parse(const char *str);
-struct json_object *json_get_object(
-		struct json_object *jso, const char *key);
+struct json_object *json_get_object(struct json_object *jso, const char *key);
 
 #endif

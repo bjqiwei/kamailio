@@ -2,8 +2,11 @@
  * Various lcr related constant, types, and external variables
  *
  * Copyright (C) 2005-2014 Juha Heinanen
+ * Copyright (C) 2023 Victor Seva
  *
  * This file is part of Kamailio, a free SIP server.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +36,8 @@
 #define LCR_MOD_H
 
 #include <stdio.h>
-#include <pcre.h>
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 #include "../../core/locking.h"
 #include "../../core/parser/parse_uri.h"
 #include "../../core/ip_addr.h"
@@ -60,10 +64,10 @@ struct rule_info
 	unsigned short from_uri_len;
 	char mt_tvalue[MAX_MT_TVALUE_LEN + 1];
 	unsigned short mt_tvalue_len;
-	pcre *from_uri_re;
+	pcre2_code *from_uri_re;
 	char request_uri[MAX_URI_LEN + 1];
 	unsigned short request_uri_len;
-	pcre *request_uri_re;
+	pcre2_code *request_uri_re;
 	unsigned short stopper;
 	unsigned int enabled;
 	struct target *targets;
@@ -146,7 +150,7 @@ extern struct rule_info ***rule_pt;
 extern struct rule_id_info **rule_id_hash_table;
 
 extern int load_gws_dummy(int lcr_id, str *ruri_user, str *from_uri,
-		str *request_uri, unsigned int *gw_ids);
+		str *request_uri, unsigned int *gw_indexes);
 extern int reload_tables();
 extern int rpc_defunct_gw(unsigned int, unsigned int, unsigned int);
 

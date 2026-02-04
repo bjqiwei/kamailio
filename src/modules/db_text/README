@@ -10,13 +10,9 @@ Ovidiu Sas
 
    <osas@voipembedded.com>
 
-Edited by
-
 Daniel-Constantin Mierla
 
    <miconda@gmail.com>
-
-Edited by
 
 Olle E. Johansson
 
@@ -47,6 +43,7 @@ Olle E. Johansson
               4.3. default_connection (string)
               4.4. emptystring (integer)
               4.5. file_buffer_size (integer)
+              4.6. max_result_rows (integer)
 
         5. Exported RPC Functions
 
@@ -69,11 +66,12 @@ Olle E. Johansson
    1.6. Set default_connection parameter
    1.7. Set emptystring parameter
    1.8. Set file_buffer_size parameter
-   1.9. Load the dbtext module
-   1.10. Definition of 'subscriber' table (one line)
-   1.11. Definition of 'location' and 'aliases' tables (one line)
-   1.12. Definition of 'version' table and sample records
-   1.13. Configuration file
+   1.9. Set max_result_rows parameter
+   1.10. Load the dbtext module
+   1.11. Definition of 'subscriber' table (one line)
+   1.12. Definition of 'location' and 'aliases' tables (one line)
+   1.13. Definition of 'version' table and sample records
+   1.14. Configuration file
 
 Chapter 1. Admin Guide
 
@@ -97,6 +95,7 @@ Chapter 1. Admin Guide
         4.3. default_connection (string)
         4.4. emptystring (integer)
         4.5. file_buffer_size (integer)
+        4.6. max_result_rows (integer)
 
    5. Exported RPC Functions
 
@@ -198,7 +197,7 @@ suser:supasswd:xxx:alpha.org:xxx
 
    This database interface does not support data insertion with default
    values. All such values specified in the database template are ignored.
-   So its advisable to specify all data for a column at insertion
+   So it is advisable to specify all data for a column at insertion
    operations.
 
 3. Dependencies
@@ -224,11 +223,12 @@ suser:supasswd:xxx:alpha.org:xxx
    4.3. default_connection (string)
    4.4. emptystring (integer)
    4.5. file_buffer_size (integer)
+   4.6. max_result_rows (integer)
 
 4.1. db_mode (integer)
 
    Set caching mode (0) or non-caching mode (1). In caching mode, data is
-   loaded at startup. In non-caching mode, the module check every time a
+   loaded at startup. In non-caching mode, the module checks every time a
    table is requested whether the corresponding file on disk has changed,
    and if yes, will re-load the table from file.
 
@@ -281,11 +281,22 @@ modparam("db_text", "emptystring", 1)
    size of the buffer used to read the text file. Some presence tables
    have columns with large content.
 
-   Default value is “16384” (off).
+   Default value is “16384”.
 
    Example 1.8. Set file_buffer_size parameter
 ...
 modparam("db_text", "file_buffer_size", 8192)
+...
+
+4.6. max_result_rows (integer)
+
+   number of rows to read from the text file.
+
+   Default value is “100000”.
+
+   Example 1.9. Set max_result_rows parameter
+...
+modparam("db_text", "max_result_rows", 1000000)
 ...
 
 5. Exported RPC Functions
@@ -302,7 +313,7 @@ modparam("db_text", "file_buffer_size", 8192)
    Parameters: none
 
    RPC Command Format:
-        kamcmd db_text.dump
+            kamctl rpc db_text.dump
 
 5.2.  db_text.query
 
@@ -313,7 +324,8 @@ modparam("db_text", "file_buffer_size", 8192)
    Parameters: sqlcmd
 
    RPC Command Format:
-            kamcmd db_text.query 'select * from location where username="xxx"'
+            kamctl rpc db_text.query 'select * from location where username="xxx
+"'
 
 6. Installation and Running
 
@@ -328,7 +340,7 @@ modparam("db_text", "file_buffer_size", 8192)
    database path. So, either you provide an absolute path to database
    directory or a relative one to “CFG_DIR” directory.
 
-   Example 1.9. Load the dbtext module
+   Example 1.10. Load the dbtext module
 ...
 loadmodule "/path/to/kamailio/modules_k/db_text.so"
 ...
@@ -340,14 +352,14 @@ modparam("module_name", "db_url", "text:///path/to/dbtext/database")
    Here are definitions for the most important tables as well as a basic
    configuration file to use db_text with Kamailio. The table structures
    may change in time and you will have to adjust these examples. Check
-   the source code directory “utils/kamctl/dbtxt/kamailio” for current
+   the source code directory “utils/kamctl/dbtext/kamailio” for current
    definitions.
 
    You have to populate the table 'subscriber' by hand with user profiles
    in order to have authentication. To use with the given configuration
    file, the table files must be placed in the '/tmp/serdb' directory.
 
-   Example 1.10. Definition of 'subscriber' table (one line)
+   Example 1.11. Definition of 'subscriber' table (one line)
 ...
 username(str) domain(str) password(str) first_name(str) last_name(str) phone(str
 ) email_address(str) datetime_created(int) datetime_modified(int) confirmation(s
@@ -355,14 +367,14 @@ tr) flag(str) sendnotification(str) greeting(str) ha1(str) ha1b(str) perms(str)
 allow_find(str) timezone(str,null) rpid(str,null)
 ...
 
-   Example 1.11. Definition of 'location' and 'aliases' tables (one line)
+   Example 1.12. Definition of 'location' and 'aliases' tables (one line)
 ...
 username(str) domain(str,null) contact(str,null) received(str) expires(int,null)
  q(double,null) callid(str,null) cseq(int,null) last_modified(str) flags(int) us
 er_agent(str) socket(str)
 ...
 
-   Example 1.12. Definition of 'version' table and sample records
+   Example 1.13. Definition of 'version' table and sample records
 ...
 table_name(str) table_version(int)
 subscriber:3
@@ -370,7 +382,7 @@ location:6
 aliases:6
 ...
 
-   Example 1.13. Configuration file
+   Example 1.14. Configuration file
 ...
 #
 #
@@ -415,7 +427,7 @@ loadmodule "modules/auth_db/auth_db.so"
 
 # use dbtext database for persistent storage
 modparam("usrloc", "db_mode", 2)
-modparam("usrloc|auth_db", "db_url", "db_text:///tmp/kamailiodb")
+modparam("usrloc|auth_db", "db_url", "text:///tmp/kamailiodb")
 
 # -- auth params --
 #
@@ -450,7 +462,7 @@ route{
     # use different transport protocol
     if (!method=="REGISTER") record_route();
 
-    # subsequent messages withing a dialog should take the
+    # subsequent messages within a dialog should take the
     # path determined by record-routing
     if (loose_route()) {
         # mark routing logic in request

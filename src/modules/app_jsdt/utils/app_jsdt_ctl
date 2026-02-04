@@ -2,13 +2,15 @@
 
 # generate the .h file
 
-KEMI_MAX_SIZE=1024
+KEMI_MAX_SIZE=1536
 
 cat > ../app_jsdt_kemi_export.h <<EOF
 /**
  * Copyright (C) 2017 Daniel-Constantin Mierla (asipto.com)
  *
  * This file is part of Kamailio, a free SIP server.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +58,8 @@ cat > ../app_jsdt_kemi_export.c <<EOF
  * Copyright (C) 2016 Daniel-Constantin Mierla (asipto.com)
  *
  * This file is part of Kamailio, a free SIP server.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

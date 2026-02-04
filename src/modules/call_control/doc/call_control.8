@@ -38,11 +38,11 @@ Default value is 0.
 .TP
 It is the path to the filesystem socket where the callcontrol application listens for commands from the module.
 .TP
-Default value is /var/run/callcontrol/socket.
+Default value is /run/callcontrol/socket.
 .TP
 .B Setting the socket_name parameter
 .TP
- modparam("call_control", "socket_name", "/var/run/callcontrol/socket") ...
+ modparam("call_control", "socket_name", "/run/callcontrol/socket") ...
 .TP 16
 .I socket_timeout (int)
 .TP
@@ -115,11 +115,11 @@ see
 .BR kamailio.cfg(5)
 .PP
 Full documentation on Kamailio is available at
-.I http://www.kamailio.org/.
+.I https://www.kamailio.org/.
 .PP
 Mailing lists:
 .nf 
-users@lists.kamailio.org - Kamailio user community
+sr-users@lists.kamailio.org - Kamailio user community
 .nf 
-devel@lists.kamailio.org - Kamailio development, new features and unstable version
+sr-dev@lists.kamailio.org - Kamailio development, new features and unstable version
 

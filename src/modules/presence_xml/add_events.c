@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -33,15 +35,16 @@
 #include "../../core/parser/parse_content.h"
 #include "../../core/data_lump_rpl.h"
 #include "../../core/ut.h"
+#include "../presence/presence.h"
 #include "xcap_auth.h"
 #include "notify_body.h"
 #include "add_events.h"
 #include "presence_xml.h"
 
-extern int disable_presence;
-extern int disable_winfo;
-extern int disable_bla;
-extern int disable_xcapdiff;
+extern int pxml_disable_presence;
+extern int pxml_disable_winfo;
+extern int pxml_disable_bla;
+extern int pxml_disable_xcapdiff;
 
 static str pu_415_rpl = str_init("Unsupported media type");
 
@@ -49,7 +52,7 @@ int xml_add_events(void)
 {
 	pres_ev_t event;
 
-	if(!disable_presence) {
+	if(!pxml_disable_presence) {
 		/* constructing presence event */
 		memset(&event, 0, sizeof(pres_ev_t));
 		event.name.s = "presence";
@@ -65,17 +68,17 @@ int xml_add_events(void)
 		event.agg_nbody = pres_agg_nbody;
 		event.evs_publ_handl = xml_publ_handl;
 		event.free_body = free_xml_body;
-		event.default_expires = 3600;
+		event.default_expires = pxml_default_expires;
 		event.get_rules_doc = pres_get_rules_doc;
 		event.get_pidf_doc = pres_get_pidf_doc;
-		if(pres_add_event(&event) < 0) {
+		if(psapi.add_event(&event) < 0) {
 			LM_ERR("while adding event presence\n");
 			return -1;
 		}
 		LM_DBG("added 'presence' event to presence module\n");
 	}
 
-	if(!disable_winfo) {
+	if(!pxml_disable_winfo) {
 		/* constructing presence.winfo event */
 		memset(&event, 0, sizeof(pres_ev_t));
 		event.name.s = "presence.winfo";
@@ -85,16 +88,16 @@ int xml_add_events(void)
 		event.content_type.len = 27;
 		event.type = WINFO_TYPE;
 		event.free_body = free_xml_body;
-		event.default_expires = 3600;
+		event.default_expires = pxml_default_expires;
 
-		if(pres_add_event(&event) < 0) {
+		if(psapi.add_event(&event) < 0) {
 			LM_ERR("while adding event presence.winfo\n");
 			return -1;
 		}
 		LM_DBG("added 'presence.winfo' event to presence module\n");
 	}
 
-	if(!disable_bla) {
+	if(!pxml_disable_bla) {
 		/* constructing bla event */
 		memset(&event, 0, sizeof(pres_ev_t));
 		event.name.s = "dialog;sla";
@@ -106,15 +109,15 @@ int xml_add_events(void)
 		event.content_type.len = 27;
 		event.type = PUBL_TYPE;
 		event.free_body = free_xml_body;
-		event.default_expires = 3600;
-		if(pres_add_event(&event) < 0) {
+		event.default_expires = pxml_default_expires;
+		if(psapi.add_event(&event) < 0) {
 			LM_ERR("while adding event dialog;sla\n");
 			return -1;
 		}
 		LM_DBG("added 'dialog;sla' event to presence module\n");
 	}
 
-	if(!disable_xcapdiff) {
+	if(!pxml_disable_xcapdiff) {
 		/* constructing xcap-diff event */
 		memset(&event, 0, sizeof(pres_ev_t));
 		event.name.s = "xcap-diff";
@@ -124,8 +127,8 @@ int xml_add_events(void)
 		event.content_type.len = 25;
 
 		event.type = PUBL_TYPE;
-		event.default_expires = 3600;
-		if(pres_add_event(&event) < 0) {
+		event.default_expires = pxml_default_expires;
+		if(psapi.add_event(&event) < 0) {
 			LM_ERR("while adding event xcap-diff\n");
 			return -1;
 		}
@@ -163,12 +166,10 @@ int xml_publ_handl(struct sip_msg *msg)
 	}
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
-	xmlMemoryDump();
 	return 1;
 
 error:
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
-	xmlMemoryDump();
 	return -1;
 }

@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -30,13 +32,18 @@
 
 #include <time.h>
 #include "../../core/sr_module.h"
-
+#include "../../core/locking.h"
+#include "../../core/str.h"
+#include "../../core/utils/sruid.h"
+#include "../tm/tm_load.h"
 
 #define KA_INACTIVE_DST 1 /*!< inactive destination */
-#define KA_TRYING_DST 2   /*!< temporary trying destination */
+#define KA_TRYING_DST 2	  /*!< temporary trying destination */
 #define KA_DISABLED_DST 4 /*!< admin disabled destination */
 #define KA_PROBING_DST 8  /*!< checking destination */
 #define KA_STATES_ALL 15  /*!< all bits for the states of destination */
+
+extern int ka_ping_interval;
 
 #define ds_skip_dst(flags) ((flags) & (KA_INACTIVE_DST | KA_DISABLED_DST))
 
@@ -45,37 +52,71 @@
 #define KA_PROBE_INACTIVE 2
 #define KA_PROBE_ONLYFLAGGED 3
 
+#define KA_FIRST_TRY_DELAY \
+	500 /* First OPTIONS send is done 500 millis after adding the destination */
+
 typedef void (*ka_statechanged_f)(str *uri, int state, void *user_attr);
+typedef void (*ka_response_f)(
+		str *uri, struct tmcb_params *ps, void *user_attr);
+
+
+typedef struct _ka_initial_dest
+{
+	str uri;
+	str owner;
+	struct _ka_initial_dest *next;
+} ka_initial_dest_t;
+
 
 typedef struct _ka_dest
 {
 	str uri;
-	str owner; // name of destination "owner"
-			   // (module asking to monitor this destination
+	str owner; /*!< Name of destination "owner" */
+			   /*!< Module asking to monitor this destination */
+	str uuid;  /*!< Universal id for this record */
 	int flags;
 	int state;
-	time_t last_checked, last_up, last_down;
+	time_t last_checked;
+	time_t last_up;		   /*!< Time of last successful SIP reply */
+	time_t last_down;	   /*!< Time of last failure SIP reply */
+	int counter;		   /*!< Counts unreachable attempts */
+	ticks_t ping_interval; /*!< Actual interval between OPTIONS  */
 
 	void *user_attr;
 	ka_statechanged_f statechanged_clb;
-
+	ka_response_f response_clb;
 	struct socket_info *sock;
 	struct ip_addr ip_address; /*!< IP-Address of the entry */
 	unsigned short int port;   /*!< Port of the URI */
 	unsigned short int proto;  /*!< Protocol of the URI */
+	struct timer_ln *timer;	   /*!< Timer firing the OPTIONS test */
+	gen_lock_t
+			lock; /*!< Lock of this record to prevent being removed while running */
 	struct _ka_dest *next;
 } ka_dest_t;
 
 typedef struct _ka_destinations_list
 {
+	gen_lock_t *lock;
 	ka_dest_t *first;
 } ka_destinations_list_t;
 
 extern ka_destinations_list_t *ka_destinations_list;
+extern int ka_counter_del;
+extern sruid_t ka_sruid;
 
-int ka_add_dest(str *uri, str *owner, int flags, ka_statechanged_f callback,
+ticks_t ka_check_timer(ticks_t ticks, struct timer_ln *tl, void *param);
+
+int ka_add_dest(str *uri, str *owner, int flags, int ping_interval,
+		ka_statechanged_f statechanged_clb, ka_response_f response_clb,
 		void *user_attr);
 int ka_destination_state(str *uri);
 int ka_str_copy(str *src, str *dest, char *prefix);
-
+int free_destination(ka_dest_t *dest);
+int ka_del_destination(str *uri, str *owner);
+int ka_find_destination(
+		str *uri, str *owner, ka_dest_t **target, ka_dest_t **head);
+int ka_find_destination_by_uuid(str uuid, ka_dest_t **target, ka_dest_t **head);
+int ka_lock_destination_list();
+int ka_unlock_destination_list();
 #endif

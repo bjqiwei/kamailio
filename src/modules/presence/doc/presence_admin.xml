@@ -25,7 +25,7 @@
 	The module can use database and memory storage (to improve performance).
 	For subscriptions it supports the 4 storage modes: Memory Only, Write Back,
 	Write Through and DB Only. For publishes, it stores the state documents in
-	database only(because of the large size) and it can store a publish cache in
+	database only (because of the large size) and it can store a publish cache in
 	memory to avoid unnecessary database queries. Read the
 	<emphasis>subs_db_mode</emphasis> and <emphasis>publ_cache</emphasis> parameter
 	sections to decide which is the best storage configuration for you.
@@ -165,7 +165,7 @@ modparam("presence", "watchers_table", "watchers")
 	<section id="presence.p.clean_period">
 		<title><varname>clean_period</varname> (int)</title>
 		<para>
-		The period in seconds between checks if there are expired messages stored in database.
+		The period in seconds between checks if there are expired messages stored in the database.
 		</para>
 		<para>
 		<emphasis>Default value is <quote>100</quote>. A zero or negative value disables this activity.
@@ -192,10 +192,10 @@ modparam("presence", "clean_period", 100)
         <example>
             <title>Set <varname>cseq_offset</varname> parameter</title>
             <programlisting format="linespecific">
-                ...
-                modparam("presence", "cseq_offset", 1)
-                ...
-            </programlisting>
+...
+modparam("presence", "cseq_offset", 1)
+...
+</programlisting>
         </example>
     </section>
     <section id="presence.p.db_update_period">
@@ -345,26 +345,6 @@ modparam("presence", "startup_mode", 0)
 		</example>
 	</section>
 
-	<section id="presence.p.to_tag_pref">
-		<title><varname>to_tag_pref</varname> (str)</title>
-		<para>
-		The prefix used when generating to_tag when sending replies for
-		SUBSCRIBE requests.
-		</para>
-		<para>
-		<emphasis>Default value is <quote>10</quote>.
-		</emphasis>
-		</para>
-		<example>
-		<title>Set <varname>to_tag_pref</varname> parameter</title>
-		<programlisting format="linespecific">
-...
-modparam("presence", "to_tag_pref", 'pres')
-...
-	</programlisting>
-		</example>
-	</section>
-
 	<section id="presence.p.expires_offset">
 		<title><varname>expires_offset</varname> (int)</title>
 		<para>
@@ -422,17 +402,17 @@ modparam("presence", "max_expires", 3600)
     <example>
         <title>Set <varname>min_expires</varname> parameter</title>
         <programlisting format="linespecific">
-            ...
-            modparam("presence", "min_expires", 1800)
-            ...
-        </programlisting>
+...
+modparam("presence", "min_expires", 1800)
+...
+</programlisting>
     </example>
 </section>
 
 <section id="presence.p.min_expires_action">
     <title><varname>min_expires_action</varname> (int)</title>
     <para>
-        The action to take when UA sends a expires value less then min_expires.
+        The action to take when UA sends an expires value less than min_expires.
     </para>
     <para>
         <itemizedlist>
@@ -482,7 +462,7 @@ modparam("presence", "server_address", "sip:10.10.10.10:5060")
 		<para>
 		The presence module can utilize database for persistent subscription storage.
 		If you use database, your subscriptions will survive machine restarts or
-		SW crashes. The disadvantage is that accessing database can be time consuming.
+		SW crashes. The disadvantage is that accessing the database can be time consuming.
 		Therefore, presence module implements four database accessing modes:
 		</para>
 		<itemizedlist>
@@ -545,12 +525,20 @@ modparam("presence", "subs_db_mode", 1)
 	<section id="presence.p.publ_cache">
 		<title><varname>publ_cache</varname> (int)</title>
 		<para>
-		To improve performance, the presence module holds by default a
-		publish cache that says if a certain publication exists in database.
-		This is only a list of URI + event, so it does not use much memory.
-		The cache is used when a Subscription is received to check if there
-		is any published state in database. This way unnecessary queries in
-		presentity table are avoided.
+		To improve performance, the presence module can operate in a couple of
+		modes related to how PUBLISH data is stored. If publ_cache is 0,
+		then no information is stored in memory.
+		</para>
+		<para>
+		If publ_cache is 1, then the module keeps in memory an index of the
+		records stored in database, In this mode it keeps only the list of URIs
+		and events, so it does not use much memory. The cache is used when a
+		Subscription is received to check if there is any published state in
+		database. This way unnecessary queries in presentity table are avoided.
+		</para>
+		<para>
+		If publ_cache is 2, then the module keeps everything related to PUBLISH
+		requests in memory, not storing anything in the database.
 		</para>
 		<para>
 		Setting this parameter to 0 will disable the usage of the publish
@@ -616,7 +604,7 @@ modparam("presence", "pres_htable_size", 11)
 		<para>
 		This parameter enables or disables the sending of an initial empty NOTIFY after a SUBSCRIBE/reSUBSCRIBE.
 		This caused problems for MWI application, because some CPEs (like Samsung) fail to understand an empty
-		NOTIFY to an message-summary event. This parameter is enabled by default, thus adhering to the standard.
+		NOTIFY to a message-summary event. This parameter is enabled by default, thus adhering to the standard.
 		</para>
 		<para>
 		<emphasis>Default value is <quote>1 </quote>.
@@ -700,7 +688,7 @@ modparam("presence", "fetch_rows", 1000)
 	<section id="presence.p.db_table_lock_type">
 	    <title><varname>db_table_lock_type</varname> (integer)</title>
 	    <para>
-		Enable (=1) or disable (=0) the Locks for table during an
+		Enable (=1) or disable (=0) the Locks for table during a
 		transaction. Locking only the "current" table causes problems
 		with a MySQL-Databases in "DB-Only" mode.
 	    </para>
@@ -804,11 +792,11 @@ modparam("presence", "subs_remove_match", 1)
 			so newer documents have higher priority.</para>
         </listitem>
         <listitem>
-			<para><emphasis>delete_subscription</emphasis> - integer value to 
+			<para><emphasis>delete_subscription</emphasis> - integer value to
 			give extra control of deleting the subscription after processing of
 			event_route[presence:notify-reply]. If value = 1, it deletes the subscription.
 			If xavp_cfg parameter is set but this attribute is not in the avp,
-			the subscription is not deleted. this does not apply for codes 404, 481
+			the subscription is not deleted. This does not apply for codes 404, 481
 			and 408 (when timeout_rm_subs = 1) where subscription is deleted.</para>
         </listitem>
      </itemizedlist>
@@ -832,8 +820,8 @@ if(is_method("PUBLISH")) {
 	<section id="presence.p.retrieve_order">
 	    <title><varname>retrieve_order</varname> (int)</title>
 	    <para>
-		If set to 0, presentity records are retrieve by received_time order.
-		If set to 1, presentity records are retrieve by the value of
+		If set to 0, presentity records are retrieved by received_time order.
+		If set to 1, presentity records are retrieved by the value of
 		retrieve_order_by parameter.
 	    </para>
 	    <para>
@@ -895,17 +883,17 @@ modparam("presence", "retrieve_order_by", "priority, received_time")
     <example>
         <title>Set <varname>sip_uri_match</varname> parameter</title>
         <programlisting format="linespecific">
-            ...
-            modparam("presence", "sip_uri_match", 1)
-            ...
-        </programlisting>
+...
+modparam("presence", "sip_uri_match", 1)
+...
+</programlisting>
     </example>
 </section>
 
 <section id="presence.p.enable_dmq">
 	<title><varname>enable_dmq</varname> (integer)</title>
 	<para>
-		If set to 1, will enable DMQ replication of presentities between nodes. Use this instead of a shared DB
+		If set to 1, will enable DMQ replication of presence data between nodes. Use this instead of a shared DB
 		to share state across a cluster and update local watchers in realtime (subs_db_mode &lt; 3) or on next
 		notifier run (subs_db_mode = 3).
 	</para>
@@ -922,10 +910,236 @@ modparam("presence", "retrieve_order_by", "priority, received_time")
 	<example>
 		<title>Set <varname>enable_dmq</varname> parameter</title>
 		<programlisting format="linespecific">
-			...
-			modparam("presence", "enable_dmq", 1)
-			...
-		</programlisting>
+...
+modparam("presence", "enable_dmq", 1)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.enable_pres_dmq">
+	<title><varname>enable_pres_dmq</varname> (integer)</title>
+	<para>
+		If set to 1, will enable DMQ replication of presentities.
+	</para>
+	<para>
+		<emphasis>
+			Make sure that enable_dmq is set to 1.
+		</emphasis>
+	</para>
+	<para>
+		<emphasis>
+			Default value is 1.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>enable_pres_dmq</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "enable_pres_dmq", 1)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.enable_pres_sync_dmq">
+	<title><varname>enable_pres_sync_dmq</varname> (integer)</title>
+	<para>
+		If set to 1, will enable initial synchronization of presentities state.
+	</para>
+	<para>
+		<emphasis>
+			Make sure that enable_dmq and enable_pres_dmq are set to 1.
+		</emphasis>
+	</para>
+	<para>
+		<emphasis>
+			Default value is 1.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>enable_pres_sync_dmq</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "enable_pres_sync_dmq", 1)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.enable_subs_dmq">
+	<title><varname>enable_subs_dmq</varname> (integer)</title>
+	<para>
+		If set to 1, will enable DMQ replication of subscriptions.
+	</para>
+	<para>
+		<emphasis>
+			Make sure that enable_dmq is set to 1.
+		</emphasis>
+	</para>
+	<para>
+		<emphasis>
+			Default value is 0.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>enable_subs_dmq</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "enable_subs_dmq", 1)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.enable_subs_sync_dmq">
+	<title><varname>enable_subs_sync_dmq</varname> (integer)</title>
+	<para>
+		If set to 1, will enable initial synchronization of subscriptions state.
+	</para>
+	<para>
+		<emphasis>
+			Make sure that enable_dmq and enable_subs_dmq are set to 1.
+		</emphasis>
+	</para>
+	<para>
+		<emphasis>
+			Default value is 1.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>enable_subs_sync_dmq</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "enable_subs_sync_dmq", 1)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.skip_notify_dmq">
+	<title><varname>skip_notify_dmq</varname> (integer)</title>
+	<para>
+		Skip sending Notify messages if presentity was received by DMQ.
+	</para>
+	<para>
+		<emphasis>
+			Default value is 0.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>skip_notify_dmq</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "skip_notify_dmq", 1)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.default_socket">
+	<title><varname>default_socket</varname> (str)</title>
+	<para>
+		Default socket name to rewrite socket info in subcription that was received by DMQ.
+	</para>
+	<para>
+		<emphasis>
+			By default is not defined. Socket info will be original value from DMQ message.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>default_socket</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "default_socket", "udp:192.168.0.125:5060")
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.pres_subs_mode">
+	<title><varname>pres_subs_mode</varname> (integer)</title>
+	<para>
+	Allow disabling cloning subscription structure for pv $subs(...), saving the
+	pkg memory and copy operations for all its fields. If 1 the cloning is done;
+	if 0, no cloning and $subs(...) returns $null.
+	</para>
+	<para>
+		<emphasis>
+			Default value is 1.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>pres_subs_mode</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "pres_subs_mode", 0)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.delete_same_subs">
+	<title><varname>delete_same_subs</varname> (integer)</title>
+	<para>
+		Enable deleting of subscriptions with the same presence uri and callid.
+	</para>
+	<para>
+		<emphasis>
+			Default value is 0 (disabled behavior).
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>delete_same_subs</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "delete_same_subs", 1)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.timer_mode">
+	<title><varname>timer_mode</varname> (integer)</title>
+	<para>
+	Specify what timer process to be used. If set to 0, the core main timer
+	is used. If set to 1, the core secondary timer is used.
+	</para>
+	<para>
+		<emphasis>
+			Default value is 1.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>timer_mode</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "timer_mode", 0)
+...
+</programlisting>
+	</example>
+</section>
+
+<section id="presence.p.subs_respond_200">
+	<title><varname>subs_respond_200</varname> (integer)</title>
+	<para>
+	Specify the response code for accepted SUBSCRIBE requests. If set to 0,
+	"202 Accepted" will be returned (default behaviour till version 5.5). If set
+	to 1, "200 OK" will be returned instead, in conformance to RFC6665, which
+	prohibits 202 responses.
+	</para>
+	<para>
+		<emphasis>
+			Default value is 1.
+		</emphasis>
+	</para>
+	<example>
+		<title>Set <varname>subs_respond_200</varname> parameter</title>
+		<programlisting format="linespecific">
+...
+modparam("presence", "subs_respond_200", 0)
+...
+</programlisting>
 	</example>
 </section>
 
@@ -1087,11 +1301,11 @@ if (method=="MESSAGE") {
     <example>
         <title><function>pres_has_subscribers</function> usage</title>
         <programlisting format="linespecific">
-            ...
-            if(pres_has_subscribers($var(uri), "message-summary"))
-            do something...;
-            ...
-        </programlisting>
+...
+if(pres_has_subscribers($var(uri), "message-summary"))
+    # do something...;
+...
+</programlisting>
     </example>
 </section>
 
@@ -1155,12 +1369,12 @@ pres_refresh_watchers("sip:test@kamailio.org", "presence", 1);
 		</example>
 	</section>
 
-	<section id="presence.f.pres_update_whatchers">
+	<section id="presence.f.pres_update_watchers">
 		<title>
 		<function moreinfo="none">pres_update_watchers(uri, event)</function>
 		</title>
 		<para>
-			The function can be used in configuration to triger updates to watchers
+			The function can be used in configuration to trigger updates to watchers
 			status if a change in watchers authorization state occurred
 			(i.e., updates of xcap documents change state from pending to active).
 		</para>
@@ -1206,10 +1420,30 @@ pres_update_watchers("sip:test@kamailio.org", "presence");
 	  </para>
 	  <programlisting  format="linespecific">
 ...
-&kamcmd; presence.cleanup
+&kamctl; rpc presence.cleanup
 ...
-	  </programlisting>
+</programlisting>
     </section>
+
+	<section id="presence.r.publish_cache_sync">
+	  <title>presence.publish_cache_sync</title>
+	  <para>
+	  	Synchronize changes made to the presentity table with the publish cache.
+	  </para>
+	  <para>
+		Name: <emphasis>presence.publish_cache_sync</emphasis>
+	  </para>
+	  <para>Parameters: <emphasis>none</emphasis></para>
+	  <para>
+		RPC Command Format:
+	  </para>
+	  <programlisting  format="linespecific">
+...
+&kamctl; rpc presence.publish_cache_sync
+...
+</programlisting>
+    </section>
+
 	<section id="presence.r.refreshWatchers">
 		<title>presence.refreshWatchers</title>
 		<para>
@@ -1262,10 +1496,127 @@ pres_update_watchers("sip:test@kamailio.org", "presence");
 		</para>
 		<programlisting  format="linespecific">
 ...
-&kamcmd; presence.refreshWatchers sip:test@kamailio.org presence 1
+&kamctl; rpc presence.refreshWatchers sip:test@kamailio.org presence 1
 ...
-		</programlisting>
+</programlisting>
 	</section>
+	<section id="presence.rpc.updateWatchers">
+	  <title>presence.updateWatchers</title>
+	  <para>
+		Manually triggers updates to watchers (for example,
+		after the contents of XCAP docs has been updated).
+	  </para>
+	  <para>
+		Name: <emphasis>presence.updateWatchers</emphasis>
+	  </para>
+	  <para>Parameters:</para>
+		<itemizedlist>
+			<listitem>
+				<para>uri - the uri of the user who made the changes
+				and whose watchers should be updated.</para>
+			</listitem>
+			<listitem>
+				<para>event - the event package (e.g. presence).
+				</para>
+			</listitem>
+		</itemizedlist>
+	  <para>
+		RPC Command Format:
+	  </para>
+	  <programlisting  format="linespecific">
+...
+&kamctl; rpc presence.updateWatchers sip:alice@domain.com presence
+...
+	  </programlisting>
+	</section>
+	<section id="presence.rpc.presentity_list">
+	  <title>presence.presentity_list</title>
+	  <para>
+		List the presentity records stored in memory.
+	  </para>
+	  <para>
+		Name: <emphasis>presence.presentity_list</emphasis>
+	  </para>
+	  <para>Parameters:</para>
+		<itemizedlist>
+			<listitem>
+				<para>mode - (optional) it can be 'full' to print all the
+				fields of presentity record. If missing, only a selected
+				set of fields are printed in the response.</para>
+			</listitem>
+		</itemizedlist>
+	  <para>
+		RPC Command Format:
+	  </para>
+	  <programlisting  format="linespecific">
+...
+kamctl rpc presence.presentity_list
+kamctl rpc presence.presentity_list full
+...
+	  </programlisting>
+	</section>
+	<section id="presence.rpc.presentity_show">
+	  <title>presence.presentity_show</title>
+	  <para>
+		Return the presentity records stored in memory by filtering with username
+		and/or domain.
+	  </para>
+	  <para>
+		Name: <emphasis>presence.presentity_show</emphasis>
+	  </para>
+	  <para>Parameters:</para>
+		<itemizedlist>
+			<listitem>
+				<para>mode - it can be  'basic' or 'full' to print a selection or
+				all the fields of presentity record.</para>
+			</listitem>
+			<listitem>
+				<para>user - username to match presentity records, use '*' to
+				match any username.</para>
+			</listitem>
+			<listitem>
+				<para>domain - the value to match the domain of the presentity
+				records, use '*' to match any domain.</para>
+			</listitem>
+		</itemizedlist>
+	  <para>
+		RPC Command Format:
+	  </para>
+	  <programlisting  format="linespecific">
+...
+kamctl rpc presence.presentity_show basic alice sipserver.com
+kamctl rpc presence.presentity_show full * sipserver.com
+...
+	  </programlisting>
+	</section>
+	<section id="presence.rpc.watcher_list">
+	  <title>presence.watcher_list</title>
+	  <para>
+		Return the watcher records for a specific presentity uri.
+	  </para>
+	  <para>
+		Name: <emphasis>presence.watcher_list</emphasis>
+	  </para>
+	  <para>Parameters:</para>
+		<itemizedlist>
+			<listitem>
+				<para>mode - it can be  'basic' or 'full' to print a selection or
+				all the fields of watcher record.</para>
+			</listitem>
+			<listitem>
+				<para>uri - the presentity uri.</para>
+			</listitem>
+		</itemizedlist>
+	  <para>
+		RPC Command Format:
+	  </para>
+	  <programlisting  format="linespecific">
+...
+kamctl rpc presence.watcher_list basic sip:alice@sipserver.com
+...
+	  </programlisting>
+	</section>
+
 </section>
 
 <section>
@@ -1283,7 +1634,7 @@ pres_update_watchers("sip:test@kamailio.org", "presence");
 				</para>
 				</listitem>
 				<listitem>
-				<para><emphasis>present:notify-reply</emphasis> - after notify is sent
+				<para><emphasis>presence:notify-reply</emphasis> - after notify is sent
 				</para>
 				</listitem>
 			</itemizedlist>
@@ -1399,7 +1750,7 @@ if(handle_subscription())
   xlog("presentity=$subs(uri)\n");
 }
 ...
-				 </programlisting>
+</programlisting>
 			</example>
 		</section>
 
@@ -1410,7 +1761,7 @@ if(handle_subscription())
 				It must be used in the following events.
 			<itemizedlist>
 				<listitem>
-				<para><emphasis>present:notify-reply</emphasis> - after notify is sent
+				<para><emphasis>presence:notify-reply</emphasis> - after notify is sent
 				</para>
 				</listitem>
 			</itemizedlist>
@@ -1428,7 +1779,7 @@ event_route[presence:notify-reply]
   xlog("received message = $notify_reply($mb)\n");
 }
 ...
-				 </programlisting>
+</programlisting>
 			</example>
 		</section>
 </section>
@@ -1436,7 +1787,7 @@ event_route[presence:notify-reply]
 <section>
 	<title>Events</title>
 		<section>
-			<title><varname>present:notify-reply</varname></title>
+			<title><varname>presence:notify-reply</varname></title>
 			<para>
 				Fired after notify reply is received or timeout.
 			</para>
@@ -1450,7 +1801,7 @@ event_route[presence:notify-reply]
   xlog("received message = $notify_reply($mb)\n");
 }
 ...
-				 </programlisting>
+</programlisting>
 			</example>
 		</section>
 </section>
@@ -1468,4 +1819,3 @@ event_route[presence:notify-reply]
 </section>
 
 </chapter>
-

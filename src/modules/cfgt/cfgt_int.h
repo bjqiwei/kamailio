@@ -1,6 +1,6 @@
 /**
  *
- * Copyright (C) 2015 Victor Seva (sipwise.com)
+ * Copyright (C) 2015-2023 Victor Seva (sipwise.com)
  *
  * This file is part of Kamailio, a free SIP server.
  *
@@ -25,9 +25,19 @@
 #include "../../core/locking.h"
 #include "../../core/route_struct.h"
 #include "../../core/str_hash.h"
-#include "../../lib/srutils/srjson.h"
+#include "../../core/utils/srjson.h"
 
 #define CFGT_HASH_SIZE 32
+
+typedef struct _cfgt_params
+{
+	str hdr_prefix;
+	str basedir;
+	int mask;
+	int skip_unknown;
+	int route_log;
+} _cfgt_params_t;
+extern _cfgt_params_t _cfgt_params;
 
 enum _cfgt_action_type
 {
@@ -48,6 +58,7 @@ typedef struct _cfgt_str_list
 {
 	str s;
 	enum _cfgt_action_type type;
+	struct timeval start, end, duration;
 	struct _cfgt_str_list *next, *prev;
 } cfgt_str_list_t, *cfgt_str_list_p;
 

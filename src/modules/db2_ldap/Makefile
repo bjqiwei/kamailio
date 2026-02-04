@@ -1,5 +1,5 @@
 #
-# WARNING: do not run this directly, it should be run by the master Makefile
+# WARNING: do not run this directly, it should be run by the main Makefile
 
 include ../../Makefile.defs
 auto_gen=
@@ -15,6 +15,4 @@ DEFS += -Wall -DOPENLDAP23 -DLDAP_DEPRECATED
 
 LIBS=-L$(LOCALBASE)/lib -L /usr/lib -lldap
 
-SERLIBPATH=../../lib
-SER_LIBS+=$(SERLIBPATH)/srdb2/srdb2
 include ../../Makefile.modules

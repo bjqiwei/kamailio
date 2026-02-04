@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -35,8 +37,6 @@
 #include <ortp/port.h>
 
 #include "rtp_media_server.h"
-// #include "rms_session_info.h"
-// struct rms_session_info;
 typedef struct rms_action rms_action_t;
 
 
@@ -44,6 +44,7 @@ typedef struct call_leg_media
 {
 	MSFactory *ms_factory;
 	RtpSession *rtps;
+	RtpProfile *rtp_profile;
 	PayloadType *pt;
 	MSTicker *ms_ticker;
 	MSFilter *ms_encoder;
@@ -61,10 +62,11 @@ typedef struct call_leg_media
 	int local_port;
 	str remote_ip;
 	int remote_port;
-	const struct rms_session_info *si;
+	const struct rms_dialog_info *di;
 } call_leg_media_t;
 
 int create_call_leg_media(call_leg_media_t *m);
+int create_session_payload(call_leg_media_t *m);
 
 int rms_media_init();
 void rms_media_destroy();

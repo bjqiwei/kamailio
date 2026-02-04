@@ -27,7 +27,7 @@
  */
 
 
-#include "../../core/md5.h"
+#include "../../core/crypto/md5.h"
 
 #include "auth_alg.h"
 
@@ -37,11 +37,9 @@ static inline void cvt_hex(HASH bin, HASHHEX hex)
 	unsigned short i;
 	unsigned char j;
 
-	for (i = 0; i<HASHLEN; i++)
-	{
+	for(i = 0; i < HASHLEN; i++) {
 		j = (bin[i] >> 4) & 0xf;
-		if (j <= 9)
-		{
+		if(j <= 9) {
 			hex[i * 2] = (j + '0');
 		} else {
 			hex[i * 2] = (j + 'a' - 10);
@@ -49,8 +47,7 @@ static inline void cvt_hex(HASH bin, HASHHEX hex)
 
 		j = bin[i] & 0xf;
 
-		if (j <= 9)
-		{
+		if(j <= 9) {
 			hex[i * 2 + 1] = (j + '0');
 		} else {
 			hex[i * 2 + 1] = (j + 'a' - 10);
@@ -61,28 +58,59 @@ static inline void cvt_hex(HASH bin, HASHHEX hex)
 }
 
 
+static inline void cvt_bin(HASHHEX hex, HASH bin)
+{
+	unsigned short i;
+	unsigned char j;
+	for(i = 0; i < HASHLEN; i++) {
+		if(hex[2 * i] >= '0' && hex[2 * i] <= '9')
+			j = (hex[2 * i] - '0') << 4;
+		else if(hex[2 * i] >= 'a' && hex[2 * i] <= 'f')
+			j = (hex[2 * i] - 'a' + 10) << 4;
+		else if(hex[2 * i] >= 'A' && hex[2 * i] <= 'F')
+			j = (hex[2 * i] - 'A' + 10) << 4;
+		else
+			j = 0;
 
-/* 
+		if(hex[2 * i + 1] >= '0' && hex[2 * i + 1] <= '9')
+			j += hex[2 * i + 1] - '0';
+		else if(hex[2 * i + 1] >= 'a' && hex[2 * i + 1] <= 'f')
+			j += hex[2 * i + 1] - 'a' + 10;
+		else if(hex[2 * i + 1] >= 'A' && hex[2 * i + 1] <= 'F')
+			j += hex[2 * i + 1] - 'A' + 10;
+
+		bin[i] = j;
+	}
+}
+
+/*
  * calculate H(A1)
  */
-void uac_calc_HA1( struct uac_credential *crd,
-		struct authenticate_body *auth,
-		str* cnonce,
-		HASHHEX sess_key)
+void uac_calc_HA1(struct uac_credential *crd, struct authenticate_body *auth,
+		str *cnonce, HASHHEX sess_key)
 {
 	MD5_CTX Md5Ctx;
 	HASH HA1;
 
-	MD5Init(&Md5Ctx);
-	MD5Update(&Md5Ctx, crd->user.s, crd->user.len);
-	MD5Update(&Md5Ctx, ":", 1);
-	MD5Update(&Md5Ctx, crd->realm.s, crd->realm.len);
-	MD5Update(&Md5Ctx, ":", 1);
-	MD5Update(&Md5Ctx, crd->passwd.s, crd->passwd.len);
-	MD5Final(HA1, &Md5Ctx);
+	if(crd->aflags & UAC_FLCRED_HA1) {
+		memcpy(sess_key, crd->passwd.s, HASHHEXLEN);
+		sess_key[HASHHEXLEN] = '\0';
+		if(auth->flags & AUTHENTICATE_MD5SESS) {
+			cvt_bin(sess_key, HA1);
+		} else {
+			return;
+		}
+	} else {
+		MD5Init(&Md5Ctx);
+		MD5Update(&Md5Ctx, crd->user.s, crd->user.len);
+		MD5Update(&Md5Ctx, ":", 1);
+		MD5Update(&Md5Ctx, crd->realm.s, crd->realm.len);
+		MD5Update(&Md5Ctx, ":", 1);
+		MD5Update(&Md5Ctx, crd->passwd.s, crd->passwd.len);
+		MD5Final(HA1, &Md5Ctx);
+	}
 
-	if ( auth->flags& AUTHENTICATE_MD5SESS )
-	{
+	if(auth->flags & AUTHENTICATE_MD5SESS) {
 		MD5Init(&Md5Ctx);
 		MD5Update(&Md5Ctx, HA1, HASHLEN);
 		MD5Update(&Md5Ctx, ":", 1);
@@ -90,20 +118,17 @@ void uac_calc_HA1( struct uac_credential *crd,
 		MD5Update(&Md5Ctx, ":", 1);
 		MD5Update(&Md5Ctx, cnonce->s, cnonce->len);
 		MD5Final(HA1, &Md5Ctx);
-	};
+	}
 
 	cvt_hex(HA1, sess_key);
 }
 
 
-
-/* 
+/*
  * calculate H(A2)
  */
-void uac_calc_HA2( str *method, str *uri,
-		struct authenticate_body *auth,
-		HASHHEX hentity,
-		HASHHEX HA2Hex )
+void uac_calc_HA2(str *method, str *uri, struct authenticate_body *auth,
+		HASHHEX hentity, HASHHEX HA2Hex)
 {
 	MD5_CTX Md5Ctx;
 	HASH HA2;
@@ -113,8 +138,7 @@ void uac_calc_HA2( str *method, str *uri,
 	MD5Update(&Md5Ctx, ":", 1);
 	MD5Update(&Md5Ctx, uri->s, uri->len);
 
-	if ( auth->flags&QOP_AUTH_INT)
-	{
+	if(auth->flags & QOP_AUTH_INT) {
 		MD5Update(&Md5Ctx, ":", 1);
 		MD5Update(&Md5Ctx, hentity, HASHHEXLEN);
 	};
@@ -124,14 +148,11 @@ void uac_calc_HA2( str *method, str *uri,
 }
 
 
-
-/* 
- * calculate request-digest/response-digest as per HTTP Digest spec 
+/*
+ * calculate request-digest/response-digest as per HTTP Digest spec
  */
-void uac_calc_response( HASHHEX ha1, HASHHEX ha2,
-		struct authenticate_body *auth,
-		str* nc, str* cnonce,
-		HASHHEX response)
+void uac_calc_response(HASHHEX ha1, HASHHEX ha2, struct authenticate_body *auth,
+		str *nc, str *cnonce, HASHHEX response)
 {
 	MD5_CTX Md5Ctx;
 	HASH RespHash;
@@ -143,8 +164,7 @@ void uac_calc_response( HASHHEX ha1, HASHHEX ha2,
 	MD5Update(&Md5Ctx, auth->nonce.s, auth->nonce.len);
 	MD5Update(&Md5Ctx, ":", 1);
 
-	if ( auth->qop.len)
-	{
+	if(auth->qop.len) {
 		MD5Update(&Md5Ctx, nc->s, nc->len);
 		MD5Update(&Md5Ctx, ":", 1);
 		MD5Update(&Md5Ctx, cnonce->s, cnonce->len);

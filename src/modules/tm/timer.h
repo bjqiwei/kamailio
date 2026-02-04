@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -91,8 +93,6 @@
 #ifndef _TM_TIMER_H
 #define _TM_TIMER_H
 
-#include "defs.h"
-
 #include "../../core/compiler_opt.h"
 #include "lock.h"
 
@@ -106,13 +106,8 @@
 #define TM_FAST_RETR_TIMER
 
 
-#ifdef TM_DIFF_RT_TIMEOUT
 #define RT_T1_TIMEOUT_MS(rb) ((rb)->my_T->rt_t1_timeout_ms)
 #define RT_T2_TIMEOUT_MS(rb) ((rb)->my_T->rt_t2_timeout_ms)
-#else
-#define RT_T1_TIMEOUT_MS(rb) (cfg_get(tm, tm_cfg, rt_t1_timeout_ms))
-#define RT_T2_TIMEOUT_MS(rb) (cfg_get(tm, tm_cfg, rt_t2_timeout_ms))
-#endif
 
 #define TM_REQ_TIMEOUT(t)                                    \
 	(is_invite(t) ? cfg_get(tm, tm_cfg, tm_max_inv_lifetime) \
@@ -121,10 +116,8 @@
 
 extern struct msgid_var user_fr_timeout;
 extern struct msgid_var user_fr_inv_timeout;
-#ifdef TM_DIFF_RT_TIMEOUT
 extern struct msgid_var user_rt_t1_timeout_ms;
 extern struct msgid_var user_rt_t2_timeout_ms;
-#endif
 extern struct msgid_var user_inv_max_lifetime;
 extern struct msgid_var user_noninv_max_lifetime;
 
@@ -177,6 +170,10 @@ inline static int _set_fr_retr(struct retr_buf *rb, unsigned retr_ms)
 	ticks_t retr_ticks;
 	int ret;
 
+#ifdef TIMER_DEBUG
+	LM_DBG("starting FR/RETR timers\n");
+#endif
+
 	ticks = get_ticks_raw();
 	timeout = rb->my_T->fr_timeout;
 	eol = rb->my_T->end_of_life;
@@ -202,7 +199,7 @@ inline static int _set_fr_retr(struct retr_buf *rb, unsigned retr_ms)
 	 *  (for neg. replies we are force to wait for the ACK so use fr) */
 	if(unlikely((rb->rbtype == TYPE_REQUEST)
 				&& ((s_ticks_t)(eol - (ticks + timeout))
-						   < 0))) { /* fr after end of life */
+						< 0))) { /* fr after end of life */
 		timeout = (((s_ticks_t)(eol - ticks)) > 0) ? (eol - ticks)
 												   : 1; /* expire now */
 	}
@@ -223,7 +220,7 @@ inline static int _set_fr_retr(struct retr_buf *rb, unsigned retr_ms)
 #endif
 	if(ret == 0)
 		rb->t_active = 1;
-	membar_write_atomic_op(); /* make sure t_active will be commited to mem.
+	membar_write_atomic_op(); /* make sure t_active will be committed to mem.
 								 before the transaction would be deref. by the
 								 current process */
 	return ret;
@@ -301,7 +298,6 @@ inline static void change_fr(struct cell *t, ticks_t fr_inv, ticks_t fr)
 }
 
 
-#ifdef TM_DIFF_RT_TIMEOUT
 /* change t1 & t2 retransmissions timers
  * if now==1 try to change them almost on the fly
  *  (next retransmission either at rt_t1 or rt_t2)
@@ -332,7 +328,6 @@ inline static void change_retr(
 		}
 	}
 }
-#endif /* TM_DIFF_RT_TIMEOUT */
 
 
 /* set the maximum transaction lifetime (from the present moment)
@@ -350,7 +345,7 @@ inline static void change_end_of_life(struct cell *t, int adj, ticks_t eol)
 				if((t->uac[i].request.rbtype == TYPE_REQUEST)
 						&& ((s_ticks_t)(t->end_of_life
 										- t->uac[i].request.fr_expire)
-								   < 0))
+								< 0))
 					t->uac[i].request.fr_expire = t->end_of_life;
 			}
 		}
@@ -379,16 +374,17 @@ inline static int t_linked_timers(tm_cell_t *t)
 {
 	int i;
 
-	if(t->uas.response.timer.next!=NULL || t->uas.response.timer.prev!=NULL) {
+	if(t->uas.response.timer.next != NULL
+			|| t->uas.response.timer.prev != NULL) {
 		return 1;
 	}
 	for(i = 0; i < t->nr_of_outgoings; i++) {
-		if(t->uac[i].request.timer.next!=NULL
-				|| t->uac[i].request.timer.prev!=NULL) {
+		if(t->uac[i].request.timer.next != NULL
+				|| t->uac[i].request.timer.prev != NULL) {
 			return 1;
 		}
-		if(t->uac[i].local_cancel.timer.next!=NULL
-				|| t->uac[i].local_cancel.timer.prev!=NULL) {
+		if(t->uac[i].local_cancel.timer.next != NULL
+				|| t->uac[i].local_cancel.timer.prev != NULL) {
 			return 1;
 		}
 	}

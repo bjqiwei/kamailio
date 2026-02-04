@@ -5,6 +5,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -35,15 +37,22 @@
  *  version).
  *
  */
+#ifndef _ACC_CDR_H_
+#define _ACC_CDR_H_
+
 
 #define MAX_CDR_CORE 3
 #define MAX_CDR_EXTRA 64
 
+extern int cdr_extra_size;
 
-int set_cdr_extra( char* cdr_extra_value);
-int set_cdr_facility( char* cdr_facility);
-int init_cdr_generation( void);
-void destroy_cdr_generation( void);
+int set_cdr_extra(char *cdr_extra_value);
+int set_cdr_facility(char *cdr_facility);
+int init_cdr_generation(void);
+void destroy_cdr_generation(void);
+int cdr_core2strar(struct dlg_cell *dlg, str *values, int *unused, char *types);
 
+int cdr_arrays_alloc(void);
+void cdr_arrays_free(void);
 
-
+#endif

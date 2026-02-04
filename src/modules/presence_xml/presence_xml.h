@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -13,8 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
- * along with this program; if not, write to the Free Software 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
@@ -31,8 +33,7 @@
 
 #include "../../lib/srdb1/db.h"
 #include "../../modules/sl/sl.h"
-#include "../presence/event_list.h"
-#include "../presence/presentity.h"
+#include "../presence/bind_presence.h"
 #include "../xcap_client/xcap_functions.h"
 
 typedef struct xcap_serv
@@ -43,16 +44,17 @@ typedef struct xcap_serv
 } xcap_serv_t;
 
 extern sl_api_t slb;
+extern presence_api_t psapi;
 
-extern str xcap_table;
-extern add_event_t pres_add_event;
+extern str pxml_xcap_table;
 extern db1_con_t *pxml_db;
 extern db_func_t pxml_dbf;
-extern int force_active;
+extern int pxml_force_active;
 extern int pidf_manipulation;
-extern int integrated_xcap_server;
+extern int pxml_integrated_xcap_server;
 extern xcap_serv_t *xs_list;
 extern xcapGetNewDoc_t xcap_GetNewDoc;
-extern pres_get_sphere_t pres_get_sphere;
+
+extern unsigned int pxml_default_expires;
 
 #endif

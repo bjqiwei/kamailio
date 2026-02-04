@@ -2,7 +2,7 @@
 # cnxcc module makefile
 #
 #
-# WARNING: do not run this directly, it should be run by the master Makefile
+# WARNING: do not run this directly, it should be run by the main Makefile
 
 include ../../Makefile.defs
 auto_gen=
@@ -47,6 +47,4 @@ endif
 DEFS+=$(HIREDISDEFS) $(LEVENTDEFS)
 LIBS=$(HIREDISLIBS) $(LEVENTLIBS)
 
-SERLIBPATH=../../lib
-SER_LIBS+=$(SERLIBPATH)/srdb1/srdb1
 include ../../Makefile.modules

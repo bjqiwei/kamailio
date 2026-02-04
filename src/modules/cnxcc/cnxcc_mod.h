@@ -4,6 +4,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -25,7 +27,7 @@
 #include "../../core/locking.h"
 #include "../../core/atomic_ops.h"
 #include "../../core/str_hash.h"
-#include "../../core/parser/parse_rr.h"
+#include "../../core/flags.h"
 
 #define str_shm_free_if_not_null(_var_) \
 	if(_var_.s != NULL) {               \
@@ -35,7 +37,7 @@
 	}
 
 /*!
- * \brief Init a cnxcc_lock 
+ * \brief Init a cnxcc_lock
  * \param _entry locked entry
  */
 #define cnxcc_lock_init(_entry) \
@@ -89,13 +91,15 @@ typedef struct stats
 	unsigned int dropped;
 } stats_t;
 
-typedef enum cnxpvtypes {
+typedef enum cnxpvtypes
+{
 	CNX_PV_ACTIVE = 1,
 	CNX_PV_TOTAL,
 	CNX_PV_DROPPED
 } cnxpvtypes_t;
 
-typedef enum credit_type {
+typedef enum credit_type
+{
 	CREDIT_TIME,
 	CREDIT_MONEY,
 	CREDIT_CHANNEL
@@ -128,11 +132,6 @@ typedef struct data
 	 * Call Shutdown Route Number
 	 */
 	int cs_route_number;
-
-	/*
-	 * Dialog flag used to track the call
-	 */
-	flag_t ctrl_flag;
 
 	int check_period;
 
@@ -212,7 +211,7 @@ typedef struct credit_data
 
 	char *str_id;
 	// flag to mark this instance in the process of being eliminated
-	int deallocating : 1;
+	unsigned int deallocating : 1;
 } credit_data_t;
 
 

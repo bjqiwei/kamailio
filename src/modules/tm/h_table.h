@@ -3,6 +3,8 @@
  *
  * This file is part of Kamailio, a free SIP server.
  *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
  * Kamailio is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -28,10 +30,8 @@
 #ifndef _H_TABLE_H
 #define _H_TABLE_H
 
-#include "defs.h"
 #include "t_stats.h"
 
-#define TM_DEL_UNREF
 /* uncomment the next define if you wish to keep hash statistics*/
 /*
 #define TM_HASH_STATS
@@ -46,7 +46,6 @@
 
 #include "../../core/clist.h"
 #include "../../core/parser/msg_parser.h"
-#include "../../core/md5utils.h"
 #include "../../core/usr_avp.h"
 #include "../../core/xavp.h"
 #include "../../core/timer.h"
@@ -54,11 +53,6 @@
 #include "../../core/atomic_ops.h"
 #include "../../core/hash_func.h"
 #include "config.h"
-
-/* if TM_DIFF_RT_TIMEOUT is defined, different retransmissions timeouts
- * can be used for each transaction, at a small memory cost
- * (extra 4 bytes/transaction) */
-#define TM_DIFF_RT_TIMEOUT
 
 
 struct s_table;
@@ -109,7 +103,7 @@ void unlock_hash(int i);
  * REQ_EXIST means that this request is a retransmission which does not
  *     affect transactional state
  * REQ_ERR_DELAYED mean that tm wants to send  reply(ser_error) but it
- *     delayed it to end-of-script to allow it to be overriden.
+ *     delayed it to end-of-script to allow it to be overridden.
  *     If this is set and all of the above flag are not => send reply
  *     on end of script. If any of the above flags is set, do not
  *     send (especially REQ_RPLD and REQ_RLSD).
@@ -151,9 +145,9 @@ typedef struct retr_buf
 	 * 0 (TYPE_REQUEST) if request, -1 if local CANCEL (TYPE_LOCAL_CANCEL),
 	 * -2 if local ACK (TYPE_LOCAL_ACK) */
 	short rbtype;
-	volatile unsigned short flags;   /* DISABLED, T2 */
+	volatile unsigned short flags;	  /* DISABLED, T2 */
 	volatile unsigned short t_active; /* timer active */
-	unsigned short branch;			 /* no more than 64k branches */
+	unsigned short branch;			  /* no more than 64k branches */
 	int buffer_len;
 	char *buffer;
 	/*the cell that contains this retrans_buff*/
@@ -176,10 +170,8 @@ typedef struct ua_server
 	 * we need them for dialog-wise matching of ACKs;
 	 * the pointer shows to shmem-ed reply */
 	str local_totag;
-#ifdef CANCEL_REASON_SUPPORT
 	struct cancel_reason *cancel_reas; /* pointer to cancel reason, used
 										* for e2e cancels */
-#endif /* CANCEL_REASON_SUPPORT */
 	unsigned int status;
 } tm_ua_server_t;
 
@@ -187,10 +179,10 @@ typedef struct ua_server
 /* User Agent Client content */
 
 /* UAC internal flags */
-#define TM_UAC_FLAG_RR (1)			/* Record-Route applied */
-#define TM_UAC_FLAG_R2 (1 << 1)		/* 2nd Record-Route applied */
-#define TM_UAC_FLAG_FB (1 << 2)		/* Mark first entry in new branch set */
-#define TM_UAC_FLAG_BLIND (1 << 3)	/* A blind uac */
+#define TM_UAC_FLAG_RR (1)		   /* Record-Route applied */
+#define TM_UAC_FLAG_R2 (1 << 1)	   /* 2nd Record-Route applied */
+#define TM_UAC_FLAG_FB (1 << 2)	   /* Mark first entry in new branch set */
+#define TM_UAC_FLAG_BLIND (1 << 3) /* A blind uac */
 
 typedef struct ua_client
 {
@@ -212,6 +204,7 @@ typedef struct ua_client
 	struct dns_srv_handle dns_h;
 #endif
 	str uri;
+	str dst_uri;
 	str path;
 	str instance;
 	str ruid;
@@ -223,10 +216,11 @@ typedef struct ua_client
 	unsigned int flags;
 	/* per branch flags */
 	flag_t branch_flags;
+	/* via-body flags */
+	flag_t vbflags;
 	/* internal processing code - (mapping over sip warning codes)
 	 * - storing the code giving a clue of what happened internally */
 	int icode;
-#ifdef WITH_AS_SUPPORT
 	/**
 	 * Resent for every rcvd 2xx reply.
 	 * This member's as an alternative to passing the reply to the AS,
@@ -235,15 +229,12 @@ typedef struct ua_client
 	 * concurrently with a 2xx reply (to generate an ACK).
 	 */
 	struct retr_buf *local_ack;
-#endif
 	/* the route to take if no final positive reply arrived */
-	unsigned short on_failure;
+	int on_failure;
 	/* the route to take for all failure replies */
-	unsigned short on_branch_failure;
+	int on_branch_failure;
 	/* the onreply_route to be processed if registered to do so */
-	unsigned short on_reply;
-	/* unused - keep the structure aligned to 32b */
-	unsigned short on_unused;
+	int on_reply;
 } tm_ua_client_t;
 
 
@@ -280,26 +271,21 @@ typedef struct async_state
 /* 6xx received => stop forking */
 #define T_6xx (1 << 4)
 
-#define T_IN_AGONY (1 << 5)		/* set if waiting to die (delete timer)
+#define T_IN_AGONY \
+	(1 << 5)					/* set if waiting to die (delete timer)
 								 * TODO: replace it with del on unref */
 #define T_AUTO_INV_100 (1 << 6) /* send an 100 reply automatically  to inv. */
-#ifdef WITH_AS_SUPPORT
 /* don't generate automatically an ACK for local transaction */
 #define T_NO_AUTO_ACK (1 << 7)
-#endif
 
-#define T_DISABLE_6xx (1 << 8)		/* treat 6xx as a normal reply */
-#define T_DISABLE_FAILOVER (1 << 9) /* don't perform dns failover */
-#ifdef CANCEL_REASON_SUPPORT
+#define T_DISABLE_6xx (1 << 8)			 /* treat 6xx as a normal reply */
+#define T_DISABLE_FAILOVER (1 << 9)		 /* don't perform dns failover */
 #define T_NO_E2E_CANCEL_REASON (1 << 10) /* don't propagate CANCEL Reason */
-#endif									 /* CANCEL_REASON_SUPPORT */
 #define T_DONT_FORK (T_CANCELED | T_6xx)
 
-#ifdef WITH_AS_SUPPORT
 /* provisional replies must trigger callbacks for local transaction */
 #define T_PASS_PROVISIONAL_FLAG (1 << 11)
 #define pass_provisional(_t_) ((_t_)->flags & T_PASS_PROVISIONAL_FLAG)
-#endif
 #define T_ASYNC_CONTINUE \
 	(1 << 12) /* Is this transaction in a continuation after being suspended */
 
@@ -326,6 +312,8 @@ typedef struct tm_xdata
 	struct usr_avp *domain_avps_from;
 	struct usr_avp *domain_avps_to;
 	sr_xavp_t *xavps_list;
+	sr_xavp_t *xavus_list;
+	sr_xavp_t *xavis_list;
 } tm_xdata_t;
 
 
@@ -342,6 +330,8 @@ typedef struct tm_xlinks
 	struct usr_avp **domain_avps_from;
 	struct usr_avp **domain_avps_to;
 	sr_xavp_t **xavps_list;
+	sr_xavp_t **xavus_list;
+	sr_xavp_t **xavis_list;
 } tm_xlinks_t;
 
 
@@ -359,14 +349,12 @@ typedef struct cell
 	/* sequence number within hash collision slot */
 	unsigned int label;
 	/* different information about the transaction */
-	unsigned short flags;
+	unsigned int flags;
 	/* number of forks */
-	short nr_of_outgoings;
+	int nr_of_outgoings;
 
 	/* free operations counter - debug */
 	int fcount;
-
-#ifdef TM_DEL_UNREF
 	/* every time the transaction/cell is referenced from somewhere this
 	 * ref_count should be increased (via REF()) and every time the reference
 	 * is removed the ref_count should be decreased (via UNREF()).
@@ -378,25 +366,21 @@ typedef struct cell
 	 * it will be automatically deleted by the UNREF() operation.
 	 */
 	atomic_t ref_count;
-#else
-	/* how many processes are currently processing this transaction ;
-	 * note that only processes working on a request/reply belonging
-	 * to a transaction increase ref_count -- timers don't, since we
-	 * rely on transaction state machine to clean-up all but wait timer
-	 * when entering WAIT state and the wait timer is the only place
-	 * from which a transaction can be deleted (if ref_count==0); good
-	 * for protecting from conditions in which wait_timer hits and
-	 * tries to delete a transaction whereas at the same time
-	 * a delayed message belonging to the transaction is received */
-	volatile unsigned int ref_count;
-#endif
-
 	/* needed for generating local ACK/CANCEL for local
-	 * transactions; all but cseq_n include the entire
-	 * header field value, cseq_n only Cseq number; with
+	 * transactions; all but cseq_hdr_n include the entire
+	 * header field value, cseq_hdr_n only Cseq number; with
 	 * local transactions, pointers point to outbound buffer,
 	 * with proxied transactions to inbound request */
-	str from, callid, cseq_n, to;
+	str from_hdr;
+	str callid_hdr;
+	str cseq_hdr_n;
+	str to_hdr;
+
+	/* shortcuts inside above fields */
+	str callid_val;
+	str cseq_num;
+	str cseq_met;
+
 	/* method shortcut -- for local transactions, pointer to
 	 * outbound buffer, for proxies transactions pointer to
 	 * original message; needed for reply matching */
@@ -407,7 +391,7 @@ typedef struct cell
 
 	/* bindings to wait and delete timer */
 	struct timer_ln wait_timer; /* used also for delete */
-	ticks_t wait_start; /* ticks when put on wait first time */
+	ticks_t wait_start;			/* ticks when put on wait first time */
 
 	/* UA Server */
 	struct ua_server uas;
@@ -430,6 +414,8 @@ typedef struct cell
 	struct usr_avp *domain_avps_from;
 	struct usr_avp *domain_avps_to;
 	sr_xavp_t *xavps_list;
+	sr_xavp_t *xavus_list;
+	sr_xavp_t *xavis_list;
 
 	/* protection against concurrent reply processing */
 	ser_lock_t reply_mutex;
@@ -438,33 +424,26 @@ typedef struct cell
 	/* recursive reply lock count */
 	int reply_rec_lock_level;
 
-#ifdef ENABLE_ASYNC_MUTEX
-	/* protect against concurrent async continues */
-	ser_lock_t async_mutex;
-#endif
-
 	ticks_t fr_timeout;		/* final response interval for retr_bufs */
 	ticks_t fr_inv_timeout; /* final inv. response interval for retr_bufs */
-#ifdef TM_DIFF_RT_TIMEOUT
 	retr_timeout_t rt_t1_timeout_ms; /* start retr. interval for retr_bufs */
 	retr_timeout_t rt_t2_timeout_ms; /* maximum retr. interval for retr_bufs */
-#endif
-	ticks_t end_of_life; /* maximum lifetime */
+	ticks_t end_of_life;			 /* maximum lifetime */
 
 	/* nr of replied branch; 0..sr_dst_max_branches=branch value,
 	 * -1 no reply, -2 local reply */
-	short relayed_reply_branch;
+	int relayed_reply_branch;
 
 	/* the route to take if no final positive reply arrived */
-	unsigned short on_failure;
+	int on_failure;
 	/* the route to take for all failure replies */
-	unsigned short on_branch_failure;
+	int on_branch_failure;
 	/* the onreply_route to be processed if registered to do so */
-	unsigned short on_reply;
+	int on_reply;
 	/* The route to take for each downstream branch separately */
-	unsigned short on_branch;
+	int on_branch;
 	/* branch route backup for late branch add (t_append_branch) */
-	unsigned short on_branch_delayed;
+	int on_branch_delayed;
 
 	/* place holder for MD5checksum, MD5_LEN bytes are extra alloc'ed */
 	char md5[0];
@@ -474,7 +453,8 @@ typedef struct cell
 
 #if 0
 /* warning: padding too much => big size increase */
-#define ENTRY_PAD_TO 128 /* should be a multiple of cacheline size for
+#define ENTRY_PAD_TO \
+	128 /* should be a multiple of cacheline size for
 						 * best performance*/
 #define ENTRY_PAD_BYTES                                            \
 	(ENTRY_PAD_TO - 2 * sizeof(struct cell *) + sizeof(ser_lock_t) \
@@ -493,7 +473,7 @@ typedef struct entry
 	/* sync mutex */
 	ser_lock_t mutex;
 	atomic_t locker_pid; /* pid of the process that holds the lock */
-	int rec_lock_level;  /* recursive lock count */
+	int rec_lock_level;	 /* recursive lock count */
 	/* currently highest sequence number in a synonym list */
 	unsigned int next_label;
 #ifdef TM_HASH_STATS
