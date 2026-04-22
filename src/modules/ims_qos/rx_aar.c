@@ -681,9 +681,8 @@ int add_media_components(AAAMessage *aar, struct sip_msg *req,
 						}
 
 						if(!flow_description_exists(p_session_data,
-								   sdp_stream_num + 1, &req_sdp_stream->media,
-								   &ipA, &portA, &ipB, &portB,
-								   &rpl_sdp_stream->transport, direction,
+								   &req_sdp_stream->media, &ipA, &portA, &ipB,
+								   &portB, &rpl_sdp_stream->transport,
 								   in_current_flow_description_list)) {
 							// Flow description does not exist in the list of flow descriptions to be added. So we add it to auth session data.
 							add_flow_description(p_session_data,
@@ -702,11 +701,10 @@ int add_media_components(AAAMessage *aar, struct sip_msg *req,
 								&req_sdp_stream->raw_stream,
 								&rpl_sdp_stream->raw_stream, direction,
 								AVP_EPC_Flow_Usage_No_Information);
-
-						sdp_stream_num++;
 					}
 				}
 			}
+			sdp_stream_num++;
 		}
 		sdp_session_num++;
 	}

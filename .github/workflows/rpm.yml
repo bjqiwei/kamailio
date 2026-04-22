@@ -112,11 +112,11 @@ jobs:
         echo ${{ github.sha }}
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
       if: "! contains(fromJson('[\"x86_64\", \"aarch64\"]'), matrix.arch)"
 
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
@@ -140,7 +140,7 @@ jobs:
           mv ~/rpmbuild/RPMS/*/* RPMS/${os_folder}/${ref_folder}/${{ github.ref_name }}/${{ matrix.arch }}
 
     - name: Push artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: kamailio-${{ matrix.os }}-${{ github.ref_name }}-${{ matrix.arch }}.rpm
         path: |
@@ -170,7 +170,7 @@ jobs:
     - build
     steps:
     - name: Download artifact images
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         pattern: kamailio-${{ matrix.os }}-${{ github.ref_name }}-*.rpm
         path: ${{ runner.temp }}/repo

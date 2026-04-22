@@ -39,7 +39,7 @@
  * On alpine linux musl library it is also not defined. There is no
  * musl feature test macro, so we look for glibc instead.
  */
-#if (defined __GLIBC__ && __GLIBC__ == 2 && __GLIBC_MINOR__ < 25) \
+#if(defined __GLIBC__ && __GLIBC__ == 2 && __GLIBC_MINOR__ < 25) \
 		|| !defined __GLIBC__
 #ifndef T_OPT
 #define T_OPT ns_t_opt
@@ -51,6 +51,7 @@
 #include "dprint.h"
 #include "mem/mem.h"
 #include "ip_addr.h"
+#include "ut.h"
 #include "error.h"
 #include "globals.h" /* tcp_disable, tls_disable a.s.o */
 #include "cfg_core.h"
@@ -1060,7 +1061,7 @@ again:
 		rd->name_len = name_len;
 		/* alloc sizeof struct + space for the null terminated name */
 		rd->rdata = (void *)pkg_malloc(
-				sizeof(struct cname_rdata) - 1 + head->name_len + 1);
+				sizeof(struct cname_rdata) - 1 + fullname_rd->name_len + 1);
 		if(unlikely(rd->rdata == 0)) {
 			PKG_MEM_ERROR;
 			goto error_rd;

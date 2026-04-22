@@ -23,7 +23,8 @@ mod_list_extra=avp auth_diameter call_control call_obj dmq domainpolicy msrp \
 			carrierroute pdb qos sca seas sms sst timer tmrec uac_redirect \
 			xhttp xhttp_rpc xprint jsonrpcs nosip dmq_usrloc statsd rtjson \
 			log_custom keepalive ss7ops acc_diameter evrexec file_out \
-			sipjson lrkproxy math posops xhttp_prom dlgs sworker influxdbc
+			sipjson lrkproxy math posops xhttp_prom dlgs sworker influxdbc \
+			peerstate ptimer pvtpl siprepo sipp
 
 # - common modules depending on database
 mod_list_db=acc alias_db auth_db avpops cfg_db db_text db_flatstore \
@@ -178,6 +179,9 @@ mod_list_ev=evapi
 # - modules depending on libjwt library
 mod_list_jwt=jwt
 
+# - modules depending on libjwt3 library
+mod_list_jwt3=jwt3
+
 # - modules depending on libwebsockets library
 mod_list_lwsc=lwsc
 
@@ -277,6 +281,7 @@ mod_list_all=$(sort $(mod_list_basic) $(mod_list_extra) \
 			   $(mod_list_ruxc) \
 			   $(mod_list_secsipid) \
 			   $(mod_list_jwt) \
+			   $(mod_list_jwt3) \
 			   $(mod_list_lwsc) \
 			   $(mod_list_stirshaken) \
 			   $(mod_list_tlsa) \
@@ -484,8 +489,8 @@ module_group_kuuid=$(mod_list_uuid)
 # pkg libev modules
 module_group_kev=$(mod_list_ev)
 
-# pkg jwt module
-module_group_kjwt=$(mod_list_jwt)
+# pkg jwt3 module
+module_group_kjwt3=$(mod_list_jwt3)
 
 # pkg lwsc module
 module_group_klwsc=$(mod_list_lwsc)

@@ -1219,6 +1219,7 @@ ndb_redis \
 nghttp2 \
 outbound \
 peering \
+peerstate \
 %if %{with phonenum}
 phonenum \
 %endif
@@ -1230,6 +1231,7 @@ presence_mwi \
 presence_profile \
 presence_reginfo \
 presence_xml \
+ptimer \
 pua \
 pua_bla \
 pua_dialoginfo \
@@ -1403,11 +1405,13 @@ rm -rf %{buildroot}
 %doc %{_docdir}/kamailio/modules/README.path
 %doc %{_docdir}/kamailio/modules/README.pdb
 %doc %{_docdir}/kamailio/modules/README.pdt
+%doc %{_docdir}/kamailio/modules/README.peerstate
 %doc %{_docdir}/kamailio/modules/README.permissions
 %doc %{_docdir}/kamailio/modules/README.pike
 %doc %{_docdir}/kamailio/modules/README.pipelimit
 %doc %{_docdir}/kamailio/modules/README.posops
 %doc %{_docdir}/kamailio/modules/README.prefix_route
+%doc %{_docdir}/kamailio/modules/README.ptimer
 %doc %{_docdir}/kamailio/modules/README.pv
 %doc %{_docdir}/kamailio/modules/README.pv_headers
 %doc %{_docdir}/kamailio/modules/README.pvtpl
@@ -1424,6 +1428,7 @@ rm -rf %{buildroot}
 %doc %{_docdir}/kamailio/modules/README.sdpops
 %doc %{_docdir}/kamailio/modules/README.seas
 %doc %{_docdir}/kamailio/modules/README.sipcapture
+%doc %{_docdir}/kamailio/modules/README.sipp
 %doc %{_docdir}/kamailio/modules/README.siprepo
 %doc %{_docdir}/kamailio/modules/README.sipt
 %doc %{_docdir}/kamailio/modules/README.siptrace
@@ -1556,11 +1561,13 @@ rm -rf %{buildroot}
 %{_libdir}/kamailio/modules/path.so
 %{_libdir}/kamailio/modules/pdb.so
 %{_libdir}/kamailio/modules/pdt.so
+%{_libdir}/kamailio/modules/peerstate.so
 %{_libdir}/kamailio/modules/permissions.so
 %{_libdir}/kamailio/modules/pike.so
 %{_libdir}/kamailio/modules/pipelimit.so
 %{_libdir}/kamailio/modules/posops.so
 %{_libdir}/kamailio/modules/prefix_route.so
+%{_libdir}/kamailio/modules/ptimer.so
 %{_libdir}/kamailio/modules/pua_rpc.so
 %{_libdir}/kamailio/modules/pv.so
 %{_libdir}/kamailio/modules/pv_headers.so
@@ -1577,6 +1584,7 @@ rm -rf %{buildroot}
 %{_libdir}/kamailio/modules/sdpops.so
 %{_libdir}/kamailio/modules/seas.so
 %{_libdir}/kamailio/modules/sipcapture.so
+%{_libdir}/kamailio/modules/sipp.so
 %{_libdir}/kamailio/modules/siprepo.so
 %{_libdir}/kamailio/modules/sipt.so
 %{_libdir}/kamailio/modules/siptrace.so

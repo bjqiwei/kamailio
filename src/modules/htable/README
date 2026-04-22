@@ -109,6 +109,7 @@ Tyler Moore
 
               7.1. htable:mod-init
               7.2. htable:expired:<table>
+              7.3. htable:reloaded:<table>
 
    List of Examples
 
@@ -236,6 +237,7 @@ Chapter 1. Admin Guide
 
         7.1. htable:mod-init
         7.2. htable:expired:<table>
+        7.3. htable:reloaded:<table>
 
 1. Overview
 
@@ -501,6 +503,9 @@ $ kamctl rpc htable.dump htable
      * autoexpire -time in seconds to delete an item from a hash table if
        no update was done to it. If it is missing or set to 0, the items
        won't expire.
+     * reloadat - time in seconds to reload a hash table. For each new
+       seconds interval, the hash table will be reloaded. You can catch
+       the reload on the event_route: htable:reloaded:<htable>.
      * dbtable - name of database to be loaded at startup in hash table.
        If empty or missing, no data will be loaded.
      * cols - the column names of the database table. They must be
@@ -1523,6 +1528,7 @@ kamctl rpc htable.dmqresync ipban
 
    7.1. htable:mod-init
    7.2. htable:expired:<table>
+   7.3. htable:reloaded:<table>
 
 7.1.  htable:mod-init
 
@@ -1557,5 +1563,16 @@ event_route[htable:mod-init] {
 
 event_route[htable:expired:mytable] {
     xlog("mytable record expired $shtrecord(key) => $shtrecord(value)\n");
+}
+...
+
+7.3.  htable:reloaded:<table>
+
+   When defined, the module calls event_route[htable:reloaded:<table>]
+   when a hash table was reloaded.
+...
+
+event_route[htable:reloaded:mytable] {
+    xlog("mytable was reloaded\n");
 }
 ...

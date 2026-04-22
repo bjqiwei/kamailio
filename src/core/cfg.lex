@@ -172,6 +172,7 @@ UDP_RECEIVER_MODE "udp_receiver_mode"
 UDP4_RAW		"udp4_raw"
 UDP4_RAW_MTU	"udp4_raw_mtu"
 UDP4_RAW_TTL	"udp4_raw_ttl"
+UDP_ACCEPT_PROXY	"udp_accept_proxy"
 SETFLAG		setflag
 RESETFLAG	resetflag
 ISFLAGSET	isflagset
@@ -447,6 +448,7 @@ TCP_OPT_LISTEN_BACKLOG	"tcp_listen_backlog"
 TCP_OPT_ACCEPT_NO_CL	"tcp_accept_no_cl"
 TCP_OPT_ACCEPT_HEP3	"tcp_accept_hep3"
 TCP_OPT_ACCEPT_HAPROXY	"tcp_accept_haproxy"
+TCP_OPT_ACCEPT_PROTOCOLS	"tcp_accept_protocols"|"tcp_accept_protos"
 TCP_OPT_CLOSE_RST	"tcp_close_rst"
 TCP_CLONE_RCVBUF	"tcp_clone_rcvbuf"
 TCP_REUSE_PORT		"tcp_reuse_port"
@@ -709,6 +711,7 @@ IMPORTFILE      "import_file"
 <INITIAL>{UDP4_RAW_MTU}	{ count(); yylval.strval=yytext; return UDP4_RAW_MTU; }
 <INITIAL>{UDP4_RAW_TTL}	{ count(); yylval.strval=yytext; return UDP4_RAW_TTL; }
 <INITIAL>{UDP_RECEIVER_MODE}	{ count(); yylval.strval=yytext; return UDP_RECEIVER_MODE; }
+<INITIAL>{UDP_ACCEPT_PROXY}	{ count(); yylval.strval=yytext; return UDP_ACCEPT_PROXY; }
 <INITIAL>{IF}	{ count(); yylval.strval=yytext; return IF; }
 <INITIAL>{ELSE}	{ count(); yylval.strval=yytext; return ELSE; }
 
@@ -976,6 +979,8 @@ IMPORTFILE      "import_file"
 									return TCP_OPT_ACCEPT_HEP3; }
 <INITIAL>{TCP_OPT_ACCEPT_HAPROXY}	{ count(); yylval.strval=yytext;
 									return TCP_OPT_ACCEPT_HAPROXY; }
+<INITIAL>{TCP_OPT_ACCEPT_PROTOCOLS}	{ count(); yylval.strval=yytext;
+									return TCP_OPT_ACCEPT_PROTOCOLS; }
 <INITIAL>{TCP_OPT_CLOSE_RST}	{ count(); yylval.strval=yytext; return TCP_OPT_CLOSE_RST; }
 <INITIAL>{TCP_CLONE_RCVBUF}		{ count(); yylval.strval=yytext;
 									return TCP_CLONE_RCVBUF; }

@@ -108,6 +108,7 @@ extern int ksr_tcp_listen_backlog;
 #endif
 extern int ksr_tcp_accept_hep3;
 extern int ksr_tcp_accept_haproxy;
+extern int ksr_tcp_accept_protocols;
 extern int ksr_tcp_script_mode;
 #ifdef USE_TLS
 extern int tls_connection_match_domain;
@@ -258,6 +259,7 @@ extern int ksr_tcp_msg_data_timeout;
 extern int ksr_tcp_accept_iplimit;
 extern int ksr_tcp_main_threads;
 extern int ksr_tcp_check_timer;
+extern int ksr_udp_accept_proxy;
 
 #ifdef USE_DNS_CACHE
 extern int

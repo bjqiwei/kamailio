@@ -3394,6 +3394,11 @@ int main(int argc, char **argv)
 #endif /* USE_TLS */
 #endif /* USE_TCP */
 
+	if(udp_main_init()) {
+		LM_CRIT("main UDP init failed\n");
+		goto error;
+	}
+
 	/* The total number of processes is now known, note that no
 	 * function being called before this point may rely on the
 	 * number of processes !
@@ -3463,6 +3468,8 @@ error:
 /**
  * code to set PTHREAD_PROCESS_SHARED attribute for pthread mutex to cope
  * with libssl 1.1+ thread-only mutex initialization
+ *
+ * disabled when tcp_main_thread = 1 - MT-mode for OpenSSL/wolfSSL
  */
 
 #define SYMBOL_EXPORT __attribute__((visibility("default")))
@@ -3484,12 +3491,14 @@ int SYMBOL_EXPORT pthread_mutex_init(
 
 	if(__mutexattr) {
 		pthread_mutexattr_t attr = *__mutexattr;
-		pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+		if(ksr_tcp_main_threads == 0)
+			pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
 		return real_pthread_mutex_init(__mutex, &attr);
 	}
 
 	pthread_mutexattr_init(&attr);
-	pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+	if(ksr_tcp_main_threads == 0)
+		pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
 	ret = real_pthread_mutex_init(__mutex, &attr);
 	pthread_mutexattr_destroy(&attr);
 
@@ -3514,12 +3523,15 @@ int SYMBOL_EXPORT pthread_rwlock_init(pthread_rwlock_t *__restrict __rwlock,
 
 	if(__attr) {
 		pthread_rwlockattr_t attr = *__attr;
-		pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+
+		if(ksr_tcp_main_threads == 0)
+			pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
 		return real_pthread_rwlock_init(__rwlock, &attr);
 	}
 
 	pthread_rwlockattr_init(&attr);
-	pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+	if(ksr_tcp_main_threads == 0)
+		pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
 	ret = real_pthread_rwlock_init(__rwlock, &attr);
 	pthread_rwlockattr_destroy(&attr);
 

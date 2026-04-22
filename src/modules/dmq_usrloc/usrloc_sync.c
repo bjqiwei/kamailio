@@ -44,7 +44,7 @@ dmq_api_t usrloc_dmqb;
 dmq_peer_t *usrloc_dmq_peer = NULL;
 
 int usrloc_dmq_send_all();
-int usrloc_dmq_request_sync();
+int usrloc_dmq_request_sync(dmq_node_t *node);
 int usrloc_dmq_send_contact(
 		ucontact_t *ptr, str aor, int action, dmq_node_t *node);
 int usrloc_dmq_send_multi_contact(
@@ -102,15 +102,12 @@ static int add_contact(str aor, ucontact_info_t *ci)
 
 	dmq_ul.lock_udomain(_d, &aor);
 	res = dmq_ul.get_urecord(_d, &aor, &r);
-	if(res < 0) {
-		LM_ERR("failed to retrieve record from usrloc\n");
-		goto error;
-	} else if(res == 0) {
+	if(res == 0) {
 		LM_DBG("'%.*s' found in usrloc\n", aor.len, ZSW(aor.s));
 		res = dmq_ul.get_ucontact(r, ci->c, ci->callid, ci->path, ci->cseq, &c);
 		LM_DBG("get_ucontact = %d\n", res);
-		if(res == -1) {
-			LM_ERR("Invalid cseq\n");
+		if(res < 0) {
+			LM_ERR("Invalid cseq res=%d\n", res);
 			goto error;
 		} else if(res > 0) {
 			LM_DBG("Not found contact\n");
@@ -123,8 +120,14 @@ static int add_contact(str aor, ucontact_info_t *ci)
 		}
 	} else {
 		LM_DBG("'%.*s' Not found in usrloc\n", aor.len, ZSW(aor.s));
-		dmq_ul.insert_urecord(_d, &aor, &r);
-		LM_DBG("Insert record\n");
+		// will take care of free mem by itself, if any issues
+		res = dmq_ul.insert_urecord(_d, &aor, &r);
+		if(res == 0) {
+			LM_DBG("Insert urecord for new aor\n");
+		} else {
+			LM_ERR("Failed to insert urecord for new aor\n");
+			goto error;
+		}
 		contact.s = ci->c->s;
 		contact.len = ci->c->len;
 		dmq_ul.insert_ucontact(r, &contact, ci, &c);
@@ -602,7 +605,7 @@ error:
 }
 
 
-int usrloc_dmq_request_sync()
+int usrloc_dmq_request_sync(dmq_node_t *node)
 {
 	srjson_doc_t jdoc;
 
@@ -626,7 +629,7 @@ int usrloc_dmq_request_sync()
 	}
 	jdoc.buf.len = strlen(jdoc.buf.s);
 	LM_DBG("sending serialized data %.*s\n", jdoc.buf.len, jdoc.buf.s);
-	if(usrloc_dmq_send(&jdoc.buf, 0) != 0) {
+	if(usrloc_dmq_send(&jdoc.buf, node) != 0) {
 		goto error;
 	}
 

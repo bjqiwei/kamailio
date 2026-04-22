@@ -45,7 +45,7 @@ static int dlg_hash_size = 4096;
 
 static char *rr_param = "did";
 static int dlg_flag = -1;
-
+int dlg_dbg_list = 0;
 
 static str timeout_spec = {NULL, 0};
 static int default_timeout = 60 * 60 * 12; /* 12 hours */
@@ -137,7 +137,7 @@ static param_export_t mod_params[] = {
 	{"dlg_extra_hdrs", PARAM_STR, &dlg_extra_hdrs},
 	//In this new dialog module we always match using DID
 	{"dlg_match_mode", PARAM_INT, &seq_match_mode},
-
+	{"dbg_list", PARAM_INT, &dlg_dbg_list},
 	{"db_url", PARAM_STR, &db_url},
 	{"db_mode", PARAM_INT, &dlg_db_mode_param},
 	{"db_update_period", PARAM_INT, &db_update_period},
@@ -150,14 +150,6 @@ static param_export_t mod_params[] = {
 
 	{0, 0, 0}
 };
-
-#ifdef MI_REMOVED
-static mi_export_t mi_cmds[] = {
-	{"dlg_list", mi_print_dlgs, 0, 0, 0},
-	{"dlg_terminate_dlg", mi_terminate_dlg, 0, 0, 0},
-	{0, 0, 0, 0, 0}
-};
-#endif
 
 static rpc_export_t rpc_methods[];
 
@@ -569,10 +561,12 @@ static int mod_init(void)
 		return -1;
 	}
 
-	/*for testing only!!!! setup timer to call print all dlg every 10 seconds!*/
-	if(register_timer(print_all_dlgs, 0, 10) < 0) {
-		LM_ERR("failed to register timer \n");
-		return -1;
+	if(unlikely(dlg_dbg_list)) {
+		/*for testing only!!!! setup timer to call print all dlg every 10 seconds!*/
+		if(register_timer(print_all_dlgs, 0, 10) < 0) {
+			LM_ERR("failed to register timer \n");
+			return -1;
+		}
 	}
 
 	/* init handlers */

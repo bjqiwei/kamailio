@@ -29,6 +29,7 @@
 #include "tcp_init.h"
 #include "tcp_options.h"
 
+#include "str.h"
 #include "ip_addr.h"
 #include "locking.h"
 #include "atomic_ops.h"
@@ -64,6 +65,7 @@
 #define F_CONN_PASSIVE 16384  /* conn. created via accept() and not connect()*/
 #define F_CONN_CLOSE_EV 32768 /* explicitely call tcpops ev route when closed */
 #define F_CONN_NOSEND 65536	  /* do not send data on this connection */
+#define F_CONN_NORECV (1 << 17) /* do not receive data on this connection */
 
 #ifndef NO_READ_HTTP11
 #define READ_HTTP11
@@ -76,6 +78,17 @@
 #ifndef NO_READ_WS
 #define READ_WS
 #endif
+
+/* tcp application protocol flags */
+#define KSR_TCPAP_HTTP 4
+#define KSR_TCPAP_WS 8
+#define KSR_TCPAP_MSRP 16
+#define KSR_TCPAP_HEP 32
+#define KSR_TCPAP_HEP3 32
+#define KSR_TCPAP_STUN 64
+#define KSR_TCPAP_HAPROXY 128
+#define KSR_TCPAP_DEFAULT \
+	(KSR_TCPAP_HTTP | KSR_TCPAP_WS | KSR_TCPAP_MSRP | KSR_TCPAP_STUN)
 
 typedef enum tcp_req_errors
 {
@@ -187,6 +200,7 @@ typedef enum tcp_req_flags
 	F_TCP_REQ_MSRP_BODY = (1 << 5),
 #endif
 	F_TCP_REQ_HEP3 = (1 << 6),
+	F_TCP_REQ_WS_HANDSHAKE = (1 << 7),
 } tcp_req_flags_t;
 
 #define TCP_REQ_HAS_CLEN(tr) ((tr)->flags & F_TCP_REQ_HAS_CLEN)
@@ -263,6 +277,18 @@ enum tcp_closed_reason
 	_TCP_CLOSED_REASON_MAX /* /!\ keep this one always at the end */
 };
 
+typedef struct ksr_coninfo
+{
+	ip_addr_t src_ip;
+	ip_addr_t dst_ip;
+	unsigned short src_port; /* host byte order */
+	unsigned short dst_port; /* host byte order */
+	int proto;
+	socket_info_t *csocket;
+	str server_name; /* outbound tls server name (sni) */
+	str server_id;	 /* outbound tls server id */
+} ksr_coninfo_t;
+
 
 typedef struct tcp_connection
 {
@@ -274,7 +300,7 @@ typedef struct tcp_connection
 	enum tcp_closed_reason event; /* connection close reason */
 	int reader_pid;				  /* pid of the active reader process */
 	struct receive_info rcv;	  /* src & dst ip, ports, proto a.s.o*/
-	ksr_coninfo_t cinfo;		  /* connection info (e.g., for haproxy ) */
+	ksr_coninfo_t cinfo;		  /* additional info (for haproxy, tls, ...) */
 	struct tcp_req req;			  /* request data */
 	atomic_t refcnt;
 	enum sip_protos type;		/* PROTO_TCP or a protocol over it, e.g. TLS */
@@ -336,14 +362,14 @@ typedef struct tcp_connection
 #define tcpconn_put(c) atomic_dec_and_test(&((c)->refcnt))
 
 
-#define init_tcp_req(r, rd_buf, rd_buf_size)                   \
-	do {                                                       \
-		memset((r), 0, sizeof(struct tcp_req));                \
-		(r)->buf = (rd_buf);                                   \
-		(r)->b_size = (rd_buf_size)-1; /* space for 0 term. */ \
-		(r)->parsed = (r)->pos = (r)->start = (r)->buf;        \
-		(r)->error = TCP_REQ_OK;                               \
-		(r)->state = H_SKIP_EMPTY;                             \
+#define init_tcp_req(r, rd_buf, rd_buf_size)                     \
+	do {                                                         \
+		memset((r), 0, sizeof(struct tcp_req));                  \
+		(r)->buf = (rd_buf);                                     \
+		(r)->b_size = (rd_buf_size) - 1; /* space for 0 term. */ \
+		(r)->parsed = (r)->pos = (r)->start = (r)->buf;          \
+		(r)->error = TCP_REQ_OK;                                 \
+		(r)->state = H_SKIP_EMPTY;                               \
 	} while(0)
 
 
@@ -441,5 +467,7 @@ tcp_connection_t *ksr_tcpcon_evcb_get(void);
 int is_tcp_main(void);
 
 #define _tconfd(c) (is_tcp_main() ? (c)->s : (c)->fd)
+
+int ksr_tcp_parse_accept_protocols(char *protos);
 
 #endif

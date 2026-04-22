@@ -253,21 +253,17 @@ int populate_leg_info(struct dlg_cell *dlg, struct sip_msg *msg, struct cell *t,
 		goto error0;
 	}
 
-	if(leg == DLG_CALLER_LEG) {
-		skip_recs = 0;
-	} else {
-		skip_recs = 0;
+	skip_recs = 0;
+	if(leg != DLG_CALLER_LEG) {
 		/* was the 200 OK received or local generated */
-		skip_recs = dlg->from_rr_nb
-					+ ((t->relayed_reply_branch >= 0) ? (
-							   (t->uac[t->relayed_reply_branch].flags
-									   & TM_UAC_FLAG_R2)
-									   ? 2
-									   : ((t->uac[t->relayed_reply_branch].flags
-												  & TM_UAC_FLAG_RR)
-													   ? 1
-													   : 0))
-													  : 0);
+		skip_recs = dlg->from_rr_nb;
+		if(t->relayed_reply_branch >= 0) {
+			if(t->uac[t->relayed_reply_branch].flags & TM_UAC_FLAG_R2) {
+				skip_recs += 2;
+			} else if(t->uac[t->relayed_reply_branch].flags & TM_UAC_FLAG_RR) {
+				skip_recs += 1;
+			}
+		}
 	}
 
 	if(msg->record_route) {
@@ -1037,8 +1033,8 @@ void dlg_onroute(struct sip_msg *req, str *route_params, void *param)
 
 	if(event == DLG_EVENT_REQCANCEL && new_state == DLG_STATE_DELETED
 			&& old_state != DLG_STATE_DELETED) {
-		LM_DBG("CANCEL successfully processed and old state was [%d]\n",
-				old_state);
+		LM_DBG("CANCEL successfully processed and old state was [%s]\n",
+				state_to_char(old_state));
 
 		ret = remove_dialog_timer(&dlg->tl);
 		if(ret < 0) {
@@ -1510,7 +1506,8 @@ void dlg_onreply(struct cell *t, int type, struct tmcb_params *param)
 		goto done;
 	}
 
-	LM_DBG("new state is %i and old state is %i\n", new_state, old_state);
+	LM_DBG("new state is %s and old state is %s\n", state_to_char(new_state),
+			state_to_char(old_state));
 
 	if(new_state == DLG_STATE_CONFIRMED_NA
 			&& old_state != DLG_STATE_CONFIRMED_NA
@@ -1533,9 +1530,10 @@ void dlg_onreply(struct cell *t, int type, struct tmcb_params *param)
 			update_dialog_dbinfo(dlg);
 
 		if(0 != insert_dlg_timer(&dlg->tl, dlg->lifetime)) {
-			LM_CRIT("Unable to insert dlg %p [%u:%u] on event %d [%d->%d] "
+			LM_CRIT("Unable to insert dlg %p [%u:%u] on event %d [%s->%s] "
 					"with clid '%.*s' and tags '%.*s' \n",
-					dlg, dlg->h_entry, dlg->h_id, event, old_state, new_state,
+					dlg, dlg->h_entry, dlg->h_id, event,
+					state_to_char(old_state), state_to_char(new_state),
 					dlg->callid.len, dlg->callid.s, dlg->from_tag.len,
 					dlg->from_tag.s);
 		} else {

@@ -1689,203 +1689,224 @@ static int rtpengine_raise_dtmf_event(char *buffer, int len)
 	for(it = jdoc.root->child; it; it = it->next) {
 		LM_DBG("found field: %s\n", it->string);
 		if(strcmp(it->string, "callid") == 0) {
-			pv_value_t pv_val;
-			pv_val.rs.s = it->valuestring;
-			pv_val.rs.len = strlen(it->valuestring);
-			pv_val.flags = PV_VAL_STR;
+			if(dtmf_event_callid_pvar) {
+				pv_value_t pv_val;
+				pv_val.rs.s = it->valuestring;
+				pv_val.rs.len = strlen(it->valuestring);
+				pv_val.flags = PV_VAL_STR;
 
-			if(dtmf_event_callid_pvar->setf(
-					   0, &dtmf_event_callid_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n",
-						dtmf_event_callid_pvar_str.len,
-						dtmf_event_callid_pvar_str.s);
-				goto error;
-			}
-		} else if(strcmp(it->string, "source_tag") == 0) {
-			pv_value_t pv_val;
-			pv_val.rs.s = it->valuestring;
-			pv_val.rs.len = strlen(it->valuestring);
-			pv_val.flags = PV_VAL_STR;
-
-			if(dtmf_event_source_tag_pvar->setf(
-					   0, &dtmf_event_source_tag_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n",
-						dtmf_event_source_tag_pvar_str.len,
-						dtmf_event_source_tag_pvar_str.s);
-				goto error;
-			}
-		} else if(strcmp(it->string, "timestamp") == 0) {
-			pv_value_t pv_val;
-			int_str val = {0};
-			char intbuf[32];
-			snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
-			memset(&val, 0, sizeof(val));
-
-			pv_val.rs.s = intbuf;
-			pv_val.rs.len = strlen(intbuf);
-			pv_val.flags = PV_VAL_STR;
-
-			if(dtmf_event_timestamp_pvar->setf(
-					   0, &dtmf_event_timestamp_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n",
-						dtmf_event_timestamp_pvar_str.len,
-						dtmf_event_timestamp_pvar_str.s);
-				goto error;
-			}
-		} else if(strcmp(it->string, "event") == 0) {
-			pv_value_t pv_val;
-			int_str val = {0};
-			char intbuf[32];
-			snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
-			memset(&val, 0, sizeof(val));
-
-			pv_val.rs.s = intbuf;
-			pv_val.rs.len = strlen(intbuf);
-			pv_val.flags = PV_VAL_STR;
-
-			if(dtmf_event_pvar->setf(
-					   0, &dtmf_event_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n", dtmf_event_pvar_str.len,
-						dtmf_event_pvar_str.s);
-				goto error;
-			}
-		} else if(strcmp(it->string, "source_label") == 0) {
-			pv_value_t pv_val;
-			pv_val.rs.s = it->valuestring;
-			pv_val.rs.len = strlen(it->valuestring);
-			pv_val.flags = PV_VAL_STR;
-
-			if(dtmf_event_source_label_pvar->setf(0,
-					   &dtmf_event_source_label_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n",
-						dtmf_event_source_label_pvar_str.len,
-						dtmf_event_source_label_pvar_str.s);
-				goto error;
-			}
-		} else if(strcmp(it->string, "tags") == 0) {
-			pv_value_t pv_val;
-			srjson_t *tag;
-			char *tags_str = NULL;
-			int tags_len = 0;
-			int first = 1;
-
-			/* Calculate total length needed for all tags */
-			for(tag = it->child; tag; tag = tag->next) {
-				if(!first) {
-					tags_len += 1; /* For comma */
-				}
-				tags_len += strlen(tag->valuestring);
-				first = 0;
-			}
-
-			if(tags_len > 0) {
-				tags_str = pkg_malloc(tags_len + 1);
-				if(!tags_str) {
-					LM_ERR("no more pkg memory\n");
+				if(dtmf_event_callid_pvar->setf(
+						   0, &dtmf_event_callid_pvar->pvp, (int)EQ_T, &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_callid_pvar_str.len,
+							dtmf_event_callid_pvar_str.s);
 					goto error;
 				}
-				tags_str[0] = '\0';
-				first = 1;
+			}
+		} else if(strcmp(it->string, "source_tag") == 0) {
+			if(dtmf_event_source_tag_pvar) {
+				pv_value_t pv_val;
+				pv_val.rs.s = it->valuestring;
+				pv_val.rs.len = strlen(it->valuestring);
+				pv_val.flags = PV_VAL_STR;
 
-				/* Concatenate all tags with commas */
+				if(dtmf_event_source_tag_pvar->setf(0,
+						   &dtmf_event_source_tag_pvar->pvp, (int)EQ_T, &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_source_tag_pvar_str.len,
+							dtmf_event_source_tag_pvar_str.s);
+					goto error;
+				}
+			}
+		} else if(strcmp(it->string, "timestamp") == 0) {
+			if(dtmf_event_timestamp_pvar) {
+				pv_value_t pv_val;
+				int_str val = {0};
+				char intbuf[32];
+				snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
+				memset(&val, 0, sizeof(val));
+
+				pv_val.rs.s = intbuf;
+				pv_val.rs.len = strlen(intbuf);
+				pv_val.flags = PV_VAL_STR;
+
+				if(dtmf_event_timestamp_pvar->setf(0,
+						   &dtmf_event_timestamp_pvar->pvp, (int)EQ_T, &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_timestamp_pvar_str.len,
+							dtmf_event_timestamp_pvar_str.s);
+					goto error;
+				}
+			}
+		} else if(strcmp(it->string, "event") == 0) {
+			if(dtmf_event_pvar) {
+				pv_value_t pv_val;
+				int_str val = {0};
+				char intbuf[32];
+				snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
+				memset(&val, 0, sizeof(val));
+
+				pv_val.rs.s = intbuf;
+				pv_val.rs.len = strlen(intbuf);
+				pv_val.flags = PV_VAL_STR;
+
+				if(dtmf_event_pvar->setf(
+						   0, &dtmf_event_pvar->pvp, (int)EQ_T, &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_pvar_str.len, dtmf_event_pvar_str.s);
+					goto error;
+				}
+			}
+		} else if(strcmp(it->string, "source_label") == 0) {
+			if(dtmf_event_source_label_pvar) {
+				pv_value_t pv_val;
+				pv_val.rs.s = it->valuestring;
+				pv_val.rs.len = strlen(it->valuestring);
+				pv_val.flags = PV_VAL_STR;
+
+				if(dtmf_event_source_label_pvar->setf(0,
+						   &dtmf_event_source_label_pvar->pvp, (int)EQ_T,
+						   &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_source_label_pvar_str.len,
+							dtmf_event_source_label_pvar_str.s);
+					goto error;
+				}
+			}
+		} else if(strcmp(it->string, "tags") == 0) {
+			if(dtmf_event_tags_pvar) {
+				pv_value_t pv_val;
+				srjson_t *tag;
+				char *tags_str = NULL;
+				int tags_len = 0;
+				int first = 1;
+
+				/* Calculate total length needed for all tags */
 				for(tag = it->child; tag; tag = tag->next) {
 					if(!first) {
-						strcat(tags_str, ",");
+						tags_len += 1; /* For comma */
 					}
-					strcat(tags_str, tag->valuestring);
+					tags_len += strlen(tag->valuestring);
 					first = 0;
 				}
 
-				pv_val.rs.s = tags_str;
-				pv_val.rs.len = tags_len;
-				pv_val.flags = PV_VAL_STR;
+				if(tags_len > 0) {
+					tags_str = pkg_malloc(tags_len + 1);
+					if(!tags_str) {
+						LM_ERR("no more pkg memory\n");
+						goto error;
+					}
+					tags_str[0] = '\0';
+					first = 1;
 
-				if(dtmf_event_tags_pvar->setf(
-						   0, &dtmf_event_tags_pvar->pvp, (int)EQ_T, &pv_val)
-						< 0) {
-					LM_ERR("error setting pvar <%.*s>\n",
-							dtmf_event_tags_pvar_str.len,
-							dtmf_event_tags_pvar_str.s);
+					/* Concatenate all tags with commas */
+					for(tag = it->child; tag; tag = tag->next) {
+						if(!first) {
+							strcat(tags_str, ",");
+						}
+						strcat(tags_str, tag->valuestring);
+						first = 0;
+					}
+
+					pv_val.rs.s = tags_str;
+					pv_val.rs.len = tags_len;
+					pv_val.flags = PV_VAL_STR;
+
+					if(dtmf_event_tags_pvar->setf(0, &dtmf_event_tags_pvar->pvp,
+							   (int)EQ_T, &pv_val)
+							< 0) {
+						LM_ERR("error setting pvar <%.*s>\n",
+								dtmf_event_tags_pvar_str.len,
+								dtmf_event_tags_pvar_str.s);
+						pkg_free(tags_str);
+						goto error;
+					}
 					pkg_free(tags_str);
-					goto error;
 				}
-				pkg_free(tags_str);
 			}
 		} else if(strcmp(it->string, "type") == 0) {
-			pv_value_t pv_val;
-			int_str val = {0};
-			char intbuf[32];
-			snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
-			memset(&val, 0, sizeof(val));
+			if(dtmf_event_type_pvar) {
+				pv_value_t pv_val;
+				int_str val = {0};
+				char intbuf[32];
+				snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
+				memset(&val, 0, sizeof(val));
 
-			pv_val.rs.s = intbuf;
-			pv_val.rs.len = strlen(intbuf);
-			pv_val.flags = PV_VAL_STR;
+				pv_val.rs.s = intbuf;
+				pv_val.rs.len = strlen(intbuf);
+				pv_val.flags = PV_VAL_STR;
 
-			if(dtmf_event_type_pvar->setf(
-					   0, &dtmf_event_type_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n",
-						dtmf_event_type_pvar_str.len,
-						dtmf_event_type_pvar_str.s);
-				goto error;
+				if(dtmf_event_type_pvar->setf(
+						   0, &dtmf_event_type_pvar->pvp, (int)EQ_T, &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_type_pvar_str.len,
+							dtmf_event_type_pvar_str.s);
+					goto error;
+				}
 			}
 		} else if(strcmp(it->string, "source_ip") == 0) {
-			pv_value_t pv_val;
-			pv_val.rs.s = it->valuestring;
-			pv_val.rs.len = strlen(it->valuestring);
-			pv_val.flags = PV_VAL_STR;
+			if(dtmf_event_source_ip_pvar) {
+				pv_value_t pv_val;
+				pv_val.rs.s = it->valuestring;
+				pv_val.rs.len = strlen(it->valuestring);
+				pv_val.flags = PV_VAL_STR;
 
-			if(dtmf_event_source_ip_pvar->setf(
-					   0, &dtmf_event_source_ip_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n",
-						dtmf_event_source_ip_pvar_str.len,
-						dtmf_event_source_ip_pvar_str.s);
-				goto error;
+				if(dtmf_event_source_ip_pvar->setf(0,
+						   &dtmf_event_source_ip_pvar->pvp, (int)EQ_T, &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_source_ip_pvar_str.len,
+							dtmf_event_source_ip_pvar_str.s);
+					goto error;
+				}
 			}
 		} else if(strcmp(it->string, "duration") == 0) {
-			pv_value_t pv_val;
-			int_str val = {0};
-			char intbuf[32];
-			snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
-			memset(&val, 0, sizeof(val));
+			if(dtmf_event_duration_pvar) {
+				pv_value_t pv_val;
+				int_str val = {0};
+				char intbuf[32];
+				snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
+				memset(&val, 0, sizeof(val));
 
-			pv_val.rs.s = intbuf;
-			pv_val.rs.len = strlen(intbuf);
-			pv_val.flags = PV_VAL_STR;
+				pv_val.rs.s = intbuf;
+				pv_val.rs.len = strlen(intbuf);
+				pv_val.flags = PV_VAL_STR;
 
-			if(dtmf_event_duration_pvar->setf(
-					   0, &dtmf_event_duration_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n",
-						dtmf_event_duration_pvar_str.len,
-						dtmf_event_duration_pvar_str.s);
-				goto error;
+				if(dtmf_event_duration_pvar->setf(0,
+						   &dtmf_event_duration_pvar->pvp, (int)EQ_T, &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_duration_pvar_str.len,
+							dtmf_event_duration_pvar_str.s);
+					goto error;
+				}
 			}
 		} else if(strcmp(it->string, "volume") == 0) {
-			pv_value_t pv_val;
-			int_str val = {0};
-			char intbuf[32];
-			snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
-			memset(&val, 0, sizeof(val));
+			if(dtmf_event_volume_pvar) {
+				pv_value_t pv_val;
+				int_str val = {0};
+				char intbuf[32];
+				snprintf(intbuf, sizeof(intbuf), "%lld", SRJSON_GET_LLONG(it));
+				memset(&val, 0, sizeof(val));
 
-			pv_val.rs.s = intbuf;
-			pv_val.rs.len = strlen(intbuf);
-			pv_val.flags = PV_VAL_STR;
+				pv_val.rs.s = intbuf;
+				pv_val.rs.len = strlen(intbuf);
+				pv_val.flags = PV_VAL_STR;
 
-			if(dtmf_event_volume_pvar->setf(
-					   0, &dtmf_event_volume_pvar->pvp, (int)EQ_T, &pv_val)
-					< 0) {
-				LM_ERR("error setting pvar <%.*s>\n",
-						dtmf_event_volume_pvar_str.len,
-						dtmf_event_volume_pvar_str.s);
-				goto error;
+				if(dtmf_event_volume_pvar->setf(
+						   0, &dtmf_event_volume_pvar->pvp, (int)EQ_T, &pv_val)
+						< 0) {
+					LM_ERR("error setting pvar <%.*s>\n",
+							dtmf_event_volume_pvar_str.len,
+							dtmf_event_volume_pvar_str.s);
+					goto error;
+				}
 			}
 		}
 	}
@@ -3242,6 +3263,8 @@ static int parse_from_to_tags(struct ng_flags_parse *ng_flags,
 			if(ng_flags->to && ng_flags->to_tag.s && ng_flags->to_tag.len)
 				bencode_dictionary_add_str(
 						ng_flags->dict, "to-tag", &ng_flags->to_tag);
+			if(ng_flags->flags)
+				bencode_list_add_string(ng_flags->flags, "directional");
 		}
 	} else if(op == OP_SUBSCRIBE_REQUEST) {
 		/* SUBSCRIBE can either specify a list of from tags or have the keyword
@@ -4089,7 +4112,7 @@ static void rtpengine_ping_check_timer(unsigned int ticks, void *param)
 	for(rtpp_list = rtpp_set_list->rset_first; rtpp_list != NULL;
 			rtpp_list = rtpp_list->rset_next) {
 		lock_get(rtpp_list->rset_lock);
-		for(crt_rtpp = rtpp_list->rn_first, idx = 0;
+		for(crt_rtpp = rtpp_list->rn_first;
 				crt_rtpp != NULL && idx < total_nodes;
 				crt_rtpp = crt_rtpp->rn_next, idx++) {
 			nodes[idx] = *crt_rtpp;
@@ -6483,6 +6506,46 @@ static int ki_stop_media2(sip_msg_t *msg, str *flags, str *viabranch)
 			msg, rtpengine_simple_wrap, parms, 1, OP_STOP_MEDIA);
 }
 
+/* KI - start forwarding */
+static int ki_start_forwarding0(sip_msg_t *msg)
+{
+	void *parms[2] = {NULL, NULL};
+	return rtpengine_rtpp_set_wrap(
+			msg, rtpengine_simple_wrap, parms, 1, OP_START_FORWARDING);
+}
+static int ki_start_forwarding(sip_msg_t *msg, str *flags)
+{
+	void *parms[2] = {flags, NULL};
+	return rtpengine_rtpp_set_wrap(
+			msg, rtpengine_simple_wrap, parms, 1, OP_START_FORWARDING);
+}
+static int ki_start_forwarding2(sip_msg_t *msg, str *flags, str *viabranch)
+{
+	void *parms[2] = {flags, viabranch};
+	return rtpengine_rtpp_set_wrap(
+			msg, rtpengine_simple_wrap, parms, 1, OP_START_FORWARDING);
+}
+
+/* KI - stop forwarding */
+static int ki_stop_forwarding0(sip_msg_t *msg)
+{
+	void *parms[2] = {NULL, NULL};
+	return rtpengine_rtpp_set_wrap(
+			msg, rtpengine_simple_wrap, parms, 1, OP_STOP_FORWARDING);
+}
+static int ki_stop_forwarding(sip_msg_t *msg, str *flags)
+{
+	void *parms[2] = {flags, NULL};
+	return rtpengine_rtpp_set_wrap(
+			msg, rtpengine_simple_wrap, parms, 1, OP_STOP_FORWARDING);
+}
+static int ki_stop_forwarding2(sip_msg_t *msg, str *flags, str *viabranch)
+{
+	void *parms[2] = {flags, viabranch};
+	return rtpengine_rtpp_set_wrap(
+			msg, rtpengine_simple_wrap, parms, 1, OP_STOP_FORWARDING);
+}
+
 static int ki_set_rtpengine_set(sip_msg_t *msg, int r1)
 {
 	rtpp_set_link_t rtpl1;
@@ -6747,6 +6810,37 @@ static sr_kemi_t sr_kemi_rtpengine_exports[] = {
     },
     { str_init("rtpengine"), str_init("stop_media2"),
         SR_KEMIP_INT, ki_stop_media2,
+        { SR_KEMIP_STR, SR_KEMIP_STR, SR_KEMIP_NONE,
+            SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
+    },
+
+    { str_init("rtpengine"), str_init("start_forwarding0"),
+        SR_KEMIP_INT, ki_start_forwarding0,
+        { SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE,
+            SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
+    },
+    { str_init("rtpengine"), str_init("start_forwarding"),
+        SR_KEMIP_INT, ki_start_forwarding,
+        { SR_KEMIP_STR, SR_KEMIP_NONE, SR_KEMIP_NONE,
+            SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
+    },
+    { str_init("rtpengine"), str_init("start_forwarding2"),
+        SR_KEMIP_INT, ki_start_forwarding2,
+        { SR_KEMIP_STR, SR_KEMIP_STR, SR_KEMIP_NONE,
+            SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
+    },
+    { str_init("rtpengine"), str_init("stop_forwarding0"),
+        SR_KEMIP_INT, ki_stop_forwarding0,
+        { SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE,
+            SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
+    },
+    { str_init("rtpengine"), str_init("stop_forwarding"),
+        SR_KEMIP_INT, ki_stop_forwarding,
+        { SR_KEMIP_STR, SR_KEMIP_NONE, SR_KEMIP_NONE,
+            SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
+    },
+    { str_init("rtpengine"), str_init("stop_forwarding2"),
+        SR_KEMIP_INT, ki_stop_forwarding2,
         { SR_KEMIP_STR, SR_KEMIP_STR, SR_KEMIP_NONE,
             SR_KEMIP_NONE, SR_KEMIP_NONE, SR_KEMIP_NONE }
     },

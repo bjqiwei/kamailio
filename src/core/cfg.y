@@ -74,6 +74,7 @@
 #include "daemonize.h"
 #include "coreparam.h"
 #include "cfg_core.h"
+#include "tcp_conn.h"
 #include "cfg/cfg.h"
 #ifdef CORE_TLS
 #include "tls/tls_config.h"
@@ -264,6 +265,7 @@ extern char *default_routename;
 %token UDP_MTU
 %token UDP_MTU_TRY_PROTO
 %token UDP_RECEIVER_MODE
+%token UDP_ACCEPT_PROXY
 %token UDP4_RAW
 %token UDP4_RAW_MTU
 %token UDP4_RAW_TTL
@@ -477,6 +479,7 @@ extern char *default_routename;
 %token TCP_OPT_ACCEPT_NO_CL
 %token TCP_OPT_ACCEPT_HEP3
 %token TCP_OPT_ACCEPT_HAPROXY
+%token TCP_OPT_ACCEPT_PROTOCOLS
 %token TCP_OPT_CLOSE_RST
 %token TCP_CLONE_RCVBUF
 %token TCP_REUSE_PORT
@@ -1466,6 +1469,21 @@ assign_stm:
 		#endif
 	}
 	| TCP_OPT_ACCEPT_HAPROXY EQUAL error { yyerror("boolean value expected"); }
+	| TCP_OPT_ACCEPT_PROTOCOLS EQUAL NUMBER {
+		#ifdef USE_TCP
+			ksr_tcp_accept_protocols=$3;
+		#else
+			warn("tcp support not compiled in");
+		#endif
+	}
+	| TCP_OPT_ACCEPT_PROTOCOLS EQUAL STRING {
+		#ifdef USE_TCP
+			ksr_tcp_parse_accept_protocols($3);
+		#else
+			warn("tcp support not compiled in");
+		#endif
+	}
+	| TCP_OPT_ACCEPT_PROTOCOLS EQUAL error { yyerror("number or string value expected"); }
 	| TCP_OPT_CLOSE_RST EQUAL NUMBER {
          #ifdef USE_TCP
              tcp_default_cfg.close_rst=$3;
@@ -2151,6 +2169,8 @@ assign_stm:
 	| UDP_MTU EQUAL error { yyerror("number expected"); }
 	| UDP_RECEIVER_MODE EQUAL NUMBER { ksr_udp_receiver_mode=$3; }
 	| UDP_RECEIVER_MODE EQUAL error { yyerror("number expected"); }
+	| UDP_ACCEPT_PROXY EQUAL NUMBER { ksr_udp_accept_proxy=$3; }
+	| UDP_ACCEPT_PROXY EQUAL error { yyerror("number expected"); }
 	| FORCE_RPORT EQUAL NUMBER
 		{ default_core_cfg.force_rport=$3; fix_global_req_flags(0, 0); }
 	| FORCE_RPORT EQUAL error { yyerror("boolean value expected"); }

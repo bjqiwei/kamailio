@@ -91,6 +91,8 @@ static pv_export_t mod_pvs[] = {
 			pv_parse_snd_name, 0, 0, 0},
 	{{"rcv", (sizeof("rcv") - 1)}, PVT_OTHER, pv_get_rcv, pv_set_rcv,
 			pv_parse_rcv_name, 0, 0, 0},
+	{{"recv", (sizeof("recv") - 1)}, PVT_OTHER, pv_get_rcv, pv_set_rcv,
+			pv_parse_rcv_name, 0, 0, 0},
 	{{"xavp", sizeof("xavp") - 1}, /* xavp */
 			PVT_XAVP, pv_get_xavp, pv_set_xavp, pv_parse_xavp_name, 0, 0, 0},
 	{{"xavu", sizeof("xavu") - 1}, /* xavu */
@@ -248,6 +250,8 @@ static pv_export_t mod_pvs[] = {
 	{{"from", (sizeof("from") - 1)}, /* */
 			PVT_FROM, pv_get_from_attr, pv_set_from_uri, 0, 0,
 			pv_init_iname, 1},
+	{{"ful", (sizeof("ful") - 1)}, /* */
+			PVT_OTHER, pv_get_furi_len, 0, 0, 0, 0, 0},
 	{{"fU", (sizeof("fU") - 1)}, /* */
 			PVT_OTHER, pv_get_from_attr, pv_set_from_username, 0, 0,
 			pv_init_iname, 2},
@@ -333,6 +337,8 @@ static pv_export_t mod_pvs[] = {
 			PVT_RURI, pv_get_ruri, pv_set_ruri, 0, 0, 0, 0},
 	{{"ruri", (sizeof("ruri") - 1)}, /* */
 			PVT_RURI, pv_get_ruri, pv_set_ruri, 0, 0, 0, 0},
+	{{"rul", (sizeof("rul") - 1)}, /* */
+			PVT_OTHER, pv_get_ruri_len, 0, 0, 0, 0, 0},
 	{{"rU", (sizeof("rU") - 1)}, /* */
 			PVT_RURI_USERNAME, pv_get_ruri_attr, pv_set_ruri_user, 0, 0,
 			pv_init_iname, 1},

@@ -258,15 +258,22 @@ int pv_get_ruri(struct sip_msg *msg, pv_param_t *param, pv_value_t *res)
 	if(msg->first_line.type == SIP_REPLY) /* REPLY doesn't have a ruri */
 		return pv_get_null(msg, param, res);
 
-	if(msg->parsed_uri_ok == 0 /* R-URI not parsed*/
-			&& parse_sip_msg_uri(msg) < 0) {
-		LM_ERR("failed to parse the R-URI\n");
-		return pv_get_null(msg, param, res);
-	}
-
 	if(msg->new_uri.s != NULL)
 		return pv_get_strval(msg, param, res, &msg->new_uri);
 	return pv_get_strval(msg, param, res, &msg->first_line.u.request.uri);
+}
+
+int pv_get_ruri_len(struct sip_msg *msg, pv_param_t *param, pv_value_t *res)
+{
+	if(msg == NULL || res == NULL)
+		return -1;
+
+	if(msg->first_line.type == SIP_REPLY) /* REPLY doesn't have a ruri */
+		return pv_get_null(msg, param, res);
+
+	if(msg->new_uri.s != NULL)
+		return pv_get_sintval(msg, param, res, msg->new_uri.len);
+	return pv_get_sintval(msg, param, res, msg->first_line.u.request.uri.len);
 }
 
 int pv_get_ouri(struct sip_msg *msg, pv_param_t *param, pv_value_t *res)
@@ -277,12 +284,6 @@ int pv_get_ouri(struct sip_msg *msg, pv_param_t *param, pv_value_t *res)
 	if(msg->first_line.type == SIP_REPLY) /* REPLY doesn't have a ruri */
 		return pv_get_null(msg, param, res);
 
-	if(msg->parsed_orig_ruri_ok == 0
-			/* orig R-URI not parsed*/
-			&& parse_orig_ruri(msg) < 0) {
-		LM_ERR("failed to parse the R-URI\n");
-		return pv_get_null(msg, param, res);
-	}
 	return pv_get_strval(msg, param, res, &msg->first_line.u.request.uri);
 }
 
@@ -320,6 +321,7 @@ int pv_get_xuri_attr(struct sip_msg *msg, struct sip_uri *parsed_uri,
 		if(parsed_uri->user.s == NULL || parsed_uri->user.len <= 0)
 			return pv_get_sintval(msg, param, res, 0);
 		return pv_get_sintval(msg, param, res, parsed_uri->user.len);
+	} else if(param->pvn.u.isname.name.n == 7) /* uri length */ {
 	}
 	LM_ERR("unknown specifier\n");
 	return pv_get_null(msg, param, res);
@@ -545,6 +547,24 @@ int pv_get_from_attr(struct sip_msg *msg, pv_param_t *param, pv_value_t *res)
 		return pv_get_null(msg, param, res);
 	}
 	return pv_get_xto_attr(msg, param, res, get_from(msg), 1);
+}
+
+int pv_get_furi_len(struct sip_msg *msg, pv_param_t *param, pv_value_t *res)
+{
+	if(msg == NULL || res == NULL)
+		return -1;
+
+	if(parse_from_header(msg) < 0) {
+		LM_ERR("cannot parse From header\n");
+		return pv_get_null(msg, param, res);
+	}
+
+	if(msg->from == NULL || get_from(msg) == NULL) {
+		LM_DBG("no From header\n");
+		return pv_get_null(msg, param, res);
+	}
+
+	return pv_get_sintval(msg, param, res, get_from(msg)->uri.len);
 }
 
 int pv_get_cseq(struct sip_msg *msg, pv_param_t *param, pv_value_t *res)
@@ -3657,6 +3677,7 @@ int pv_set_xto_attr(struct sip_msg *msg, pv_param_t *param, int op,
 	int llen = 0;
 	int llen_uri = 0;
 	int is_enclosed = 0;
+	char *p;
 
 	if(msg == NULL || param == NULL) {
 		LM_ERR("bad parameters\n");
@@ -3674,13 +3695,28 @@ int pv_set_xto_attr(struct sip_msg *msg, pv_param_t *param, int op,
 				return -1;
 			}
 
-			buf.s = pkg_malloc(val->rs.len);
+			buf.len = val->rs.len;
+			if(!(tb->style & TBS_URI_ENCLOSED)) {
+				/* existing uri not enclosed - check if new one has parameters */
+				for(p = val->rs.s + val->rs.len - 1; p > val->rs.s; p--) {
+					if(*p == ';') {
+						buf.len += 2;
+						break;
+					}
+				}
+			}
+			buf.s = pkg_malloc(buf.len);
 			if(buf.s == NULL) {
 				LM_ERR("no more pkg mem\n");
 				goto error;
 			}
-			buf.len = val->rs.len;
-			memcpy(buf.s, val->rs.s, val->rs.len);
+			if(buf.len == val->rs.len + 2) {
+				buf.s[0] = '<';
+				memcpy(buf.s + 1, val->rs.s, val->rs.len);
+				buf.s[buf.len - 1] = '>';
+			} else {
+				memcpy(buf.s, val->rs.s, val->rs.len);
+			}
 			loffset = tb->uri.s - msg->buf;
 			llen = tb->uri.len;
 			break;

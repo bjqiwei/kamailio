@@ -30,23 +30,13 @@
 #include <openssl/bn.h>
 #include <openssl/dh.h>
 
-/* only OpenSSL <= 1.1.1 */
-#if !defined(OPENSSL_NO_ENGINE) && OPENSSL_VERSION_NUMBER < 0x030000000L
-#define KSR_SSL_COMMON
-#define KSR_SSL_ENGINE
-#define KEY_PREFIX "/engine:"
-#define KEY_PREFIX_LEN (strlen(KEY_PREFIX))
+#include "tls_openssl.h"
+#ifdef KSR_SSL_ENGINE
 #include <openssl/engine.h>
+#endif /* KSR_SSL_ENGINE */
+#ifdef KSR_SSL_COMMON
 extern EVP_PKEY *tls_engine_private_key(const char *key_id);
-#endif
-
-#if !defined(OPENSSL_NO_PROVIDER) && OPENSSL_VERSION_NUMBER >= 0x030000000L
-#define KSR_SSL_COMMON
-#define KSR_SSL_PROVIDER
-#define KEY_PREFIX "/uri:"
-#define KEY_PREFIX_LEN (strlen(KEY_PREFIX))
-extern EVP_PKEY *tls_engine_private_key(const char *key_id);
-#endif
+#endif /* KSR_SSL_COMMON */
 
 #if OPENSSL_VERSION_NUMBER >= 0x00907000L
 #include <openssl/ui.h>
@@ -229,11 +219,23 @@ void tls_free_domain(tls_domain_t *d)
 
 	if(!d)
 		return;
-	if(d->ctx) {
+
+	/* TODO: in multi-threaded mode this needs to be freed in PROC_TCP_MAIN */
+	if(d->ctx && ksr_tcp_main_threads == 0) {
 		procs_no = get_max_procs();
 		for(i = 0; i < procs_no; i++) {
-			if(d->ctx[i])
+			if(d->ctx[i]) {
+#ifdef KSR_SSL_COMMON
+				if(ksr_tls_jit_key_ex_idx >= 0) {
+					ksr_tls_jit_key_t *jk =
+							(ksr_tls_jit_key_t *)SSL_CTX_get_ex_data(
+									d->ctx[i], ksr_tls_jit_key_ex_idx);
+					if(jk)
+						shm_free(jk);
+				}
+#endif /* KSR_SSL_COMMON */
 				SSL_CTX_free(d->ctx[i]);
+			}
 		}
 		shm_free(d->ctx);
 	}
@@ -415,6 +417,15 @@ static int ksr_tls_fill_missing(tls_domain_t *d, tls_domain_t *parent)
 	LOG(L_INFO, "%s: private_key_password='%s'\n", tls_domain_str(d),
 			d->pkey_password.s ? "..." : NULL);
 
+	if(d->cert_file2.s) {
+		LOG(L_INFO, "%s: certificate2='%s'\n", tls_domain_str(d),
+				d->cert_file2.s);
+	}
+	if(d->pkey_file2.s) {
+		LOG(L_INFO, "%s: private_key2='%s'\n", tls_domain_str(d),
+				d->pkey_file2.s);
+	}
+
 	if(d->verify_cert == -1)
 		d->verify_cert = parent->verify_cert;
 	LOG(L_INFO, "%s: verify_certificate=%d\n", tls_domain_str(d),
@@ -456,7 +467,7 @@ static int tls_domain_foreach_CTX(
 	int i, ret;
 	int procs_no;
 
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	for(i = 0; i < procs_no; i++) {
 		if((ret = ctx_cbk(d->ctx[i], l1, p2)) < 0)
 			return ret;
@@ -603,7 +614,7 @@ static int load_cert(tls_domain_t *d)
 	}
 	if(fix_shm_pathname(&d->cert_file) < 0)
 		return -1;
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	for(i = 0; i < procs_no; i++) {
 		if(!SSL_CTX_use_certificate_chain_file(d->ctx[i], d->cert_file.s)) {
 			ERR("%s: Unable to load certificate file '%s'\n", tls_domain_str(d),
@@ -612,6 +623,21 @@ static int load_cert(tls_domain_t *d)
 			return -1;
 		}
 	}
+
+	if(d->cert_file2.s && d->cert_file2.len) {
+		if(fix_shm_pathname(&d->cert_file2) < 0)
+			return -1;
+		for(i = 0; i < procs_no; i++) {
+			if(!SSL_CTX_use_certificate_chain_file(
+					   d->ctx[i], d->cert_file2.s)) {
+				ERR("%s: Unable to load certificate2 file '%s'\n",
+						tls_domain_str(d), d->cert_file2.s);
+				TLS_ERR("load_cert:");
+				return -1;
+			}
+		}
+	}
+
 	return 0;
 }
 
@@ -635,7 +661,7 @@ static int load_ca_list(tls_domain_t *d)
 		return -1;
 	if(d->ca_path.s && d->ca_path.len > 0 && fix_shm_pathname(&d->ca_path) < 0)
 		return -1;
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	for(i = 0; i < procs_no; i++) {
 		if(SSL_CTX_load_verify_locations(d->ctx[i], d->ca_file.s, d->ca_path.s)
 				!= 1) {
@@ -680,7 +706,7 @@ static int load_crl(tls_domain_t *d)
 		return -1;
 	LOG(L_INFO, "%s: Certificate revocation lists will be checked (%.*s)\n",
 			tls_domain_str(d), d->crl_file.len, d->crl_file.s);
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	for(i = 0; i < procs_no; i++) {
 		if(SSL_CTX_load_verify_locations(d->ctx[i], d->crl_file.s, 0) != 1) {
 			ERR("%s: Unable to load certificate revocation list '%s'\n",
@@ -736,9 +762,9 @@ static int set_cipher_list(tls_domain_t *d)
 #endif /* TLS_KSSL_WORKAROUND */
 	if(!cipher_list)
 		return 0;
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	for(i = 0; i < procs_no; i++) {
-#if OPENSSL_VERSION_NUMBER < 0x030000000L
+#if OPENSSL_VERSION_NUMBER < 0x010101000L
 		if(SSL_CTX_set_cipher_list(d->ctx[i], cipher_list) == 0) {
 			ERR("%s: Failure to set SSL context cipher list \"%s\"\n",
 					tls_domain_str(d), cipher_list);
@@ -811,7 +837,7 @@ static int set_verification(tls_domain_t *d)
 		}
 	}
 
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	for(i = 0; i < procs_no; i++) {
 		if(d->verify_client >= TLS_VERIFY_CLIENT_OPTIONAL_NO_CA) {
 			/* Note that actual verification result is available in $tls_peer_verified */
@@ -877,7 +903,7 @@ static int set_ssl_options(tls_domain_t *d)
 	STACK_OF(SSL_COMP) * comp_methods;
 #endif
 
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	options = SSL_OP_ALL; /* all the bug workarounds by default */
 #if OPENSSL_VERSION_NUMBER >= 0x00907000L
 	options |= SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
@@ -928,7 +954,7 @@ static int set_session_cache(tls_domain_t *d)
 	int procs_no;
 	str tls_session_id;
 
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	tls_session_id = cfg_get(tls, tls_cfg, session_id);
 	for(i = 0; i < procs_no; i++) {
 		/* janakj: I am not sure if session cache makes sense in ser, session
@@ -1064,10 +1090,12 @@ static int tls_server_name_cb(SSL *ssl, int *ad, void *private)
 		   " socket [%s:%d] server name='%s' -"
 		   " switching SSL CTX to %p dom %p%s\n",
 			server_name.s, ip_addr2a(&new_domain->ip), new_domain->port,
-			ZSW(new_domain->server_name.s), new_domain->ctx[process_no],
+			ZSW(new_domain->server_name.s),
+			new_domain->ctx[ksr_tcp_main_threads == 0 ? process_no : 0],
 			new_domain,
 			(new_domain->type & TLS_DOMAIN_DEF) ? " (default)" : "");
-	SSL_set_SSL_CTX(ssl, new_domain->ctx[process_no]);
+	SSL_set_SSL_CTX(
+			ssl, new_domain->ctx[ksr_tcp_main_threads == 0 ? process_no : 0]);
 	/* SSL_set_SSL_CTX only sets the correct certificate parameters, but does
 	   set the proper verify options. Thus this will be done manually! */
 
@@ -1130,7 +1158,7 @@ static int ksr_tls_fix_domain(tls_domain_t *d, tls_domain_t *def)
 		}
 	}
 
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	d->ctx = (SSL_CTX **)shm_malloc(sizeof(SSL_CTX *) * procs_no);
 	if(!d->ctx) {
 		ERR("%s: Cannot allocate shared memory\n", tls_domain_str(d));
@@ -1278,6 +1306,30 @@ static int ksr_passwd_cfg_cb(char *buf, int size, int rwflag, void *tlsd)
 }
 
 /**
+ * @brief Password callback for second private key, using pkey_password2
+ */
+static int ksr_passwd_cfg_cb2(char *buf, int size, int rwflag, void *tlsd)
+{
+	tls_domain_t *d;
+
+	d = (tls_domain_t *)tlsd;
+	if(d->pkey_password2.s == NULL || d->pkey_password2.len <= 0) {
+		return 0;
+	}
+	if(d->pkey_password2.len >= size - 1) {
+		LM_WARN("key2 password is too long (%d / %d) - truncating\n",
+				d->pkey_password2.len, size);
+		memcpy(buf, d->pkey_password2.s, size - 1);
+		buf[size - 1] = '\0';
+	} else {
+		memcpy(buf, d->pkey_password2.s, d->pkey_password2.len);
+		buf[d->pkey_password2.len] = '\0';
+	}
+	LM_DBG("returning password for private key2\n");
+	return strlen(buf);
+}
+
+/**
  * @brief Password callback, ask for private key password on CLI
  * @param buf buffer
  * @param size buffer size
@@ -1344,7 +1396,7 @@ static int load_engine_private_key(tls_domain_t *d)
 		return 0;
 
 	do {
-		i = process_no;
+		i = (ksr_tcp_main_threads == 0 ? process_no : 0);
 		for(idx = 0, ret_pwd = 0; idx < 3; idx++) {
 			pkey = tls_engine_private_key(d->pkey_file.s + KEY_PREFIX_LEN);
 			if(pkey) {
@@ -1400,7 +1452,7 @@ static int load_private_key(tls_domain_t *d)
 	if(fix_shm_pathname(&d->pkey_file) < 0)
 		return -1;
 
-	procs_no = get_max_procs();
+	procs_no = ksr_tcp_main_threads == 0 ? get_max_procs() : 1;
 	for(i = 0; i < procs_no; i++) {
 		if(ksr_tls_key_password_mode == 1) {
 			SSL_CTX_set_default_passwd_cb(d->ctx[i], ksr_passwd_ui_cb);
@@ -1412,12 +1464,35 @@ static int load_private_key(tls_domain_t *d)
 
 		for(idx = 0, ret_pwd = 0; idx < 3; idx++) {
 #ifdef KSR_SSL_COMMON
-			// in PROC_INIT skip loading HSM keys due to
-			// fork() issues with PKCS#11 libraries
+			/*
+			 * engine/PKCS#11 keys are not loaded here (PKCS#11 libs are
+			 * not fork()-safe).  In MP-mode (tcp_main_threads == 0) the
+			 * key URI is stored in the SSL_CTX ex_data slot and the
+			 * actual ENGINE/OSSL_STORE call is deferred to the first
+			 * SSL_new() in each worker (JIT).  In MT-mode the key is
+			 * loaded in PROC_TCP_MAIN via tls_fix_engine_keys().
+			 */
 			if(strncmp(d->pkey_file.s, KEY_PREFIX, KEY_PREFIX_LEN) != 0) {
 				ret_pwd = SSL_CTX_use_PrivateKey_file(
 						d->ctx[i], d->pkey_file.s, SSL_FILETYPE_PEM);
+			} else if(ksr_tcp_main_threads == 0
+					  && ksr_tls_jit_key_ex_idx >= 0) {
+				/* MP-mode JIT: store URI in this ctx slot's ex_data. */
+				ksr_tls_jit_key_t *jk = (ksr_tls_jit_key_t *)shm_mallocxz(
+						sizeof(ksr_tls_jit_key_t));
+				if(jk == NULL) {
+					SHM_MEM_ERROR;
+					ret_pwd = 0;
+				} else {
+					snprintf(jk->key_uri, KSR_TLS_JIT_KEY_URI_LEN, "%s",
+							d->pkey_file.s);
+					jk->loaded = 0;
+					SSL_CTX_set_ex_data(d->ctx[i], ksr_tls_jit_key_ex_idx, jk);
+					ret_pwd = 1;
+				}
 			} else {
+				/* MT-mode: loaded later by tls_fix_engine_keys() in
+				 * PROC_TCP_MAIN. */
 				ret_pwd = 1;
 			}
 #else
@@ -1457,6 +1532,38 @@ static int load_private_key(tls_domain_t *d)
 
 	DBG("%s: Key '%s' successfully loaded\n", tls_domain_str(d),
 			d->pkey_file.s);
+
+	/* Load second private key if configured (for dual-cert support) */
+	if(d->pkey_file2.s && d->pkey_file2.len) {
+		if(fix_shm_pathname(&d->pkey_file2) < 0)
+			return -1;
+
+		for(i = 0; i < procs_no; i++) {
+			if(d->pkey_password2.s && d->pkey_password2.len > 0) {
+				SSL_CTX_set_default_passwd_cb(d->ctx[i], ksr_passwd_cfg_cb2);
+				SSL_CTX_set_default_passwd_cb_userdata(d->ctx[i], d);
+			} else if(ksr_tls_key_password_mode == 1) {
+				SSL_CTX_set_default_passwd_cb(d->ctx[i], ksr_passwd_ui_cb);
+				SSL_CTX_set_default_passwd_cb_userdata(
+						d->ctx[i], d->pkey_file2.s);
+			} else {
+				SSL_CTX_set_default_passwd_cb(d->ctx[i], ksr_passwd_cfg_cb2);
+				SSL_CTX_set_default_passwd_cb_userdata(d->ctx[i], d);
+			}
+
+			ret_pwd = SSL_CTX_use_PrivateKey_file(
+					d->ctx[i], d->pkey_file2.s, SSL_FILETYPE_PEM);
+			if(!ret_pwd) {
+				ERR("%s: Unable to load private key2 file '%s'\n",
+						tls_domain_str(d), d->pkey_file2.s);
+				TLS_ERR("load_private_key:");
+				return -1;
+			}
+		}
+		DBG("%s: Key2 '%s' successfully loaded\n", tls_domain_str(d),
+				d->pkey_file2.s);
+	}
+
 	return 0;
 }
 

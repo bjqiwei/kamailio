@@ -670,7 +670,7 @@ static int fix_nated_contact(struct sip_msg *msg)
 	str params1 = {0};
 	str params2 = {0};
 
-	if(get_contact_uri(msg, &uri, &c) == -1)
+	if(get_contact_uri(msg, &uri, &c) < 0)
 		return -1;
 	if((c->uri.s < msg->buf) || (c->uri.s > (msg->buf + msg->len))) {
 		LM_ERR("you can't call fix_nated_contact twice, "
@@ -771,7 +771,7 @@ static int set_contact_alias(struct sip_msg *msg, int trim)
 	nuri.len = MAX_URI_SIZE;
 	curi.s = cbuf;
 	curi.len = MAX_URI_SIZE;
-	if(get_contact_uri(msg, &uri, &c) == -1)
+	if(get_contact_uri(msg, &uri, &c) < 0)
 		return -1;
 	if((c->uri.s < msg->buf) || (c->uri.s > (msg->buf + msg->len))) {
 		LM_ERR("you can't update contact twice, check your config!\n");
@@ -866,19 +866,14 @@ static int add_contact_alias_0(struct sip_msg *msg)
 	struct sip_uri uri;
 	struct ip_addr *ip;
 	char *bracket, *lt, *param, *at, *port, *start;
+	int rc = 0;
 
-	/* Do nothing if Contact header does not exist */
-	if(!msg->contact) {
-		if(parse_headers(msg, HDR_CONTACT_F, 0) == -1) {
-			LM_ERR("while parsing headers\n");
-			return -1;
-		}
-		if(!msg->contact) {
-			LM_DBG("no contact header\n");
+	if((rc = get_contact_uri(msg, &uri, &c)) < 0) {
+		if(rc < -1) {
+			/* do nothing if Contact header or URI does not exist */
+			LM_DBG("star or no contact header\n");
 			return 2;
 		}
-	}
-	if(get_contact_uri(msg, &uri, &c) == -1) {
 		LM_ERR("failed to get contact uri\n");
 		return -1;
 	}
@@ -1029,19 +1024,14 @@ static int add_contact_alias_3(
 	char *bracket, *lt, *param, *at, *start;
 	int is_ipv6 = 0;
 	int i;
+	int rc = 0;
 
-	/* Do nothing if Contact header does not exist */
-	if(!msg->contact) {
-		if(parse_headers(msg, HDR_CONTACT_F, 0) == -1) {
-			LM_ERR("while parsing headers\n");
-			return -1;
-		}
-		if(!msg->contact) {
-			LM_DBG("no contact header\n");
+	if((rc = get_contact_uri(msg, &uri, &c)) < 0) {
+		if(rc < -1) {
+			/* do nothing if Contact header or URI does not exist */
+			LM_DBG("star or no contact header\n");
 			return 2;
 		}
-	}
-	if(get_contact_uri(msg, &uri, &c) == -1) {
 		LM_ERR("failed to get contact uri\n");
 		return -1;
 	}
@@ -1248,6 +1238,11 @@ static int ki_handle_ruri_alias_mode(struct sip_msg *msg, int mode)
 	at = &(buf[0]);
 	append_str(at, "sip:", 4);
 	ip_port_len = trans - val;
+	if(ip_port_len >= MAX_URI_SIZE - 128) {
+		/* ip or hostname and port */
+		LM_ERR("very long alias address\n");
+		return -1;
+	}
 	alias_len = _ksr_contact_salias.len + ip_port_len + 2 /* ~n */;
 	if(is_ipv6 && val[0] != '[') {
 		// IPv6 - add '[' ']' around IP
@@ -1492,7 +1487,7 @@ static int contact_1918(struct sip_msg *msg)
 	struct sip_uri uri;
 	contact_t *c;
 
-	if(get_contact_uri(msg, &uri, &c) == -1)
+	if(get_contact_uri(msg, &uri, &c) < 0)
 		return -1;
 
 	return (is1918addr(&(uri.host)) == 1) ? 1 : 0;
@@ -1507,7 +1502,7 @@ static int contact_rport(struct sip_msg *msg)
 	struct sip_uri uri;
 	contact_t *c;
 
-	if(get_contact_uri(msg, &uri, &c) == -1) {
+	if(get_contact_uri(msg, &uri, &c) < 0) {
 		return -1;
 	}
 
@@ -2717,7 +2712,7 @@ done:
 
 static int sel_rewrite_contact(str *res, select_t *s, struct sip_msg *msg)
 {
-	static char buf[500];
+	static char buf[MAX_URI_SIZE];
 	contact_t *c;
 	int n, def_port_fl, len;
 	char *cp;
@@ -2751,7 +2746,7 @@ static int sel_rewrite_contact(str *res, select_t *s, struct sip_msg *msg)
 			|| (msg->rcv.proto != PROTO_TLS && msg->rcv.src_port == SIP_PORT);
 	if(!def_port_fl)
 		len += 1 /*:*/ + 5 /*port*/;
-	if(len > sizeof(buf)) {
+	if(len > sizeof(buf) - 1) {
 		LM_ERR("rewrite contact[%d] - contact too long\n", s->params[2].v.i);
 		return -1;
 	}
@@ -2764,14 +2759,25 @@ static int sel_rewrite_contact(str *res, select_t *s, struct sip_msg *msg)
 	memcpy(buf, c->name.s, res->len);
 	cp = ip_addr2a(&msg->rcv.src_ip);
 	if(def_port_fl) {
-		res->len += snprintf(buf + res->len, sizeof(buf) - res->len, "%s", cp);
+		len = snprintf(buf + res->len, sizeof(buf) - res->len, "%s", cp);
 	} else {
-		res->len += snprintf(buf + res->len, sizeof(buf) - res->len, "%s:%d",
-				cp, msg->rcv.src_port);
+		len = snprintf(buf + res->len, sizeof(buf) - res->len, "%s:%d", cp,
+				msg->rcv.src_port);
+	}
+	if(len < 0 || len >= sizeof(buf) - res->len) {
+		LM_ERR("rewrite contact[%d] - result address too long\n",
+				s->params[2].v.i);
+		return -1;
+	}
+	res->len += len;
+	len = res->len + c->len - (hostport.s + hostport.len - c->name.s);
+	if(len >= MAX_URI_SIZE - 1) {
+		LM_ERR("rewrite contact[%d] - result too long\n", s->params[2].v.i);
+		return -1;
 	}
 	memcpy(buf + res->len, hostport.s + hostport.len,
 			c->len - (hostport.s + hostport.len - c->name.s));
-	res->len += c->len - (hostport.s + hostport.len - c->name.s);
+	res->len = len;
 
 	return 0;
 }
